@@ -15,6 +15,7 @@ public:
 
 public:
     QString getAutopilotTypeName();	//Overwritten from UAS to add MAV_AUTOPILOT_ASLUAV type.
+	int SendCommandLong(MAV_CMD CmdID, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
 
 public slots:
     /** @brief Receive a MAVLink message from this MAV */

@@ -313,20 +313,6 @@
         </layout>
        </item>
       </layout>
-      <zorder>bat3SoCBar</zorder>
-      <zorder>bat2SoCBar</zorder>
-      <zorder>bat1SoCBar</zorder>
-      <zorder>PowerGroupBox</zorder>
-      <zorder>bat3PowerLabel_2</zorder>
-      <zorder>bat3VLabel_2</zorder>
-      <zorder>batVLabel_2</zorder>
-      <zorder>bat1VLabel_2</zorder>
-      <zorder>bat1PowerLabel_2</zorder>
-      <zorder>bat2VLabel_2</zorder>
-      <zorder>batPowerLabel_2</zorder>
-      <zorder>bat2PowerLabel_2</zorder>
-      <zorder>bat2TempLabel_2</zorder>
-      <zorder>bat3TempLabel_2</zorder>
      </widget>
      <widget class="QWidget" name="mpptTab">
       <attribute name="title">
@@ -1022,6 +1008,50 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="CMDTab">
+      <attribute name="title">
+       <string>CMD</string>
+      </attribute>
+      <widget class="QPushButton" name="ResetMPPTButton">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>10</y>
+         <width>75</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="ResetMPPTEdit">
+       <property name="geometry">
+        <rect>
+         <x>112</x>
+         <y>10</y>
+         <width>41</width>
+         <height>24</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="ResetMPPTLabel">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>91</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::TabFocus</enum>
+       </property>
+       <property name="text">
+        <string>Reset MPPT Nr. :</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </item>

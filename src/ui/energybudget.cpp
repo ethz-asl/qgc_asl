@@ -4,6 +4,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
+#include <QMessageBox>
 #include <math.h>
 #include <qdebug.h>
 #include "../uas/ASLUAV.h"
@@ -47,6 +48,8 @@ m_batCharging(true)
 	ui->overviewGraphicsView->setScene(m_scene);
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 	connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
+	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
+	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
 	if (UASManager::instance()->getActiveUAS())
 	{
 		setActiveUAS(UASManager::instance()->getActiveUAS());
@@ -355,4 +358,19 @@ QString EnergyBudget::convertMPPTStatus(uint8_t bit)
 	if (bit & 0x0020) return MPPTBit5;
 	if (bit & 0x0040) return MPPTBit6;
 	return "OK";
+}
+
+void EnergyBudget::ResetMPPTCmd()
+{
+	QMessageBox::StandardButton reply;
+	reply = QMessageBox::question(this, tr("MPPT reset"), tr("Sending command to reset MPPT. Use this with caution! Are you sure?"), QMessageBox::Yes | QMessageBox::No);
+
+	if (reply == QMessageBox::Yes) {
+		int MPPTNr = ui->ResetMPPTEdit->text().toInt();
+
+		//Send the message via the currently active UAS
+		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();;
+		if (tempUAS) tempUAS->SendCommandLong(MAV_CMD_RESET_MPPT, (float) MPPTNr);
+	}
+
 }
