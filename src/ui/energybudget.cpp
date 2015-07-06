@@ -10,6 +10,7 @@
 #include "../uas/ASLUAV.h"
 #include "UASInterface.h"
 #include "UASManager.h"
+#include "QGCApplication.h"
 
 #define OVERVIEWTOIMAGEHEIGHTSCALE (3.0)
 #define OVERVIEWTOIMAGEWIDTHSCALE (3.0)
@@ -49,6 +50,7 @@ m_batCharging(true)
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 	connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
+	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
 	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
 	if (UASManager::instance()->getActiveUAS())
 	{
@@ -95,20 +97,15 @@ void EnergyBudget::buildGraphicsImage()
 	m_batToPropPath->setPath(m_batToPropPath->mapFromScene(bat2PropPath));
 	// Add text
 	m_chargePowerText->setPos(batRect.x() + batRect.width() / 2.0 - 5*penWidth, (batRect.y() + cellRect.y()+cellRect.height())/ 2.0);
-	m_chargePowerText->setDefaultTextColor(QColor(Qt::white));
 	m_chargePowerText->setFont(QFont("Helvetica", penWidth*1.2));
 	m_batUsePowerText->setPos((batRect.x() + propRect.x()) / 2.0, batRect.y() + batRect.height() / 2.0 - 3*penWidth);
 	m_batUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
-	m_batUsePowerText->setDefaultTextColor(QColor(Qt::white));
 	m_cellPowerText->setPos(cellRect.x()+cellRect.width()/2.0, cellRect.y() - 2*penWidth);
 	m_cellPowerText->setFont(QFont("Helvetica", penWidth*1.2));
-	m_cellPowerText->setDefaultTextColor(QColor(Qt::white));
 	m_cellUsePowerText->setPos(propRect.x() + propRect.width() / 2.0 + 2*penWidth, (propRect.y() + cellRect.y() + cellRect.height()) / 2.0);
 	m_cellUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
-	m_cellUsePowerText->setDefaultTextColor(QColor(Qt::white));
 	m_SystemUsePowerText->setPos(propRect.x() + propRect.width()/2.0 -1.0*penWidth, propRect.y() + propRect.height());
 	m_SystemUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
-	m_SystemUsePowerText->setDefaultTextColor(QColor(Qt::white));
 
 	// Recalc scene bounding rect
 	m_scene->setSceneRect(QRectF(0.0, 0.0, 0.0, 0.0));
@@ -373,4 +370,24 @@ void EnergyBudget::ResetMPPTCmd()
 		if (tempUAS) tempUAS->SendCommandLong(MAV_CMD_RESET_MPPT, (float) MPPTNr);
 	}
 
+}
+
+void EnergyBudget::styleChanged(bool darkStyle)
+{
+	if (darkStyle)
+	{
+		m_chargePowerText->setDefaultTextColor(QColor(Qt::white));
+		m_batUsePowerText->setDefaultTextColor(QColor(Qt::white));
+		m_cellPowerText->setDefaultTextColor(QColor(Qt::white));
+		m_cellUsePowerText->setDefaultTextColor(QColor(Qt::white));
+		m_SystemUsePowerText->setDefaultTextColor(QColor(Qt::white));
+	}
+	else
+	{
+		m_chargePowerText->setDefaultTextColor(QColor(Qt::black));
+		m_batUsePowerText->setDefaultTextColor(QColor(Qt::black));
+		m_cellPowerText->setDefaultTextColor(QColor(Qt::black));
+		m_cellUsePowerText->setDefaultTextColor(QColor(Qt::black));
+		m_SystemUsePowerText->setDefaultTextColor(QColor(Qt::black));
+	}
 }
