@@ -107,6 +107,8 @@ void EnergyBudget::buildGraphicsImage()
 	m_SystemUsePowerText->setPos(propRect.x() + propRect.width()/2.0 -1.0*penWidth, propRect.y() + propRect.height());
 	m_SystemUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
 
+	// set the right textcolor
+	this->styleChanged(qgcApp()->styleIsDark());
 	// Recalc scene bounding rect
 	m_scene->setSceneRect(QRectF(0.0, 0.0, 0.0, 0.0));
 }
