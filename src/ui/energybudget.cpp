@@ -269,7 +269,7 @@ void EnergyBudget::updateGraphicsImage()
 		m_cellUsePowerText->setVisible(true);
 		if (m_batCharging)
 		{
-			m_cellUsePowerText->setPlainText(QString("%1W").arg(m_cellPower - m_batCharging, 0, 'f', 1));
+			m_cellUsePowerText->setPlainText(QString("%1W").arg(m_cellPower - m_chargePower, 0, 'f', 1));
 		}
 		else
 		{
