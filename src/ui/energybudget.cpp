@@ -153,7 +153,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat1VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat1ALabel->setText(QString("%1").arg(current / 1000.0));
 			ui->bat1PowerLabel->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
-			ui->bat1PowerLabel_2->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
+			ui->bat1CurrentLabel_2->setText(QString("%1").arg((current / 1000.0)));
 			ui->bat1StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat1TempLabel->setText(QString("%1").arg(temp));
 			ui->bat1SoCBar->setValue(soc);
@@ -170,7 +170,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat2VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat2ALabel->setText(QString("%1").arg(current / 1000.0));
 			ui->bat2PowerLabel->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
-			ui->bat2PowerLabel_2->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
+			ui->bat2CurrentLabel_2->setText(QString("%1").arg((current / 1000.0)));
 			ui->bat2StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat2TempLabel->setText(QString("%1").arg(temp));
 			ui->bat2SoCBar->setValue(soc);
@@ -187,7 +187,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat3VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat3ALabel->setText(QString("%1").arg(current / 1000.0));
 			ui->bat3PowerLabel->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
-			ui->bat3PowerLabel_2->setText(QString("%1").arg((volt / 1000.0)*(current / 1000.0)));
+			ui->bat3CurrentLabel_2->setText(QString("%1").arg((current / 1000.0)));
 			ui->bat3StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat3TempLabel->setText(QString("%1").arg(temp));
 			ui->bat3SoCBar->setValue(soc);
