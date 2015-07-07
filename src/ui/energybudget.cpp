@@ -229,9 +229,12 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
 	ui->mppt1PowerLabel->setText(QString("%1").arg(volt1*amp1));
 	ui->mppt2PowerLabel->setText(QString("%1").arg(volt2*amp2));
 	ui->mppt3PowerLabel->setText(QString("%1").arg(volt3*amp3));
-	ui->mppt1StatLabel->setText(convertMPPTStatus(status1));
-	ui->mppt2StatLabel->setText(convertMPPTStatus(status2));
-	ui->mppt3StatLabel->setText(convertMPPTStatus(status3));
+	ui->mppt1ModLabel->setText(convertMPPTModus(status1));
+	ui->mppt2ModLabel->setText(convertMPPTModus(status2));
+	ui->mppt3ModLabel->setText(convertMPPTModus(status3));
+	ui->mppt1StatLabel->setText(convertMPPTModus(status1));
+	ui->mppt2StatLabel->setText(convertMPPTModus(status2));
+	ui->mppt3StatLabel->setText(convertMPPTModus(status3));
 	ui->mppt1PwmLabel->setText(QString("%1").arg(pwm1));
 	ui->mppt2PwmLabel->setText(QString("%1").arg(pwm2));
 	ui->mppt3PwmLabel->setText(QString("%1").arg(pwm3));
@@ -347,7 +350,8 @@ QString EnergyBudget::convertBatteryStatus(uint16_t bit)
 	return "OK";
 }
 
-#define MPPTBit0 "CC/CV"
+#define MPPTBit0Active "CV"
+#define MPPTBit0Inactive "CC"
 #define MPPTBit1 "OVA"
 #define MPPTBit2 "OTA"
 #define MPPTBit3 "OCAL4"
@@ -355,9 +359,14 @@ QString EnergyBudget::convertBatteryStatus(uint16_t bit)
 #define MPPTBit5 "OCAL2"
 #define MPPTBit6 "OCAL1"
 
+QString EnergyBudget::convertMPPTModus(uint8_t bit)
+{
+	if (bit & 0x0001) return MPPTBit0Active;
+	return MPPTBit0Inactive;
+}
+
 QString EnergyBudget::convertMPPTStatus(uint8_t bit)
 {
-	if (bit & 0x0001) return MPPTBit0;
 	if (bit & 0x0002) return MPPTBit1;
 	if (bit & 0x0004) return MPPTBit2;
 	if (bit & 0x0008) return MPPTBit3;

@@ -50,6 +50,7 @@ protected:
 	void updateGraphicsImage();
 	QString convertHostfet(uint16_t);
 	QString convertBatteryStatus(uint16_t);
+	QString convertMPPTModus(uint8_t);
 	QString convertMPPTStatus(uint8_t bit);
 
 protected slots:
