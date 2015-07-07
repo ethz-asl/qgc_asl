@@ -5,6 +5,7 @@
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
 #include <QMessageBox>
+#include <QTimer>
 #include <math.h>
 #include <qdebug.h>
 #include "../uas/ASLUAV.h"
@@ -19,6 +20,7 @@
 #define CENTERCOMPID 151
 #define RIGHTCOMPID 152
 #define CELLPOWERTHRESHHOLD 0.1
+#define MPPTRESETTIMEMS 3000
 
 
 EnergyBudget::EnergyBudget(QWidget *parent) :
@@ -40,7 +42,8 @@ m_cellPower(0.0),
 m_batUsePower(0.0),
 m_propUsePower(0.0),
 m_chargePower(0.0),
-m_batCharging(true)
+m_batCharging(true),
+m_MPPTUpdateReset(new QTimer(this))
 {
     ui->setupUi(this);
 	ui->overviewGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
@@ -51,19 +54,23 @@ m_batCharging(true)
 	connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
 	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
+	m_MPPTUpdateReset->setInterval(MPPTRESETTIMEMS);
+	m_MPPTUpdateReset->setSingleShot(false);
+	connect(m_MPPTUpdateReset, SIGNAL(timeout()), this, SLOT(MPPTTimerTimeout()));
 	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
 	if (UASManager::instance()->getActiveUAS())
 	{
 		setActiveUAS(UASManager::instance()->getActiveUAS());
 	}
+	m_MPPTUpdateReset->start();
 }
 
 EnergyBudget::~EnergyBudget()
 {
     delete ui;
 	delete m_scene;
+	delete m_MPPTUpdateReset;
 }
-
 
 void EnergyBudget::buildGraphicsImage()
 {
@@ -117,7 +124,6 @@ qreal EnergyBudget::adjustImageScale(const QRectF &viewSize, QRectF &img)
 {
 	return std::fmin((viewSize.height() / (OVERVIEWTOIMAGEHEIGHTSCALE*img.height())), (viewSize.width() / (OVERVIEWTOIMAGEWIDTHSCALE*img.width())));
 }
-
 
 void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float curr_2)
 {
@@ -213,6 +219,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 
 void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3)
 {
+	m_MPPTUpdateReset->stop();
 	ui->mppt1VLabel->setText(QString("%1").arg(volt1));
 	ui->mppt2VLabel->setText(QString("%1").arg(volt2));
 	ui->mppt3VLabel->setText(QString("%1").arg(volt3));
@@ -231,6 +238,7 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
 
 	m_cellPower = (volt1*amp1 + volt2*amp2 + volt3*amp3);
 	updateGraphicsImage();
+	m_MPPTUpdateReset->start(MPPTRESETTIMEMS);
 }
 
 void EnergyBudget::updateGraphicsImage()
@@ -392,4 +400,15 @@ void EnergyBudget::styleChanged(bool darkStyle)
 		m_cellUsePowerText->setDefaultTextColor(QColor(Qt::black));
 		m_SystemUsePowerText->setDefaultTextColor(QColor(Qt::black));
 	}
+}
+
+void EnergyBudget::MPPTTimerTimeout()
+{
+	m_cellPower = m_propUsePower - m_chargePower - m_batUsePower;
+	ui->mppt1VLabel->setText(QString("--"));
+	ui->mppt2VLabel->setText(QString("--"));
+	ui->mppt3VLabel->setText(QString("--"));
+	ui->mppt1ALabel->setText(QString("--"));
+	ui->mppt2ALabel->setText(QString("--"));
+	ui->mppt3ALabel->setText(QString("--"));
 }

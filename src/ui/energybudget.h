@@ -13,6 +13,7 @@ class QGraphicsPixmapItem;
 class QGraphicsPathItem;
 class QGraphicsTextItem;
 class UASInterface;
+class QTimer;
 
 class EnergyBudget : public QWidget
 {
@@ -41,6 +42,7 @@ protected:
 	float m_propUsePower;
 	float m_chargePower;
 	bool m_batCharging;
+	QTimer *m_MPPTUpdateReset;
 
 	void buildGraphicsImage();
 	qreal adjustImageScale(const QRectF &, QRectF&);
@@ -56,6 +58,7 @@ protected slots:
 	void updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
 	void setActiveUAS(UASInterface *uas);
 	void styleChanged(bool);
+	void MPPTTimerTimeout();
 
 	void ResetMPPTCmd();
 };
