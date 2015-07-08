@@ -14,6 +14,7 @@ class QGraphicsPathItem;
 class QGraphicsTextItem;
 class UASInterface;
 class QTimer;
+class Hysteresisf;
 
 class EnergyBudget : public QWidget
 {
@@ -41,7 +42,16 @@ protected:
 	float m_batUsePower;
 	float m_propUsePower;
 	float m_chargePower;
-	bool m_batCharging;
+	enum class batChargeStatus : int8_t
+	{
+		DSCHRG,
+		LVL,
+		CHRG
+	};
+	batChargeStatus m_batCharging;
+	Hysteresisf *m_batHystHigh;
+	Hysteresisf *m_batHystLow;
+	Hysteresisf *m_mpptHyst;
 	QTimer *m_MPPTUpdateReset;
 
 	void buildGraphicsImage();

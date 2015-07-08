@@ -19,9 +19,24 @@
 #define LEFTCOMPID 150
 #define CENTERCOMPID 151
 #define RIGHTCOMPID 152
-#define CELLPOWERTHRESHHOLD 0.1
+#define CELLPOWERHYSTMIN 1
+#define CELLPOWERHYSTMAX 3
+#define BATPOWERHIGHMIN 1
+#define BATPOWERHIGHMAX 3
+#define BATPOWERLOWMIN -3
+#define BATPOWERLOWMAX -1
 #define MPPTRESETTIMEMS 3000
 
+class Hysteresisf
+{
+public:
+	Hysteresisf(float minVal, float maxVal, bool isHighState);
+	bool check(float);
+private:
+	float const m_minVal;
+	float const m_maxVal;
+	bool m_highState;
+};
 
 EnergyBudget::EnergyBudget(QWidget *parent) :
 QWidget(parent),
@@ -42,7 +57,10 @@ m_cellPower(0.0),
 m_batUsePower(0.0),
 m_propUsePower(0.0),
 m_chargePower(0.0),
-m_batCharging(true),
+m_batCharging(batChargeStatus::CHRG),
+m_batHystHigh(new Hysteresisf(BATPOWERHIGHMIN, BATPOWERHIGHMAX, true)),
+m_batHystLow(new Hysteresisf(BATPOWERLOWMIN, BATPOWERLOWMAX, true)),
+m_mpptHyst(new Hysteresisf(CELLPOWERHYSTMIN, CELLPOWERHYSTMAX, true)),
 m_MPPTUpdateReset(new QTimer(this))
 {
     ui->setupUi(this);
@@ -70,6 +88,9 @@ EnergyBudget::~EnergyBudget()
     delete ui;
 	delete m_scene;
 	delete m_MPPTUpdateReset;
+	delete m_batHystHigh;
+	delete m_batHystLow;
+	delete m_mpptHyst;
 }
 
 void EnergyBudget::buildGraphicsImage()
@@ -202,17 +223,23 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 	}
 
 	float power((ui->bat1PowerLabel->text().toDouble() + ui->bat2PowerLabel->text().toDouble() + ui->bat3PowerLabel->text().toDouble()));
-	if (power >= 0)
+	if (m_batHystHigh->check(power))
 	{
-		m_batCharging = true;
+		m_batCharging = batChargeStatus::CHRG;
 		m_chargePower = power;
 		m_batUsePower = 0;
 	}
-	else
+	else if(!(m_batHystLow->check(power)))
 	{
-		m_batCharging = false;
+		m_batCharging = batChargeStatus::DSCHRG;
 		m_chargePower = 0;
 		m_batUsePower = -power;
+	}
+	else
+	{
+		m_batCharging = batChargeStatus::LVL;
+		m_chargePower = 0;
+		m_batUsePower = 0;
 	}
 	updateGraphicsImage();
 }
@@ -246,7 +273,7 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
 
 void EnergyBudget::updateGraphicsImage()
 {
-	if (m_batCharging)
+	if (m_batCharging == batChargeStatus::CHRG)
 	{
 		m_chargePath->setVisible(true);
 		m_chargePowerText->setVisible(true);
@@ -254,7 +281,7 @@ void EnergyBudget::updateGraphicsImage()
 		m_batToPropPath->setVisible(false);
 		m_batUsePowerText->setVisible(false);
 	}
-	else
+	else if (m_batCharging == batChargeStatus::DSCHRG)
 	{
 		m_chargePath->setVisible(false);
 		m_chargePowerText->setVisible(false);
@@ -262,19 +289,19 @@ void EnergyBudget::updateGraphicsImage()
 		m_batUsePowerText->setVisible(true);
 		m_batUsePowerText->setPlainText(QString("%1W").arg(m_batUsePower, 0, 'f', 1));
 	}
-	if (m_cellPower > CELLPOWERTHRESHHOLD)
+	else
+	{
+		m_chargePath->setVisible(false);
+		m_chargePowerText->setVisible(false);
+		m_batToPropPath->setVisible(false);
+		m_batUsePowerText->setVisible(false);
+	}
+	if (m_mpptHyst->check(m_cellPower))
 	{
 		m_cellToPropPath->setVisible(true);
 		m_cellPowerText->setPlainText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
 		m_cellUsePowerText->setVisible(true);
-		if (m_batCharging)
-		{
-			m_cellUsePowerText->setPlainText(QString("%1W").arg(m_cellPower - m_chargePower, 0, 'f', 1));
-		}
-		else
-		{
-			m_cellUsePowerText->setPlainText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
-		}
+		m_cellUsePowerText->setPlainText(QString("%1W").arg(m_propUsePower - m_batUsePower, 0, 'f', 1));
 	}
 	else
 	{
@@ -420,4 +447,25 @@ void EnergyBudget::MPPTTimerTimeout()
 	ui->mppt1ALabel->setText(QString("--"));
 	ui->mppt2ALabel->setText(QString("--"));
 	ui->mppt3ALabel->setText(QString("--"));
+}
+
+Hysteresisf::Hysteresisf(float minVal, float maxVal, bool isHighState) :
+m_minVal(minVal),
+m_maxVal(maxVal),
+m_highState(isHighState)
+{
+
+}
+
+bool Hysteresisf::check(float const currVal)
+{
+	if (currVal < m_minVal)
+	{
+		m_highState = false;
+	}
+	if (currVal > m_maxVal)
+	{
+		m_highState = true;
+	}
+	return m_highState;
 }
