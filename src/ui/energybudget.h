@@ -15,6 +15,7 @@ class QGraphicsTextItem;
 class UASInterface;
 class QTimer;
 class Hysteresisf;
+class UASInterface;
 
 class EnergyBudget : public QWidget
 {
@@ -42,6 +43,7 @@ protected:
 	float m_batUsePower;
 	float m_propUsePower;
 	float m_chargePower;
+	double m_thrust;
 	enum class batChargeStatus : int8_t
 	{
 		DSCHRG,
@@ -70,6 +72,7 @@ protected slots:
 	void setActiveUAS(UASInterface *uas);
 	void styleChanged(bool);
 	void MPPTTimerTimeout();
+	void changeThrust(UASInterface*, double);
 
 	void ResetMPPTCmd();
 };

@@ -57,6 +57,7 @@ m_cellPower(0.0),
 m_batUsePower(0.0),
 m_propUsePower(0.0),
 m_chargePower(0.0),
+m_thrust(0.0),
 m_batCharging(batChargeStatus::CHRG),
 m_batHystHigh(new Hysteresisf(BATPOWERHIGHMIN, BATPOWERHIGHMAX, true)),
 m_batHystLow(new Hysteresisf(BATPOWERLOWMIN, BATPOWERLOWMAX, true)),
@@ -149,7 +150,7 @@ qreal EnergyBudget::adjustImageScale(const QRectF &viewSize, QRectF &img)
 void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float curr_2)
 {
 	m_propUsePower = volt*currpb;
-	m_SystemUsePowerText->setPlainText(QString("%1W").arg(m_propUsePower, 0, 'f', 1));
+	m_SystemUsePowerText->setPlainText(QString("%1W @Thr %2%").arg(m_propUsePower, 0, 'f', 1).arg(m_thrust*100.0,0,'f',0));
 	ui->powerA1Value->setText(QString("%1").arg(curr_1));
 	ui->powerA2Value->setText(QString("%1").arg(curr_2));
 	ui->powerAValue->setText(QString("%1").arg(currpb));
@@ -323,6 +324,7 @@ void EnergyBudget::setActiveUAS(UASInterface *uas)
 	disconnect(this, SLOT(updatePower(float, float, float, float)));
 	disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
 	disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+	disconnect(this, SLOT(changeThrust(UASInterface*, double)));
 
 	//connect the uas if asluas
 	ASLUAV *asluas = dynamic_cast<ASLUAV*>(uas);
@@ -331,6 +333,7 @@ void EnergyBudget::setActiveUAS(UASInterface *uas)
 		connect(asluas, SIGNAL(PowerDataChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
 		connect(asluas, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
 		connect(asluas, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+		connect(asluas, SIGNAL(thrustChanged(UASInterface*, double)), this, SLOT(changeThrust(UASInterface*, double)));
 	}
 	//else set to standard output
 	else
@@ -447,6 +450,12 @@ void EnergyBudget::MPPTTimerTimeout()
 	ui->mppt1ALabel->setText(QString("--"));
 	ui->mppt2ALabel->setText(QString("--"));
 	ui->mppt3ALabel->setText(QString("--"));
+}
+
+void EnergyBudget::changeThrust(UASInterface *uas, double thrust)
+{
+	Q_UNUSED(uas);
+	m_thrust = thrust;
 }
 
 Hysteresisf::Hysteresisf(float minVal, float maxVal, bool isHighState) :
