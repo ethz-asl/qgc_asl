@@ -65,8 +65,8 @@ m_mpptHyst(new Hysteresisf(CELLPOWERHYSTMIN, CELLPOWERHYSTMAX, true)),
 m_MPPTUpdateReset(new QTimer(this))
 {
     ui->setupUi(this);
-	ui->overviewGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
-	ui->overviewGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    ui->overviewGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->overviewGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->buildGraphicsImage();
 	ui->overviewGraphicsView->setScene(m_scene);
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
@@ -99,9 +99,13 @@ void EnergyBudget::buildGraphicsImage()
 	m_scene->setSceneRect(0.0, 0.0, 1000.0, 1000.0);
 	qreal penWidth(40);
 	// scale and place images
-	m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), m_propPixmap->boundingRect()));
-	m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), m_cellPixmap->boundingRect()));
-	m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), m_batPixmap->boundingRect()));
+
+    QRectF temp=m_propPixmap->boundingRect();
+    m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
+    temp=m_cellPixmap->boundingRect();
+    m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
+    temp=m_batPixmap->boundingRect();
+    m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
 	double maxheight(std::fmax(m_propPixmap->mapRectToScene(m_propPixmap->boundingRect()).height(), m_batPixmap->mapRectToScene(m_batPixmap->boundingRect()).height()));
 	m_propPixmap->setOffset(0.0, m_propPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_propPixmap->mapRectFromScene(QRectF(0.0,0.0,1.0,maxheight)).height()/2.0 - m_propPixmap->boundingRect().height() / 2.0);
 	m_batPixmap->setOffset(m_batPixmap->mapRectFromScene(m_scene->sceneRect()).width() - m_batPixmap->boundingRect().width(), m_batPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_batPixmap->mapRectFromScene(QRectF(0.0, 0.0, 1.0, maxheight)).height() / 2.0 - m_batPixmap->boundingRect().height() / 2.0);

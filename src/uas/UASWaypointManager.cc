@@ -1178,7 +1178,7 @@ void UASWaypointManager::_updateWPonTimer()
 {
 	while (current_state != WP_IDLE)
 	{
-		Sleep(100);
+		sleep(100);
 	}
 	readWaypoints(true);
 }
