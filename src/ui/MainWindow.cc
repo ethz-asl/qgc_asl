@@ -69,6 +69,7 @@ This file is part of the QGROUNDCONTROL project
 #include "QGCMessageBox.h"
 #include "QGCDockWidget.h"
 #include "energybudget.h"
+#include "sensorpodstatus.h"
 
 #ifdef QGC_USE_ASLUAV_MESSAGES
 #include "AutoTrim.h"
@@ -104,6 +105,7 @@ const char* MainWindow::_uasInfoViewDockWidgetName = "UAS_INFO_INFOVIEW_DOCKWIDG
 const char* MainWindow::_debugConsoleDockWidgetName = "COMMUNICATION_CONSOLE_DOCKWIDGET";
 const char* MainWindow::_AutoTrimDockWidgetName = "AUTOTRIM_DOCKWIDGET";
 const char* MainWindow::_aslEnergyBudgetWidgetName = "ENERGY_BUDGET_DOCKWIDGET";
+const char* MainWindow::_aslSensorpodStatusWidgetName = "SENSORPOD_STATUS_DOCKWIDGET";
 
 static MainWindow* _instance = NULL;   ///< @brief MainWindow singleton
 
@@ -431,8 +433,9 @@ void MainWindow::_buildCommonWidgets(void)
         { _uasInfoViewDockWidgetName,       "Info View",                Qt::LeftDockWidgetArea },
         { _debugConsoleDockWidgetName,      "Communications Console",   Qt::LeftDockWidgetArea },
 		{ _AutoTrimDockWidgetName,          "Auto Trim",                Qt::RightDockWidgetArea },
-		{ _aslEnergyBudgetWidgetName,		"Energy Budget",			Qt::RightDockWidgetArea }
-		
+        { _aslEnergyBudgetWidgetName,		"Energy Budget",			Qt::RightDockWidgetArea },
+        { _aslSensorpodStatusWidgetName,	"Sensorpod Status",         Qt::RightDockWidgetArea }
+
     };
     static const size_t cDockWidgetInfo = sizeof(rgDockWidgetInfo) / sizeof(rgDockWidgetInfo[0]);
 
@@ -585,6 +588,8 @@ void MainWindow::_createInnerDockWidget(const QString& widgetName)
         widget = new QGCTabbedInfoView(this);
 	} else if (widgetName == _aslEnergyBudgetWidgetName) {
 		widget = new EnergyBudget(this);
+    } else if (widgetName == _aslSensorpodStatusWidgetName) {
+        widget = new SensorpodStatus(this);
     } else if (widgetName == _debugConsoleDockWidgetName) {
         widget = new DebugConsole(this);
 	} else if (widgetName == _AutoTrimDockWidgetName) {
