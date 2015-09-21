@@ -335,6 +335,7 @@ private:
     static const char* _debugConsoleDockWidgetName;
 	static const char* _AutoTrimDockWidgetName;
 	static const char* _aslEnergyBudgetWidgetName;
+    static const char* _aslSensorpodStatusWidgetName;
 
     QMap<QString, QDockWidget*>     _mapName2DockWidget;
     QMap<int, QDockWidget*>         _mapUasId2HilDockWidget;

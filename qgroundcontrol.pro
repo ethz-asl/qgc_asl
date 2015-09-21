@@ -153,6 +153,7 @@ MacBuild {
 LinuxBuild {
 	DEFINES += __STDC_LIMIT_MACROS
     CONFIG += qesp_linux_udev
+    QMAKE_CXXFLAGS += -std=c++11 
 }
 
 WindowsBuild {
@@ -353,6 +354,7 @@ FORMS += \
     src/ui/QGCCommConfiguration.ui \
     src/ui/QGCUDPLinkConfiguration.ui \
     src/ui/energybudget.ui \
+    src/ui/sensorpodstatus.ui \
     src/ui/AutoTrim.ui
 
 HEADERS += \
@@ -508,6 +510,7 @@ HEADERS += \
     src/QmlControls/ScreenTools.h \
     src/uas/ASLUAV.h \
     src/ui/energybudget.h \
+    src/ui/sensorpodstatus.h \
     src/ui/AutoTrim.h
 
 SOURCES += \
@@ -652,6 +655,7 @@ SOURCES += \
     src/ui/toolbar/MainToolBar.cc \
     src/QmlControls/ScreenTools.cc \
     src/ui/energybudget.cpp \
+    src/ui/sensorpodstatus.cpp \
     src/uas/ASLUAV.cc \
     src/ui/AutoTrim.cpp
 

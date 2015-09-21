@@ -190,6 +190,15 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 				//The rest of the message handling (i.e. adding data to the plots) is done elsewhere
 				break;
 			}
+            case MAVLINK_MSG_ID_SENSORPOD_STATUS:
+            {
+                mavlink_sensorpod_status_t data;
+                mavlink_msg_sensorpod_status_decode(&message, &data);
+                emit SensorpodStatusChanged(data.visensor_rate_1, data.visensor_rate_2, data.visensor_rate_3, data.visensor_rate_4,
+                                            data.recording_nodes_count,data.cpu_temp, data.free_space);
+
+                break;
+            }
 			default:
 			{
 				//std::cout << "msgid:"<<message.(int)msgid<<endl; //"ASLUAV: Unknown message received"<<endl;
@@ -258,4 +267,14 @@ int ASLUAV::SendCommandLong(MAV_CMD CmdID, float param1, float param2, float par
 
 	std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent." << std::endl;
 	return 0;
+}
+
+int ASLUAV::SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
+{
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack(mavlink->getSystemId(), mavlink->getComponentId(), &msg, uasId, target_component, CmdID, 1, param1, param2, param3, param4, param5, param6, param7);
+    sendMessage(msg);
+
+    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent to component " << (int) target_component << "." << std::endl;
+    return 0;
 }
