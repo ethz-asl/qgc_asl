@@ -100,12 +100,12 @@ void EnergyBudget::buildGraphicsImage()
 	qreal penWidth(40);
 	// scale and place images
 
-    QRectF temp=m_propPixmap->boundingRect();
-    m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
-    temp=m_cellPixmap->boundingRect();
-    m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
-    temp=m_batPixmap->boundingRect();
-    m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), temp ));
+    QRectF tempRectF=m_propPixmap->boundingRect();
+    m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
+    tempRectF=m_cellPixmap->boundingRect();
+    m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
+    tempRectF=m_batPixmap->boundingRect();
+    m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
 	double maxheight(std::fmax(m_propPixmap->mapRectToScene(m_propPixmap->boundingRect()).height(), m_batPixmap->mapRectToScene(m_batPixmap->boundingRect()).height()));
 	m_propPixmap->setOffset(0.0, m_propPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_propPixmap->mapRectFromScene(QRectF(0.0,0.0,1.0,maxheight)).height()/2.0 - m_propPixmap->boundingRect().height() / 2.0);
 	m_batPixmap->setOffset(m_batPixmap->mapRectFromScene(m_scene->sceneRect()).width() - m_batPixmap->boundingRect().width(), m_batPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_batPixmap->mapRectFromScene(QRectF(0.0, 0.0, 1.0, maxheight)).height() / 2.0 - m_batPixmap->boundingRect().height() / 2.0);
