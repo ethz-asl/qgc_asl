@@ -208,6 +208,25 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 
                 break;
             }
+            case MAVLINK_MSG_ID_FW_SOARING_DATA:
+            {
+                mavlink_fw_soaring_data_t data;
+                mavlink_msg_fw_soaring_data_decode(&message, &data);
+
+                //Draw thermal position into map
+                const quint16 THERMAL_ID = 100;
+                ThermalUpdraftEstimate.setId(THERMAL_ID);
+                ThermalUpdraftEstimate.setLongitude((double)data.xLon);
+                ThermalUpdraftEstimate.setLatitude((double)data.xLat);
+                ThermalUpdraftEstimate.setAltitude(this->getAltitudeAMSL());
+                ThermalUpdraftEstimate.setParam1(data.z1_LocalUpdraftSpeed);
+                ThermalUpdraftEstimate.setParam2(data.xW);
+                ThermalUpdraftEstimate.setParam3(data.xR);
+                ThermalUpdraftEstimate.setParam4(data.ControlMode);
+                ThermalUpdraftEstimate.setAction(MAV_CMD_NAV_LOITER_UNLIM);
+                emit(ThermalUpdraftEstimateChanged(&ThermalUpdraftEstimate));
+                break;
+            }
 			default:
 			{
 				//std::cout << "msgid:"<<message.(int)msgid<<endl; //"ASLUAV: Unknown message received"<<endl;
@@ -286,4 +305,19 @@ int ASLUAV::SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float
 
     std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent to component " << (int) target_component << "." << std::endl;
     return 0;
+}
+
+double ASLUAV::getThermalUpdraftVelocity(void)
+{
+    return ThermalUpdraftEstimate.getParam1();
+}
+
+double ASLUAV::getThermalStrength(void)
+{
+	return ThermalUpdraftEstimate.getParam2();
+}
+
+double ASLUAV::getThermalControlMode(void)
+{
+	return ThermalUpdraftEstimate.getParam4();
 }

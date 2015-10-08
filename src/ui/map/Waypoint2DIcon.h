@@ -36,10 +36,10 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     /** @brief Enable and format the waypoint number display */
     void SetShowNumber(const bool &value);
-
+	/** @brief Set the item color */
+	void SetColor(const QColor newcolor);
 public:
     void updateWaypoint();
-
 protected:
     mapcontrol::OPMapWidget* parent; ///< Parent widget
     QPointer<Waypoint> waypoint;   ///< Waypoint data container this icon represents

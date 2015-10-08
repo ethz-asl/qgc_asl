@@ -8,6 +8,8 @@
 #include "UASWaypointManager.h"
 #include "QGCMessageBox.h"
 
+#include "src/uas/ASLUAV.h"
+
 QGCMapWidget::QGCMapWidget(QWidget *parent) :
     mapcontrol::OPMapWidget(parent),
     firingWaypointChange(NULL),
@@ -346,6 +348,8 @@ void QGCMapWidget::addUAS(UASInterface* uas)
             delete item;
         }
     }
+    // Added (ASL / PhilippOe)
+    connect(uas, SIGNAL(ThermalUpdraftEstimateChanged(Waypoint*)), this, SLOT(updateThermalUpdraftMarker(Waypoint*)));
 }
 
 void QGCMapWidget::activeUASSet(UASInterface* uas)
@@ -464,10 +468,27 @@ void QGCMapWidget::updateGlobalPosition()
             uav->SetTrailDistance(5);
             uav->SetTrailType(mapcontrol::UAVTrailType::ByTimeElapsed);
         }
+        const float maxValue = 3.0f;
+        const float minValue = -2.0f;
+        const float range = maxValue - minValue;
+        const float subrange = range / 3.0f;
+        float Value = 0.0f;
+        if (system->getAutopilotType() == MAV_AUTOPILOT_ASLUAV) {
+            Value = (float)(((ASLUAV*)system)->getThermalUpdraftVelocity());
+        }
+        Value = qBound(minValue, Value, maxValue);
+        float marker = minValue + 2.0f*subrange;
+        int red = qBound(0, qRound((Value - marker) / subrange * 255.0f), 255);
+        marker = minValue + 2.0f*subrange;
+        int green = qBound(0, qRound(255.0f - abs(Value - marker) / subrange * 255.0f), 255);
+        marker = minValue + 1.0f*subrange;
+        int blue = qBound(0, qRound(255.0f - abs(Value - marker) / subrange * 255.0f), 255);
+        QColor color(red, green, blue);
+        //printf("Val: %.3f ||| R:%d G:%d B:%d\n", Value, red, green, blue);
 
         // Set new lat/lon position of UAV icon
         internals::PointLatLng pos_lat_lon = internals::PointLatLng(system->getLatitude(), system->getLongitude());
-        uav->SetUAVPos(pos_lat_lon, system->getAltitudeAMSL());
+        uav->SetUAVPos(pos_lat_lon, system->getAltitudeAMSL(), color);
         // Follow status
         if (followUAVEnabled && system->getUASID() == followUAVID) SetCurrentPosition(pos_lat_lon);
         // Convert from radians to degrees and apply
@@ -890,3 +911,72 @@ void QGCMapWidget::updateWaypointList(int uas)
 
 //    return internals::PointLatLng(lat2 * rad_to_deg, lon2 * rad_to_deg);
 //}
+
+void QGCMapWidget::updateThermalUpdraftMarker(Waypoint *wp)
+{
+    const int wpindex = 100;
+    
+    //qDebug() << __FILE__ << __LINE__ << "UPDATING WP FUNCTION CALLED";
+    // Source of the event was in this widget, do nothing
+    if (firingWaypointChange == wp) {
+        return;
+    }
+
+    //qDebug() << "UPDATING THERMAL MARKER POSITION IN 2D MAP";
+	UASInterface* system = UASManager::instance()->getActiveUAS();
+	
+	int value = 0;
+	float control_mode = 0.0f;
+	QColor wpColor(Qt::black);
+	if (system !=NULL) {
+		if (system->getAutopilotType() == MAV_AUTOPILOT_ASLUAV) {
+			value = (int)(((ASLUAV*)system)->getThermalStrength()* 100.0f);
+			control_mode = (float)(((ASLUAV*)system)->getThermalControlMode());
+			if (fabs(control_mode - 2.0f) < 0.01) wpColor = Qt::darkGreen; //Change color depending on current control mode onboard the UAV
+			else if (fabs(control_mode - 3.0f) < 0.01) wpColor = Qt::green;
+			else if(fabs(control_mode - 4.0f) < 0.01) wpColor = Qt::yellow;
+		}
+	}
+
+    // Check if wp exists yet in map
+    if (!waypointsToIcons.contains(wp))
+    {
+        // Create icon for new WP
+        Waypoint2DIcon* icon = new Waypoint2DIcon(map, this, wp, wpColor, value);
+        ConnectWP(icon);
+        icon->setParentItem(map);
+        // Update maps to allow inverse data association
+        waypointsToIcons.insert(wp, icon);
+        iconsToWaypoints.insert(icon, wp);
+    }
+    else
+    {
+        // Waypoint exists, block it's signals and update it
+        mapcontrol::WayPointItem* icon = waypointsToIcons.value(wp);
+        // Make sure we don't die on a null pointer
+        // this should never happen, just a precaution
+        if (!icon) return;
+        // Block outgoing signals to prevent an infinite signal loop
+        // should not happen, just a precaution
+        this->blockSignals(true);
+        // Update the WP
+        Waypoint2DIcon* wpicon = dynamic_cast<Waypoint2DIcon*>(icon);
+        if (wpicon)
+        {
+            // Let icon read out values directly from waypoint
+            icon->SetNumber(value);
+			wpicon->SetColor(wpColor);
+			wpicon->updateWaypoint();
+	    }
+        else
+        {
+            // Use safe standard interfaces for non Waypoint-class based wps
+            icon->SetCoord(internals::PointLatLng(wp->getLatitude(), wp->getLongitude()));
+            icon->SetAltitude(wp->getAltitude());
+            icon->SetHeading(wp->getYaw());
+            icon->SetNumber(value);
+        }
+        // Re-enable signals again
+        this->blockSignals(false);
+    }
+}

@@ -71,6 +71,8 @@ public slots:
     void goHome();
     /** @brief Update this waypoint for this UAS */
     void updateWaypoint(int uas, Waypoint* wp);
+    /** @brief Update marker position for estimated thermal updraft*/
+    void updateThermalUpdraftMarker(Waypoint *wp);
     /** @brief Update the whole waypoint */
     void updateWaypointList(int uas);
     /** @brief Update the home position on the map */

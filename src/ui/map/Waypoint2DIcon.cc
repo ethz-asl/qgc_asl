@@ -317,3 +317,8 @@ void Waypoint2DIcon::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         }
     }
 }
+
+void Waypoint2DIcon::SetColor(const QColor newcolor)
+{
+	color = newcolor;
+}
