@@ -84,8 +84,10 @@ void SensorpodStatus::PowerCycleSensorpodCmd()
 
 	if (reply == QMessageBox::Yes) {
 		//Send the message via the currently active UAS
-		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();;
-        if (tempUAS) tempUAS->SendCommandLongTarget(MAV_CMD_PAYLOAD_CONTROL, (uint8_t) 50, 1.0f);
+		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();
+	        if (tempUAS) {
+			tempUAS->SendCommandLong(MAV_CMD_PAYLOAD_CONTROL, 1.0f);
+		}
 	}
 
 }
