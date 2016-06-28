@@ -190,6 +190,82 @@
        <string>CMD</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QGroupBox" name="ObcControlGroup">
+         <property name="title">
+          <string>OBC Control</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QRadioButton" name="powerCycle1">
+            <property name="text">
+             <string>cycle power (off -&gt; on)</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="powerOn1">
+            <property name="text">
+             <string>power on</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="powerOff1">
+            <property name="text">
+             <string>power off</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="noCommand1">
+            <property name="text">
+             <string>do nothing</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="LidarControlGroup">
+         <property name="title">
+          <string>LIDAR control</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QRadioButton" name="powerOn2">
+            <property name="text">
+             <string>power on</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="powerOff2">
+            <property name="text">
+             <string>power off</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="noCommand2">
+            <property name="text">
+             <string>do nothing</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item alignment="Qt::AlignHCenter">
         <widget class="QPushButton" name="PowerCycleButton">
          <property name="minimumSize">
@@ -208,7 +284,7 @@
           <string>Perform a power cycle of the whole pod</string>
          </property>
          <property name="text">
-          <string>Power Cycle Sensorpod</string>
+          <string>Send</string>
          </property>
         </widget>
        </item>
