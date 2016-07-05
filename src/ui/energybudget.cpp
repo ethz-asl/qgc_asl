@@ -12,6 +12,7 @@
 #include "UASInterface.h"
 #include "UASManager.h"
 #include "QGCApplication.h"
+#include "GAudioOutput.h"
 
 #define OVERVIEWTOIMAGEHEIGHTSCALE (3.0)
 #define OVERVIEWTOIMAGEWIDTHSCALE (3.0)
@@ -50,9 +51,11 @@ m_cellToPropPath(m_scene->addPath(QPainterPath())),
 m_batToPropPath(m_scene->addPath(QPainterPath())),
 m_chargePowerText(m_scene->addText(QString("???"))),
 m_cellPowerText(m_scene->addText(QString("???"))),
+m_BckpBatText(m_scene->addText(QString("Backup Battery in use!!!"))),
 m_cellUsePowerText(m_scene->addText(QString("???"))),
 m_batUsePowerText(m_scene->addText(QString("???"))),
 m_SystemUsePowerText(m_scene->addText(QString("???"))),
+m_lastBckpBatWarn(0),
 m_cellPower(0.0),
 m_batUsePower(0.0),
 m_propUsePower(0.0),
@@ -139,6 +142,9 @@ void EnergyBudget::buildGraphicsImage()
 	m_cellUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
 	m_SystemUsePowerText->setPos(propRect.x() + propRect.width()/2.0 -1.0*penWidth, propRect.y() + propRect.height());
 	m_SystemUsePowerText->setFont(QFont("Helvetica", penWidth*1.2));
+	m_BckpBatText->setPos(propRect.x(), propRect.y());
+	m_BckpBatText->setFont(QFont("Helvetica", penWidth * 2));
+	m_BckpBatText->setVisible(false);
 
 	// set the right textcolor
 	this->styleChanged(qgcApp()->styleIsDark());
@@ -161,6 +167,26 @@ void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float cur
 	ui->powerVValue->setText(QString("%1").arg(volt));
 
 	updateGraphicsImage();
+}
+
+void EnergyBudget::updatePwrBrdStat(uint8_t stat)
+{
+#define BCKPBATREG 0x20
+	if (stat & BCKPBATREG)
+	{
+		m_scene->setBackgroundBrush(Qt::red);
+		m_BckpBatText->setVisible(true);
+		if ((QGC::groundTimeUsecs() - m_lastBckpBatWarn) > 10000000)
+		{
+			m_lastBckpBatWarn = QGC::groundTimeUsecs();
+			GAudioOutput::instance()->say(QString("Critical, System switched to backup battery!"));
+		}
+	}
+	else
+	{
+		m_scene->setBackgroundBrush(Qt::NoBrush);
+		m_BckpBatText->setVisible(false);
+	}
 }
 
 void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
@@ -329,6 +355,7 @@ void EnergyBudget::setActiveUAS(UASInterface *uas)
 	disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
 	disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
 	disconnect(this, SLOT(changeThrust(UASInterface*, double)));
+	disconnect(this, SLOT(updatePwrBrdStat(uint8_t)));
 
 	//connect the uas if asluas
 	ASLUAV *asluas = dynamic_cast<ASLUAV*>(uas);
@@ -338,6 +365,7 @@ void EnergyBudget::setActiveUAS(UASInterface *uas)
 		connect(asluas, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
 		connect(asluas, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
 		connect(asluas, SIGNAL(thrustChanged(UASInterface*, double)), this, SLOT(changeThrust(UASInterface*, double)));
+		connect(asluas, SIGNAL(PwrBrdStatChanged(uint8_t)), this, SLOT(updatePwrBrdStat(uint8_t)));
 	}
 	//else set to standard output
 	else

@@ -163,6 +163,15 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 				//The rest of the message handling (i.e. adding data to the plots) is done elsewhere
 				break;
 			}
+			case MAVLINK_MSG_ID_SENS_POWER_BOARD:
+			{
+				mavlink_sens_power_board_t data;
+				mavlink_msg_sens_power_board_decode(&message, &data);
+				float totalAmp = data.pwr_brd_aux_amp + data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp;
+				emit PwrBrdStatChanged(data.pwr_brd_status);
+				emit PowerDataChanged(data.pwr_brd_system_volt/1000, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
+				break;
+			}
 			case MAVLINK_MSG_ID_SENS_MPPT:
 			{
 				mavlink_sens_mppt_t data;
