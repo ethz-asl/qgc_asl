@@ -80,13 +80,25 @@ void SensorpodStatus::setActiveUAS(UASInterface *uas)
 void SensorpodStatus::PowerCycleSensorpodCmd()
 {
 	QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Sensorpod reset"), tr("Sending command to perform power cycle of sensorpod. Use this with caution! Are you sure?"), QMessageBox::Yes | QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Payload control"), tr("Sending command to control payload. Use this with caution! Are you sure?"), QMessageBox::No | QMessageBox::Yes);
 
 	if (reply == QMessageBox::Yes) {
 		//Send the message via the currently active UAS
 		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();
-	        if (tempUAS) {
-			tempUAS->SendCommandLong(MAV_CMD_PAYLOAD_CONTROL, 1.0f);
+        if (tempUAS) {
+            float cmd1 = 0.0f, cmd2 = 0.0f;
+
+            if(ui->powerOn1->isChecked()) cmd1 = 0.5f;
+            else if(ui->powerOff1->isChecked()) cmd1 = -0.5f;
+            else if(ui->powerCycle1->isChecked()) cmd1 = 1.0f;
+
+            if(ui->powerOn2->isChecked()) cmd2 = 0.5f;
+            else if(ui->powerOff2->isChecked()) cmd2 = -0.5f;
+
+            tempUAS->SendCommandLong(MAV_CMD_PAYLOAD_CONTROL, cmd1, cmd2);
+
+            ui->noCommand1->setChecked(true);
+            ui->noCommand2->setChecked(true);
 		}
 	}
 

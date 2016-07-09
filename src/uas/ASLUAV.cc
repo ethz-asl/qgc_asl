@@ -135,8 +135,9 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
                 mavlink_msg_sens_power_decode(&message, &data);
 
 				// Battery charge/time remaining/voltage calculations
-				lpVoltage_ext = data.adc121_vspb_volt;
-				tickLowpassVoltage_ext = tickLowpassVoltage_ext*0.8f + 0.2f*data.adc121_vspb_volt;
+				currentVoltage_ext = data.adc121_vspb_volt;
+				lpVoltage_ext = currentVoltage_ext;
+				tickLowpassVoltage_ext = tickLowpassVoltage_ext*0.8f + 0.2f*currentVoltage_ext;
 				// We don't want to tick above the threshold
 				if (tickLowpassVoltage_ext > tickVoltage_ext)
 				{
@@ -157,7 +158,7 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 					lastTickVoltageValue_ext = tickLowpassVoltage_ext;
 				}
 				
-				if (startVoltage_ext == -1.0f && currentVoltage > 0.1f) startVoltage_ext = currentVoltage_ext;
+				if (startVoltage_ext == -1.0f && currentVoltage_ext > 0.1f) startVoltage_ext = currentVoltage_ext;
 
 				emit PowerDataChanged(lpVoltage_ext, data.adc121_cspb_amp, data.adc121_cs1_amp, data.adc121_cs2_amp);
 				//The rest of the message handling (i.e. adding data to the plots) is done elsewhere
@@ -167,9 +168,36 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 			{
 				mavlink_sens_power_board_t data;
 				mavlink_msg_sens_power_board_decode(&message, &data);
-				float totalAmp = data.pwr_brd_aux_amp + data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp;
+
+				// Battery charge/time remaining/voltage calculations
+				currentVoltage_ext = data.pwr_brd_system_volt / 1000;
+				lpVoltage_ext = currentVoltage_ext;
+				tickLowpassVoltage_ext = tickLowpassVoltage_ext*0.8f + 0.2f*currentVoltage_ext;
+				// We don't want to tick above the threshold
+				if (tickLowpassVoltage_ext > tickVoltage_ext)
+				{
+					lastTickVoltageValue_ext = tickLowpassVoltage_ext;
+				}
+				if ((startVoltage_ext > 0.0f) && (tickLowpassVoltage_ext < tickVoltage_ext) && (fabs(lastTickVoltageValue_ext - tickLowpassVoltage_ext) > 0.1f)
+					/* warn if lower than treshold */
+					&& (lpVoltage_ext < tickVoltage_ext)
+					/* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+					&& (currentVoltage_ext > 3.3f)
+					/* warn only if current voltage is really still lower by a reasonable amount */
+					&& ((currentVoltage_ext - 0.2f) < tickVoltage_ext)
+					/* warn only every 12 seconds */
+					&& (QGC::groundTimeUsecs() - lastVoltageWarning) > 12000000)
+				{
+					GAudioOutput::instance()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(getUASID()).arg(lpVoltage, 0, 'f', 1, QChar(' ')));
+					lastVoltageWarning = QGC::groundTimeUsecs();
+					lastTickVoltageValue_ext = tickLowpassVoltage_ext;
+				}
+
+				if (startVoltage_ext == -1.0f && currentVoltage_ext > 0.1f) startVoltage_ext = currentVoltage_ext;
+
+				float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
 				emit PwrBrdStatChanged(data.pwr_brd_status);
-				emit PowerDataChanged(data.pwr_brd_system_volt/1000, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
+				emit PowerDataChanged(currentVoltage_ext, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
 				break;
 			}
 			case MAVLINK_MSG_ID_SENS_MPPT:
