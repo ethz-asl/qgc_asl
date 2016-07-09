@@ -195,7 +195,7 @@ void ASLUAV::receiveMessage(LinkInterface *link, mavlink_message_t message)
 
 				if (startVoltage_ext == -1.0f && currentVoltage_ext > 0.1f) startVoltage_ext = currentVoltage_ext;
 
-				float totalAmp = data.pwr_brd_aux_amp + data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp;
+				float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
 				emit PwrBrdStatChanged(data.pwr_brd_status);
 				emit PowerDataChanged(currentVoltage_ext, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
 				break;
