@@ -24,7 +24,7 @@ There are three ways to obtain the QGroundControl source code from our GitHub re
 This option assumes that you have Git already. To clone (checkout) the QGC repository, run the following command in the directory that you want the qgroundcontrol folder to be created:
 
 ```
-git clone --recursive git://github.com/mavlink/qgroundcontrol.git
+git clone --recursive https://github.com/ethz-asl/fw_qgc.git
 ```
 
 ### Fork the Repository
