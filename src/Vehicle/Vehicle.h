@@ -582,9 +582,17 @@ public:
     /// and destroyed when the vehicle goes away.
     void setFirmwarePluginInstanceData(QObject* firmwarePluginInstanceData);
 
+    //asluav
+    int SendCommandLong(MAV_CMD CmdID, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
+    int SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
+
 public slots:
     void setLatitude(double latitude);
     void setLongitude(double longitude);
+
+    //asluav
+    void setBatterySpecs(const QString& specs);
+
 
 signals:
     void allLinksInactive(Vehicle* vehicle);
@@ -613,6 +621,14 @@ signals:
     void messagesReceivedChanged    ();
     void messagesSentChanged        ();
     void messagesLostChanged        ();
+
+    //asluav
+    void AirspeedChanged(float airspeed);
+    void AslctrlDataChanged(float uElev, float uAil, float uRud, float uThrot, float roll, float pitch, float yaw, float roll_ref, float pitch_ref, float h);
+    void MPPTDataChanged(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3);
+    void BatMonDataChanged(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
+    void SensorpodStatusChanged(uint8_t rate1, uint8_t rate2, uint8_t rate3, uint8_t rate4, uint8_t numRecordTopics, uint8_t cpuTemp, uint16_t freeSpace);
+    void SensPowerChanged(float vspb_volt, float cspb_amp, float cs1_amp, float cs2_amp);
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);
@@ -718,6 +734,13 @@ private:
     void _ackMavlinkLogData(uint16_t sequence);
     void _sendNextQueuedMavCommand(void);
     void _updatePriorityLink(void);
+
+    //asluav
+    void _handleSensPower(mavlink_message_t& message);
+    void _handleSensMppt(mavlink_message_t& message);
+    void _handleSensBatmon(mavlink_message_t& message);
+    void _handleAslctrlData(mavlink_message_t& message);
+    void _handleSensorpodStatus(mavlink_message_t& message);
 
 private:
     int     _id;                    ///< Mavlink system id

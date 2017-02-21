@@ -71,7 +71,9 @@ enum DockWidgetTypes {
     ONBOARD_FILES,
     INFO_VIEW,
     HIL_CONFIG,
-    ANALYZE
+    ANALYZE,
+    //asluav
+    AUTO_TRIM
 };
 
 static const char *rgDockWidgetNames[] = {
@@ -80,7 +82,9 @@ static const char *rgDockWidgetNames[] = {
     "Onboard Files",
     "Info View",
     "HIL Config",
-    "Analyze"
+    "Analyze",
+    //asluav
+    "Auto Trim"
 };
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -365,8 +369,11 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
                 widget = new Linecharts(widgetName, action, mavlinkDecoder, this);
                 break;
             case INFO_VIEW:
-                widget= new QGCTabbedInfoView(widgetName, action, this);
+                widget = new QGCTabbedInfoView(widgetName, action, this);
                 break;
+            //asluav
+            case AUTO_TRIM:
+                widget = new AutoTrim(widgetName, action, this);
         }
         if(action->data().toInt() == INFO_VIEW) {
             qobject_cast<QGCTabbedInfoView*>(widget)->addSource(mavlinkDecoder);

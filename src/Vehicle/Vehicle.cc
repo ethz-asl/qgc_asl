@@ -491,6 +491,23 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
 //    case MAVLINK_MSG_ID_WIND:
 //        _handleWind(message);
 //        break;
+
+    // ASLUAV dialect messages
+    case MAVLINK_MSG_ID_SENS_POWER:
+        _handleSensPower(message);
+        break;
+    case MAVLINK_MSG_ID_SENS_MPPT:
+        _handleSensMppt(message);
+        break;
+    case MAVLINK_MSG_ID_SENS_BATMON:
+        _handleSensBatmon(message);
+        break;
+    case MAVLINK_MSG_ID_ASLCTRL_DATA:
+        _handleAslctrlData(message);
+        break;
+    case MAVLINK_MSG_ID_SENSORPOD_STATUS:
+        _handleSensorpodStatus(message);
+        break;
     }
 
     emit mavlinkMessageReceived(message);
@@ -909,6 +926,108 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
     emit remoteControlRSSIChanged(channels.rssi);
     emit rcChannelsChanged(channelCount, pwmValues);
 }
+
+//asluav
+void Vehicle::setBatterySpecs(const QString& specs)
+{
+//    if (specs.length() == 0) return;
+
+//    batteryRemainingEstimateEnabled = false;
+//    QString stringList = specs;
+//    stringList = stringList.remove("V");
+//    stringList = stringList.remove("v");
+//    QStringList parts = stringList.split(",");
+
+//    bool ok;
+//    float temp;
+
+//    // Assign first battery spec value: PX4-internal voltage sensor
+//    if (parts.at(0).contains("%")) {
+//        QString percent = parts.at(0);
+//        percent = percent.remove("%");
+//        float temp = percent.toFloat(&ok);
+
+//        if (ok)	warnLevelPercent = temp;
+//        else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
+//    }
+//    else {
+//        temp = parts.at(0).toFloat(&ok);
+//        if (ok) tickVoltage = temp;
+//        else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
+//    }
+
+//    // Assign second battery spec value if available: External voltage sensor
+//    if (parts.length() > 1) {
+//        if (parts.at(1).contains("%")) {
+//            emit textMessageReceived(0, 0, 0, "External voltage sensor does not support relative warn levels, but requires absolute voltage warning limit!");
+//        }
+//        else {
+//            temp = parts.at(1).toFloat(&ok);
+//            if (ok) tickVoltage_ext = temp;
+//            else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
+//        }
+//    }
+}
+
+int Vehicle::SendCommandLong(MAV_CMD CmdID, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
+{
+//    mavlink_message_t msg;
+//    mavlink_msg_command_long_pack(mavlink->getSystemId(), mavlink->getComponentId(), &msg, uasId, 0, CmdID, 1, param1, param2, param3, param4, param5, param6, param7);
+//    sendMessage(msg);
+
+//    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent." << std::endl;
+//    return 0;
+}
+
+int Vehicle::SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
+{
+//    mavlink_message_t msg;
+//    mavlink_msg_command_long_pack(mavlink->getSystemId(), mavlink->getComponentId(), &msg, uasId, target_component, CmdID, 1, param1, param2, param3, param4, param5, param6, param7);
+//    sendMessage(msg);
+
+//    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent to component " << (int) target_component << "." << std::endl;
+//    return 0;
+}
+
+void Vehicle::_handleSensPower(mavlink_message_t& message)
+{
+    mavlink_sens_power_t data;
+    mavlink_msg_sens_power_decode(&message, &data);
+    emit SensPowerChanged(data.adc121_vspb_volt, data.adc121_cspb_amp, data.adc121_cs1_amp, data.adc121_cs2_amp);
+}
+
+void Vehicle::_handleSensMppt(mavlink_message_t& message)
+{
+    mavlink_sens_mppt_t data;
+    mavlink_msg_sens_mppt_decode(&message, &data);
+    emit MPPTDataChanged(data.mppt1_volt, data.mppt1_amp, data.mppt1_pwm, data.mppt1_status, data.mppt2_volt, data.mppt2_amp, data.mppt2_pwm, data.mppt2_status, data.mppt3_volt, data.mppt3_amp, data.mppt3_pwm, data.mppt3_status);
+}
+
+void Vehicle::_handleSensBatmon(mavlink_message_t& message)
+{
+    mavlink_sens_batmon_t data;
+    mavlink_msg_sens_batmon_decode(&message, &data);
+    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.hostfetcontrol, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+}
+
+void Vehicle::_handleAslctrlData(mavlink_message_t& message)
+{
+    mavlink_aslctrl_data_t data;
+    mavlink_msg_aslctrl_data_decode(&message, &data);
+
+    emit AslctrlDataChanged(data.uElev, data.uAil, data.uRud, data.uThrot, data.RollAngle,
+        data.PitchAngle, data.YawAngle, data.RollAngleRef, data.PitchAngleRef, data.h);
+}
+
+void Vehicle::_handleSensorpodStatus(mavlink_message_t& message)
+{
+    mavlink_sensorpod_status_t data;
+    mavlink_msg_sensorpod_status_decode(&message, &data);
+    emit SensorpodStatusChanged(data.visensor_rate_1, data.visensor_rate_2, data.visensor_rate_3, data.visensor_rate_4,
+                                data.recording_nodes_count,data.cpu_temp, data.free_space);
+}
+
+
 
 bool Vehicle::_containsLink(LinkInterface* link)
 {
