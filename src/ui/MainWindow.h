@@ -39,8 +39,9 @@
 #include "QGCDockWidget.h"
 #include "QGCQmlWidgetHolder.h"
 
-//asluav
 #include "AutoTrim.h"
+#include "EnergyBudget.h"
+#include "SensorpodStatus.h"
 
 #include "ui_MainWindow.h"
 

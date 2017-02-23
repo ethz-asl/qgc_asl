@@ -72,8 +72,9 @@ enum DockWidgetTypes {
     INFO_VIEW,
     HIL_CONFIG,
     ANALYZE,
-    //asluav
-    AUTO_TRIM
+    AUTO_TRIM,
+    ENERGY_BUDGET,
+    SENSORPOD_STATUS
 };
 
 static const char *rgDockWidgetNames[] = {
@@ -83,8 +84,9 @@ static const char *rgDockWidgetNames[] = {
     "Info View",
     "HIL Config",
     "Analyze",
-    //asluav
-    "Auto Trim"
+    "Auto Trim",
+    "Energy Budget",
+    "Sensorpod Status"
 };
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -371,9 +373,12 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
             case INFO_VIEW:
                 widget = new QGCTabbedInfoView(widgetName, action, this);
                 break;
-            //asluav
             case AUTO_TRIM:
                 widget = new AutoTrim(widgetName, action, this);
+            case ENERGY_BUDGET:
+                widget = new EnergyBudget(widgetName, action, this);
+            case SENSORPOD_STATUS:
+                widget = new SensorpodStatus(widgetName, action, this);
         }
         if(action->data().toInt() == INFO_VIEW) {
             qobject_cast<QGCTabbedInfoView*>(widget)->addSource(mavlinkDecoder);
