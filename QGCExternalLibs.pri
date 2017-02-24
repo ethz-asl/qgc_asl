@@ -19,7 +19,7 @@ WindowsBuild {
 
 MAVLINKPATH_REL = libs/mavlink/include/mavlink/v2.0
 MAVLINKPATH = $$BASEDIR/$$MAVLINKPATH_REL
-MAVLINK_CONF = ardupilotmega
+MAVLINK_CONF = ASLUAV
 DEFINES += MAVLINK_NO_DATA
 
 # First we select the dialect, checking for valid user selection
