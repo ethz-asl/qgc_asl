@@ -4,6 +4,10 @@
 #include <QObject>
 #include <QWidget>
 #include <stdint.h>
+#include "QGCDockWidget.h"
+#include "ui_SensorpodStatus.h"
+#include "Vehicle.h"
+
 
 namespace Ui {
 class SensorpodStatus;
@@ -14,12 +18,12 @@ class UASInterface;
 class QTimer;
 class UASInterface;
 
-class SensorpodStatus : public QWidget
+class SensorpodStatus : public QGCDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit SensorpodStatus(QWidget *parent = 0);
+    explicit SensorpodStatus(const QString& title, QAction* action, QWidget *parent = 0);
     ~SensorpodStatus();
 
 protected:
@@ -30,10 +34,10 @@ protected:
 
 protected slots:
     void updateSensorpodStatus(uint8_t rate1, uint8_t rate2, uint8_t rate3, uint8_t rate4, uint8_t numRecordTopics, uint8_t cpuTemp, uint16_t freeSpace);
-	void setActiveUAS(UASInterface *uas);
-    void UpdateTimerTimeout();
+    void setActiveUAS(void);
+    void UpdateTimerTimeout(void);
 
-    void PowerCycleSensorpodCmd();
+    void PowerCycleSensorpodCmd(void);
 };
 
 #endif // SENSORPODSTATUS_H

@@ -629,7 +629,7 @@ signals:
     void BatMonDataChanged(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
     void SensorpodStatusChanged(uint8_t rate1, uint8_t rate2, uint8_t rate3, uint8_t rate4, uint8_t numRecordTopics, uint8_t cpuTemp, uint16_t freeSpace);
     void SensPowerChanged(float vspb_volt, float cspb_amp, float cs1_amp, float cs2_amp);
-    void SensPowerBoardChanged(uint8_t pwr_brd_status, uint8_t pwr_brd_led_status, float pwr_brd_system_volt, float pwr_brd_servo_volt, float pwr_brd_mot_l_amp, float pwr_brd_mot_r_amp, float pwr_brd_servo_1_amp, float pwr_brd_servo_2_amp, float pwr_brd_servo_3_amp, float pwr_brd_servo_4_amp, float pwr_brd_aux_amp);
+    void SensPowerBoardChanged(uint8_t pwr_brd_status);
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);

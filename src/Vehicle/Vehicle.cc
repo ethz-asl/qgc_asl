@@ -1003,7 +1003,7 @@ void Vehicle::_handleSensPowerBoard(mavlink_message_t &message)
 {
     mavlink_sens_power_board_t data;
     mavlink_msg_sens_power_board_decode(&message, &data);
-    emit SensPowerBoardChanged(data.pwr_brd_status, data.pwr_brd_led_status, data.pwr_brd_system_volt, data.pwr_brd_servo_volt, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp, data.pwr_brd_servo_1_amp, data.pwr_brd_servo_2_amp, data.pwr_brd_servo_3_amp, data.pwr_brd_servo_4_amp, data.pwr_brd_aux_amp);
+    emit SensPowerBoardChanged(data.pwr_brd_status);
 }
 
 void Vehicle::_handleSensMppt(mavlink_message_t& message)

@@ -1,5 +1,5 @@
-#include "energybudget.h"
-#include "ui_energybudget.h"
+#include "EnergyBudget.h"
+#include "ui_EnergyBudget.h"
 #include <qgraphicsscene.h>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsLineItem>
@@ -8,9 +8,8 @@
 #include <QTimer>
 #include <math.h>
 #include <qdebug.h>
-#include "../uas/ASLUAV.h"
 #include "UASInterface.h"
-#include "UASManager.h"
+#include "MultiVehicleManager.h"
 #include "QGCApplication.h"
 #include "GAudioOutput.h"
 
@@ -36,16 +35,16 @@ public:
 private:
 	float const m_minVal;
 	float const m_maxVal;
-	bool m_highState;
+    bool m_highState;
 };
 
-EnergyBudget::EnergyBudget(QWidget *parent) :
-QWidget(parent),
+EnergyBudget::EnergyBudget(const QString &title, QAction *action, QWidget *parent) :
+QGCDockWidget(title, action, parent),
 ui(new Ui::EnergyBudget),
 m_scene(new QGraphicsScene(this)),
-m_propPixmap(m_scene->addPixmap(QPixmap("files/images/energyWidget/prop.JPG"))),
-m_cellPixmap(m_scene->addPixmap(QPixmap("files/images/energyWidget/solarcell.png"))),
-m_batPixmap(m_scene->addPixmap(QPixmap("files/images/energyWidget/Battery.png"))),
+m_propPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Prop"))),
+m_cellPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Solarcell"))),
+m_batPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Battery"))),
 m_chargePath(m_scene->addPath(QPainterPath())),
 m_cellToPropPath(m_scene->addPath(QPainterPath())),
 m_batToPropPath(m_scene->addPath(QPainterPath())),
@@ -73,16 +72,16 @@ m_MPPTUpdateReset(new QTimer(this))
 	this->buildGraphicsImage();
 	ui->overviewGraphicsView->setScene(m_scene);
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
-	connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
+    //connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
 	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
 	m_MPPTUpdateReset->setInterval(MPPTRESETTIMEMS);
 	m_MPPTUpdateReset->setSingleShot(false);
 	connect(m_MPPTUpdateReset, SIGNAL(timeout()), this, SLOT(MPPTTimerTimeout()));
 	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
-	if (UASManager::instance()->getActiveUAS())
+    if (qgcApp()->toolbox()->multiVehicleManager()->activeVehicle())
 	{
-		setActiveUAS(UASManager::instance()->getActiveUAS());
+        setActiveUAS();
 	}
 	m_MPPTUpdateReset->start();
 }
@@ -169,24 +168,25 @@ void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float cur
 	updateGraphicsImage();
 }
 
-void EnergyBudget::updatePwrBrdStat(uint8_t stat)
+void EnergyBudget::OnSensPowerBoardChanged(uint8_t pwr_brd_status)
 {
 #define BCKPBATREG 0x20
-	if (stat & BCKPBATREG)
-	{
-		m_scene->setBackgroundBrush(Qt::red);
-		m_BckpBatText->setVisible(true);
-		if ((QGC::groundTimeUsecs() - m_lastBckpBatWarn) > 10000000)
-		{
-			m_lastBckpBatWarn = QGC::groundTimeUsecs();
-			GAudioOutput::instance()->say(QString("Critical, System switched to backup battery!"));
-		}
-	}
-	else
-	{
-		m_scene->setBackgroundBrush(Qt::NoBrush);
-		m_BckpBatText->setVisible(false);
-	}
+    if (pwr_brd_status & BCKPBATREG)
+    {
+        m_scene->setBackgroundBrush(Qt::red);
+        m_BckpBatText->setVisible(true);
+        if ((QGC::groundTimeUsecs() - m_lastBckpBatWarn) > 10000000)
+        {
+            m_lastBckpBatWarn = QGC::groundTimeUsecs();
+            //GAudioOutput::instance()->say(QString("Critical, System switched to backup battery!"));
+        }
+    }
+    else
+    {
+        m_scene->setBackgroundBrush(Qt::NoBrush);
+        m_BckpBatText->setVisible(false);
+    }
+
 }
 
 void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
@@ -302,7 +302,7 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
 	m_MPPTUpdateReset->start(MPPTRESETTIMEMS);
 }
 
-void EnergyBudget::updateGraphicsImage()
+void EnergyBudget::updateGraphicsImage(void)
 {
 	if (m_batCharging == batChargeStatus::CHRG)
 	{
@@ -348,7 +348,7 @@ void EnergyBudget::resizeEvent(QResizeEvent *event)
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
 }
 
-void EnergyBudget::setActiveUAS(UASInterface *uas)
+void EnergyBudget::setActiveUAS(void)
 {
 	//disconnect any previous uas
 	disconnect(this, SLOT(updatePower(float, float, float, float)));
@@ -358,14 +358,15 @@ void EnergyBudget::setActiveUAS(UASInterface *uas)
 	disconnect(this, SLOT(updatePwrBrdStat(uint8_t)));
 
 	//connect the uas if asluas
-	ASLUAV *asluas = dynamic_cast<ASLUAV*>(uas);
-	if (asluas)
+    Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    if (tempUAS)
 	{
-		connect(asluas, SIGNAL(PowerDataChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
-		connect(asluas, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-		connect(asluas, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
-		connect(asluas, SIGNAL(thrustChanged(UASInterface*, double)), this, SLOT(changeThrust(UASInterface*, double)));
-		connect(asluas, SIGNAL(PwrBrdStatChanged(uint8_t)), this, SLOT(updatePwrBrdStat(uint8_t)));
+        connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
+        connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+        //connect(tempUAS, SIGNAL(thrustChanged(UASInterface*, double)), this, SLOT(changeThrust(UASInterface*, double)));
+        connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)), this, SLOT(OnSensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)));
+
 	}
 	//else set to standard output
 	else
@@ -438,7 +439,7 @@ QString EnergyBudget::convertMPPTStatus(uint8_t bit)
 	return "OK";
 }
 
-void EnergyBudget::ResetMPPTCmd()
+void EnergyBudget::ResetMPPTCmd(void)
 {
 	QMessageBox::StandardButton reply;
 	reply = QMessageBox::question(this, tr("MPPT reset"), tr("Sending command to reset MPPT. Use this with caution! Are you sure?"), QMessageBox::Yes | QMessageBox::No);
@@ -447,8 +448,8 @@ void EnergyBudget::ResetMPPTCmd()
 		int MPPTNr = ui->ResetMPPTEdit->text().toInt();
 
 		//Send the message via the currently active UAS
-		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();;
-		if (tempUAS) tempUAS->SendCommandLong(MAV_CMD_RESET_MPPT, (float) MPPTNr);
+        Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+        if (tempUAS) tempUAS->SendCommandLong(MAV_CMD_RESET_MPPT, (float) MPPTNr);
 	}
 
 }
@@ -473,7 +474,7 @@ void EnergyBudget::styleChanged(bool darkStyle)
 	}
 }
 
-void EnergyBudget::MPPTTimerTimeout()
+void EnergyBudget::MPPTTimerTimeout(void)
 {
 	m_cellPower = m_propUsePower - m_chargePower - m_batUsePower;
 	ui->mppt1VLabel->setText(QString("--"));

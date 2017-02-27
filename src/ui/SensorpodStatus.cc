@@ -1,33 +1,33 @@
-#include "sensorpodstatus.h"
-#include "ui_sensorpodstatus.h"
+#include "SensorpodStatus.h"
+#include "ui_SensorpodStatus.h"
 #include <qgraphicsscene.h>
 #include <QMessageBox>
 #include <QTimer>
 #include <math.h>
 #include <qdebug.h>
-#include "../uas/ASLUAV.h"
+#include "MultiVehicleManager.h"
 #include "UASInterface.h"
-#include "UASManager.h"
 #include "QGCApplication.h"
+
 
 #define RESETTIMEMS 10000
 
-SensorpodStatus::SensorpodStatus(QWidget *parent) :
-    QWidget(parent),
+SensorpodStatus::SensorpodStatus(const QString &title, QAction *action, QWidget *parent) :
+    QGCDockWidget(title, action, parent),
     ui(new Ui::SensorpodStatus),
     m_scene(new QGraphicsScene(this)),
     m_UpdateReset(new QTimer (this))
 {
     ui->setupUi(this);
-    connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
+//  connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
     connect(ui->PowerCycleButton, SIGNAL(clicked()), this, SLOT(PowerCycleSensorpodCmd()));
 //	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
     m_UpdateReset->setInterval(RESETTIMEMS);
     m_UpdateReset->setSingleShot(false);
     connect(m_UpdateReset, SIGNAL(timeout()), this, SLOT(UpdateTimerTimeout()));
-    if (UASManager::instance()->getActiveUAS())
+    if (qgcApp()->toolbox()->multiVehicleManager()->activeVehicle())
     {
-        setActiveUAS(UASManager::instance()->getActiveUAS());
+        setActiveUAS();
     }
     m_UpdateReset->start();
 }
@@ -59,16 +59,16 @@ void SensorpodStatus::updateSensorpodStatus(uint8_t rate1, uint8_t rate2, uint8_
 //	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
 //}
 
-void SensorpodStatus::setActiveUAS(UASInterface *uas)
+void SensorpodStatus::setActiveUAS(void)
 {
 	//disconnect any previous uas
     disconnect(this, SLOT(updateSensorpodStatus(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint16_t)));
 
     //connect the uas if asluas
-	ASLUAV *asluas = dynamic_cast<ASLUAV*>(uas);
-	if (asluas)
+    Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    if (tempUAS)
 	{
-        connect(asluas, SIGNAL(SensorpodStatusChanged(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint16_t)), this, SLOT(updateSensorpodStatus(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint16_t)));
+        connect(tempUAS, SIGNAL(SensorpodStatusChanged(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint16_t)), this, SLOT(updateSensorpodStatus(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint16_t)));
 	}
 	//else set to standard output
 	else
@@ -77,14 +77,14 @@ void SensorpodStatus::setActiveUAS(UASInterface *uas)
 	}
 }
 
-void SensorpodStatus::PowerCycleSensorpodCmd()
+void SensorpodStatus::PowerCycleSensorpodCmd(void)
 {
 	QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, tr("Payload control"), tr("Sending command to control payload. Use this with caution! Are you sure?"), QMessageBox::No | QMessageBox::Yes);
 
 	if (reply == QMessageBox::Yes) {
 		//Send the message via the currently active UAS
-		ASLUAV *tempUAS = (ASLUAV*) UASManager::instance()->getActiveUAS();
+        Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
         if (tempUAS) {
             float cmd1 = 0.0f, cmd2 = 0.0f;
 
@@ -104,7 +104,7 @@ void SensorpodStatus::PowerCycleSensorpodCmd()
 
 }
 
-void SensorpodStatus::UpdateTimerTimeout()
+void SensorpodStatus::UpdateTimerTimeout(void)
 {
     ui->topic1rate->setText(QString("--"));
     ui->topic2rate->setText(QString("--"));

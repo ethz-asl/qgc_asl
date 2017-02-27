@@ -76,7 +76,6 @@ void AutoTrim::ConnectToActiveUAS(void)
         connect(tempUAS, SIGNAL(AslctrlDataChanged(float,float,float,float,float,float,float,float,float,float)), this, SLOT(OnAslctrlDataChanged(float,float,float,float,float,float,float,float,float,float)));
         //connect(tempUAS, SIGNAL(speedChanged(UASInterface*, double, double, quint64)), this, SLOT(OnSpeedChanged(UASInterface*, double, double, quint64)));
         connect(tempUAS, SIGNAL(SensPowerChanged(float,float,float,float)), this, SLOT(OnSensPowerChanged(float,float,float,float)));
-        //connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)), this, SLOT(OnSensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)));
         QMessageBox::information(this, tr("[AutoTrim] Connect"),tr("Connected to the active UAS!"), QMessageBox::Ok);
         m_ui->pb_Connect->setEnabled(false);
         m_ui->pb_StartTrim->setEnabled(true);
@@ -254,73 +253,6 @@ void AutoTrim::OnSensPowerChanged(float volt, float currpb, float curr_1, float 
     }
 
 }
-
-//void AutoTrim::OnSensPowerBoardChanged(uint8_t pwr_brd_status, uint8_t pwr_brd_led_status, float pwr_brd_system_volt, float pwr_brd_servo_volt, float pwr_brd_mot_l_amp, float pwr_brd_mot_r_amp, float pwr_brd_servo_1_amp, float pwr_brd_servo_2_amp, float pwr_brd_servo_3_amp, float pwr_brd_servo_4_amp, float pwr_brd_aux_amp)
-//{
-//    // Battery charge/time remaining/voltage calculations
-//    _lpVoltage_ext = pwr_brd_system_volt / 1000;
-//    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_lpVoltage_ext;
-//    // We don't want to tick above the threshold
-//    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
-//    {
-//        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
-//    }
-//    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
-//        /* warn if lower than treshold */
-//        && (_lpVoltage_ext < _tickVoltage_ext)
-//        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
-//        && (_lpVoltage_ext > 3.3f)
-//        /* warn only if current voltage is really still lower by a reasonable amount */
-//        && ((_lpVoltage_ext - 0.2f) < _tickVoltage_ext)
-//        /* warn only every 12 seconds */
-//        && (QGC::groundTimeUsecs() - lastVoltageWarning) > 12000000)
-//    {
-//        GAudioOutput::instance()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(getUASID()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
-//        lastVoltageWarning = QGC::groundTimeUsecs();
-//        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
-//    }
-
-//    if (_startVoltage_ext == -1.0f && _lpVoltage_ext > 0.1f) _startVoltage_ext = _lpVoltage_ext;
-
-//    float totalAmp = pwr_brd_mot_l_amp + pwr_brd_mot_r_amp + pwr_brd_servo_volt/(pwr_brd_system_volt)*(pwr_brd_aux_amp + pwr_brd_servo_1_amp + pwr_brd_servo_2_amp + pwr_brd_servo_3_amp + pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
-
-//    void EnergyBudget::updatePwrBrdStat(uint8_t stat) //here bcs pwrbrdstatchanged (set stat=pwr_brd_status)
-//    {
-//    #define BCKPBATREG 0x20
-//        if (stat & BCKPBATREG)
-//        {
-//            m_scene->setBackgroundBrush(Qt::red);
-//            m_BckpBatText->setVisible(true);
-//            if ((QGC::groundTimeUsecs() - m_lastBckpBatWarn) > 10000000)
-//            {
-//                m_lastBckpBatWarn = QGC::groundTimeUsecs();
-//                GAudioOutput::instance()->say(QString("Critical, System switched to backup battery!"));
-//            }
-//        }
-//        else
-//        {
-//            m_scene->setBackgroundBrush(Qt::NoBrush);
-//            m_BckpBatText->setVisible(false);
-//        }
-//    }
-
-//    if (bConnected) {
-//            // Update current data text fields.
-//            m_ui->e_cur_power->setText(QString("%1").arg(_lpVoltage_ext*totalAmp, 0, 'f', 2));
-//    }
-
-//    if (bStarted) {
-//            // Update avrg/accum values here.
-//            avg_power = (avg_power*n_power + _lpVoltage_ext*totalAmp) / (n_power + 1);
-//            m_ui->e_avg_power->setText(QString("%1").arg(avg_power, 0, 'f', 2));
-
-//            // Increase counters
-//            n_power += 1;
-
-//            //Update elapsed time and counters
-//            UpdateElapsedTimeCounters();
-//    }
-//}
 
 void AutoTrim::ResetData()
 {

@@ -375,10 +375,13 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
                 break;
             case AUTO_TRIM:
                 widget = new AutoTrim(widgetName, action, this);
+                break;
             case ENERGY_BUDGET:
                 widget = new EnergyBudget(widgetName, action, this);
+                break;
             case SENSORPOD_STATUS:
                 widget = new SensorpodStatus(widgetName, action, this);
+                break;
         }
         if(action->data().toInt() == INFO_VIEW) {
             qobject_cast<QGCTabbedInfoView*>(widget)->addSource(mavlinkDecoder);
