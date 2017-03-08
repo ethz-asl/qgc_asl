@@ -985,6 +985,42 @@
             }
         },
         { "id": 30001, "rawName": "MAV_CMD_PAYLOAD_PREPARE_DEPLOY", "friendlyName": "Payload prepare deploy" },
-        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" }
+        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" },
+		{
+            "id":                   31000,
+            "rawName":              "MAV_CMD_WAYPOINT_USER_1",
+            "friendlyName":         "Waypoint (approach)",
+            "description":          "Approach waypoint for landing descent.",
+            "specifiesCoordinate":  true,
+            "friendlyEdit":         true,
+            "category":             "Advanced",
+            "param2": {
+                "label":            "Acceptance:",
+                "units":            "m",
+                "default":          30.0,
+                "decimalPlaces":    2
+            }
+        },
+        {
+            "id":                   31001,
+            "rawName":              "MAV_CMD_WAYPOINT_USER_2",
+            "friendlyName":         "Loiter (approach)",
+            "description":          "Loiter approach waypoint for landing descent. [optional] set specific landing slope in degrees; or disable with negative value (takes px4 param FW_LND_ANG)",
+            "specifiesCoordinate":  true,
+            "friendlyEdit":         true,
+            "category":             "Advanced",
+            "param1": {
+                "label":            "Landing slope:",
+                "units":            "deg",
+                "default":          -1.0,
+                "decimalPlaces":    2
+            },
+            "param3": {
+                "label":            "Radius:",
+                "units":            "m",
+                "default":          80.0,
+                "decimalPlaces":    2
+            }
+        }
     ]
 }

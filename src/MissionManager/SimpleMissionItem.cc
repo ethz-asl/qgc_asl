@@ -645,6 +645,14 @@ double SimpleMissionItem::circleRadius(void)
         _radius = _missionItem.param3();
         _circleColor = "#CCFFFF00";
         _circleWidth = 2;
+    } else if (_command == 31000) {
+        _radius = _missionItem.param2();
+        _circleColor = "#CC00ffcc";
+        _circleWidth = 2;
+    } else if (_command == 31001) {
+        _radius = _missionItem.param3();
+        _circleColor = "#CC00ffcc";
+        _circleWidth = 2;
     }
 
     emit circleRadiusChanged(_radius);
