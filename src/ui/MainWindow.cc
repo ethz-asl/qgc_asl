@@ -51,6 +51,7 @@
 #include "QGCDockWidget.h"
 #include "HILDockWidget.h"
 #include "AppMessages.h"
+#include "windsensor.h"  // asl: add wind sensor interface
 #endif
 
 #ifndef NO_SERIAL_LINK
@@ -71,7 +72,8 @@ enum DockWidgetTypes {
     ONBOARD_FILES,
     INFO_VIEW,
     HIL_CONFIG,
-    ANALYZE
+    ANALYZE,
+    WIND_SENSOR // asl: Include the wind sensor widget
 };
 
 static const char *rgDockWidgetNames[] = {
@@ -80,7 +82,9 @@ static const char *rgDockWidgetNames[] = {
     "Onboard Files",
     "Info View",
     "HIL Config",
-    "Analyze"
+    "Analyze",
+    "Wind Sensor" // asl: Include the wind sensor widget
+
 };
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -366,6 +370,10 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
                 break;
             case INFO_VIEW:
                 widget= new QGCTabbedInfoView(widgetName, action, this);
+                break;
+            // asl: add wind sensor interface
+            case WIND_SENSOR:
+                widget = new WindSensorStruct(widgetName, action, this);
                 break;
         }
         if(action->data().toInt() == INFO_VIEW) {

@@ -324,6 +324,7 @@ FORMS += \
     src/ui/QGCTabbedInfoView.ui \
     src/ui/QGCUASFileView.ui \
     src/ui/QGCUASFileViewMulti.ui \
+    src/ui/windsensor.ui \  # asl: add wind sensor interface
     src/ui/uas/QGCUnconnectedInfoWidget.ui \
     src/ui/uas/UASMessageView.ui \
     src/ui/uas/UASQuickView.ui \
@@ -554,6 +555,7 @@ HEADERS += \
     src/ui/QGCTabbedInfoView.h \
     src/ui/QGCUASFileView.h \
     src/ui/QGCUASFileViewMulti.h \
+    src/ui/windsensor.h \  # asl: add wind sensor interface
     src/ui/linechart/ChartPlot.h \
     src/ui/linechart/IncrementalPlot.h \
     src/ui/linechart/LinechartPlot.h \
@@ -702,6 +704,7 @@ SOURCES += \
     src/ui/QGCTabbedInfoView.cpp \
     src/ui/QGCUASFileView.cc \
     src/ui/QGCUASFileViewMulti.cc \
+    src/ui/windsensor.cpp \  # asl: add wind sensor interface
     src/ui/linechart/ChartPlot.cc \
     src/ui/linechart/IncrementalPlot.cc \
     src/ui/linechart/LinechartPlot.cc \
