@@ -74,7 +74,7 @@ void WindSensor::received_data()
               // Send message to pixhawk
               mavlink_message_t msg;
               MAVLinkProtocol* mavlink = qgcApp()->toolbox()->mavlinkProtocol();
-              mavlink_msg_wind_sensor_pack(mavlink->getSystemId(),mavlink->getComponentId(),&msg,wind_data_list[time_ind+1].toFloat(),wind_data_list[time_ind+3].toFloat(),wind_data_list[time_ind+4].toFloat(),wind_data_list[time_ind+5].toFloat());
+              mavlink_msg_wind_sensor_pack_chan(mavlink->getSystemId(),mavlink->getComponentId(), _vehicle->priorityLink()->mavlinkChannel(),&msg,wind_data_list[time_ind+1].toFloat(),wind_data_list[time_ind+3].toFloat(),wind_data_list[time_ind+4].toFloat(),wind_data_list[time_ind+5].toFloat());
               if(_vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg))
                    ui->textBrowser->insertPlainText(QString("sent succesfully"));
               else
