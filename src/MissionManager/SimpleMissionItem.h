@@ -36,6 +36,9 @@ public:
     Q_PROPERTY(bool             rawEdit                 READ rawEdit                WRITE setRawEdit            NOTIFY rawEditChanged)              ///< true: raw item editing with all params
     Q_PROPERTY(bool             relativeAltitude        READ relativeAltitude                                   NOTIFY frameChanged)
     Q_PROPERTY(bool             showHomePosition        READ showHomePosition       WRITE setShowHomePosition   NOTIFY showHomePositionChanged)
+    Q_PROPERTY(double           circleRadius            READ circleRadius                                       NOTIFY circleRadiusChanged)
+    Q_PROPERTY(QColor           circleColor             READ circleColor                                        NOTIFY circleColorChanged)
+    Q_PROPERTY(int              circleWidth             READ circleWidth                                        NOTIFY circleWidthChanged)
 
     // These properties are used to display the editing ui
     Q_PROPERTY(QmlObjectListModel*  checkboxFacts   READ checkboxFacts  NOTIFY uiModelChanged)
@@ -50,7 +53,9 @@ public:
     bool            homePosition        (void) const    { return _homePositionSpecialCase; }
     bool            rawEdit             (void) const;
     bool            showHomePosition    (void) const    { return _showHomePosition; }
-
+    double          circleRadius        (void);
+    QColor          circleColor         (void) const    { return _circleColor; }
+    int             circleWidth         (void) const    { return _circleWidth; }
 
     QmlObjectListModel* textFieldFacts  (void);
     QmlObjectListModel* checkboxFacts   (void);
@@ -112,6 +117,9 @@ signals:
     void rawEditChanged             (bool rawEdit);
     void uiModelChanged             (void);
     void showHomePositionChanged    (bool showHomePosition);
+    void circleRadiusChanged        (double circleRadius);
+    void circleColorChanged         (QColor circleColor);
+    void circleWidthChanged         (QColor circleWidth);
 
 private slots:
     void _setDirtyFromSignal(void);
@@ -134,6 +142,8 @@ private:
     bool        _dirty;
     bool        _homePositionSpecialCase;   ///< true: This item is being used as a ui home position indicator
     bool        _showHomePosition;
+    QColor      _circleColor;
+    int         _circleWidth;
 
     MissionCommandTree* _commandTree;
 

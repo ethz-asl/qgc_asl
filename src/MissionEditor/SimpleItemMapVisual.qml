@@ -23,23 +23,28 @@ Item {
     property var map    ///< Map control to place item in
 
     property var    _missionItem:       object
-    property var    _itemVisual
+    property var    _itemVisuals:       [ ]
     property var    _dragArea
-    property bool   _itemVisualShowing: false
     property bool   _dragAreaShowing:   false
 
+    readonly property int _indicatorIndex:   0
+    readonly property int _radiusIndex:   1
+
     function hideItemVisuals() {
-        if (_itemVisualShowing) {
-            _itemVisual.destroy()
-            _itemVisualShowing = false
+        for (var i=0; i<_itemVisuals.length; i++) {
+            _itemVisuals[i].destroy()
         }
+        _itemVisuals = [ ]
     }
 
     function showItemVisuals() {
-        if (!_itemVisualShowing) {
-            _itemVisual = indicatorComponent.createObject(map)
+        if  (_itemVisuals.length === 0) {
+            var _itemVisual = indicatorComponent.createObject(map)
             map.addMapItem(_itemVisual)
-            _itemVisualShowing = true
+            _itemVisuals[_indicatorIndex] = _itemVisual
+            _itemVisual = radiusComponent.createObject(map)
+            map.addMapItem(_itemVisual)
+            _itemVisuals[_radiusIndex] = _itemVisual
         }
     }
 
@@ -80,6 +85,10 @@ Item {
                 hideDragArea()
             }
         }
+
+        onCircleRadiusChanged: {
+            showItemVisuals()
+        }
     }
 
     // Control which is used to drag items
@@ -87,7 +96,7 @@ Item {
         id: dragAreaComponent
 
         MissionItemIndicatorDrag {
-            itemIndicator:  _itemVisual
+            itemIndicator:  _itemVisuals[_indicatorIndex]
             itemCoordinate: _missionItem.coordinate
 
             onItemCoordinateChanged: _missionItem.coordinate = itemCoordinate
@@ -124,6 +133,20 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    // radius visual
+    Component {
+        id: radiusComponent
+
+        MapCircle {
+            z:              QGroundControl.zOrderMapItems
+            center:         _missionItem.coordinate
+            radius:         _missionItem.circleRadius
+            border.width:   _missionItem.circleWidth
+            border.color:   _missionItem.circleColor
+            color:          "transparent"
         }
     }
 }

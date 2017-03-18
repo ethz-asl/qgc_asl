@@ -52,6 +52,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, QObject* parent)
     , _rawEdit(false)
     , _homePositionSpecialCase(false)
     , _showHomePosition(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
     , _supportedCommandFact         (0, "Command:",                     FactMetaData::valueTypeUint32)
@@ -84,6 +86,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missio
     , _dirty(false)
     , _homePositionSpecialCase(false)
     , _showHomePosition(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
     , _supportedCommandFact         (0, "Command:",                     FactMetaData::valueTypeUint32)
@@ -114,6 +118,8 @@ SimpleMissionItem::SimpleMissionItem(const SimpleMissionItem& other, QObject* pa
     , _dirty(false)
     , _homePositionSpecialCase(false)
     , _showHomePosition(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
     , _supportedCommandFact         (0, "Command:",                     FactMetaData::valueTypeUint32)
@@ -192,6 +198,11 @@ void SimpleMissionItem::_connectSignals(void)
 
     // Sequence number is kept in mission iteem, so we need to propagate signal up as well
     connect(&_missionItem, &MissionItem::sequenceNumberChanged, this, &SimpleMissionItem::sequenceNumberChanged);
+
+    // These signals require an update to the circle radius
+    connect(&_missionItem._param2Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
+    connect(&_missionItem._param3Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
+    connect(&_missionItem._commandFact, &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
 }
 
 void SimpleMissionItem::_setupMetaData(void)
@@ -619,4 +630,26 @@ void SimpleMissionItem::setSequenceNumber(int sequenceNumber)
 double SimpleMissionItem::flightSpeed(void)
 {
     return missionItem().flightSpeed();
+}
+
+double SimpleMissionItem::circleRadius(void)
+{
+    double _radius = 0.0;
+    int _command = _missionItem._commandFact.cookedValue().toInt();
+
+    if (_command == 16) {
+        _radius = _missionItem.param2();
+        _circleColor = "#80FFFFFF";
+        _circleWidth = 2;
+    } else if (_command == 17) {
+        _radius = _missionItem.param3();
+        _circleColor = "#CCFFFF00";
+        _circleWidth = 2;
+    }
+
+    emit circleRadiusChanged(_radius);
+    emit circleColorChanged(_circleColor);
+    emit circleWidthChanged(_circleWidth);
+
+    return _radius;
 }

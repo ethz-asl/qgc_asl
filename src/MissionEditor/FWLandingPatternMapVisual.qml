@@ -221,7 +221,7 @@ Item {
             center:         _missionItem.loiterCoordinate
             radius:         _missionItem.loiterRadius.rawValue
             border.width:   2
-            border.color:   "green"
+            border.color:   "#CCa99eff"
             color:          "transparent"
         }
     }
