@@ -170,6 +170,12 @@
                 "default":          15,
                 "decimalPlaces":    2
             },
+            "param3": {
+                "label":            "Radius:",
+                "units":            "m",
+                "default":          100.0,
+                "decimalPlaces":    2
+            },
             "param4": {
                 "label":            "Heading",
                 "units":            "radians",
