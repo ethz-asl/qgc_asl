@@ -8,10 +8,10 @@
  ****************************************************************************/
 
 
-import QtQuick                      2.4
-import QtQuick.Controls             1.3
+import QtQuick                      2.3
+import QtQuick.Controls             1.2
 import QtLocation                   5.3
-import QtPositioning                5.2
+import QtPositioning                5.3
 
 import QGroundControl               1.0
 import QGroundControl.FlightDisplay 1.0
@@ -71,148 +71,108 @@ FlightMap {
         Component.onCompleted: start(false /* editMode */)
     }
 
-    QGCLabel {
-        id:                         flyLabel
-        text:                       qsTr("Fly")
-        color:                      mapPal.text
-        visible:                    !ScreenTools.isShortScreen
-        anchors.topMargin:          _toolButtonTopMargin
-        anchors.horizontalCenter:   centerMapDropButton.horizontalCenter
-        anchors.top:                parent.top
-    }
-
-    //-- Vertical Tool Buttons
-
     ExclusiveGroup {
-        id: dropButtonsExclusiveGroup
+        id: _mapTypeButtonsExclusiveGroup
     }
 
-    ExclusiveGroup {
-        id: mapTypeButtonsExclusiveGroup
-    }
+    ToolStrip {
+        id:                 toolStrip
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
+        anchors.left:       parent.left
+        anchors.topMargin:  _toolButtonTopMargin
+        anchors.top:        parent.top
+        color:              qgcPal.window
+        title:              qsTr("Fly")
+        z:                  QGroundControl.zOrderWidgets
+        buttonVisible:      [ true, true, _showZoom, _showZoom ]
+        maxHeight:          (_flightVideo.visible ? _flightVideo.y : parent.height) - toolStrip.y   // Massive reach across hack
 
-    //-- Dismiss Drop Down (if any)
-    MouseArea {
-        anchors.fill:   parent
-        enabled:        dropButtonsExclusiveGroup.current != null
-        onClicked: {
-            if (dropButtonsExclusiveGroup.current) {
-                dropButtonsExclusiveGroup.current.checked = false
+        property bool _showZoom: !ScreenTools.isMobile
+
+        model: [
+            {
+                name:               "Center",
+                iconSource:         "/qmlimages/MapCenter.svg",
+                dropPanelComponent: centerMapDropPanel
+            },
+            {
+                name:               "Map",
+                iconSource:         "/qmlimages/MapType.svg",
+                dropPanelComponent: mapTypeDropPanel
+            },
+            {
+                name:               "In",
+                iconSource:         "/qmlimages/ZoomPlus.svg"
+            },
+            {
+                name:               "Out",
+                iconSource:         "/qmlimages/ZoomMinus.svg"
             }
-            dropButtonsExclusiveGroup.current = null
+        ]
+
+        onClicked: {
+            switch (index) {
+            case 2:
+                _flightMap.zoomLevel += 0.5
+                break
+            case 3:
+                _flightMap.zoomLevel -= 0.5
+                break
+            }
         }
     }
 
-    // IMPORTANT NOTE: Drop Buttons must be parented directly to the map. If they are placed in a Column for example the drop control positioning
-    // will not work correctly.
+    // Toolstrip drop panel compomnents
 
-    //-- Map Center Control
-    CenterMapDropButton {
-        id:                     centerMapDropButton
-        anchors.topMargin:      flyLabel.visible ? ScreenTools.defaultFontPixelHeight / 2 : _toolButtonTopMargin
-        anchors.leftMargin:     ScreenTools.defaultFontPixelHeight
-        anchors.left:           parent.left
-        anchors.top:            flyLabel.visible ? flyLabel.bottom : parent.top
-        z:                      QGroundControl.zOrderWidgets
-        exclusiveGroup:         dropButtonsExclusiveGroup
-        map:                    _flightMap
-        mapFitViewport:         Qt.rect(leftToolWidth, _toolButtonTopMargin, flightMap.width - leftToolWidth - rightPanelWidth, flightMap.height - _toolButtonTopMargin)
-        usePlannedHomePosition: false
-        geoFenceController:     geoFenceController
-        missionController:      missionController
-        rallyPointController:   rallyPointController
-        showFollowVehicle:      true
-        followVehicle:          _followVehicle
-        onFollowVehicleChanged: _followVehicle = followVehicle
+    MapFitFunctions {
+        id:                         mapFitFunctions
+        map:                        _flightMap
+        mapFitViewport:             Qt.rect(leftToolWidth, _toolButtonTopMargin, flightMap.width - leftToolWidth - rightPanelWidth, flightMap.height - _toolButtonTopMargin)
+        usePlannedHomePosition:     false
+        mapMissionController:      missionController
+        mapGeoFenceController:     geoFenceController
+        mapRallyPointController:   rallyPointController
 
-        property real leftToolWidth:    centerMapDropButton.x + centerMapDropButton.width
+        property real leftToolWidth:    toolStrip.x + toolStrip.width
     }
 
-    //-- Map Type Control
-    DropButton {
-        id:                 mapTypeButton
-        anchors.topMargin:  ScreenTools.defaultFontPixelHeight
-        anchors.top:        centerMapDropButton.bottom
-        anchors.left:       centerMapDropButton.left
-        dropDirection:      dropRight
-        buttonImage:        "/qmlimages/MapType.svg"
-        viewportMargins:    ScreenTools.defaultFontPixelWidth / 2
-        exclusiveGroup:     dropButtonsExclusiveGroup
-        z:                  QGroundControl.zOrderWidgets
-        lightBorders:       isSatelliteMap
+    Component {
+        id: centerMapDropPanel
 
-        dropDownComponent: Component {
-            Column {
+        CenterMapDropPanel {
+            map:                _flightMap
+            fitFunctions:       mapFitFunctions
+            showFollowVehicle:  true
+            followVehicle:      _followVehicle
+
+            onFollowVehicleChanged: _followVehicle = followVehicle
+        }
+    }
+
+    Component {
+        id: mapTypeDropPanel
+
+        Column {
+            spacing: ScreenTools.defaultFontPixelHeight / 2
+
+            QGCLabel { text: qsTr("Map type:") }
+            Row {
                 spacing: ScreenTools.defaultFontPixelWidth
+                Repeater {
+                    model: QGroundControl.flightMapSettings.mapTypes
 
-                Row {
-                    spacing: ScreenTools.defaultFontPixelWidth
-
-                    Repeater {
-                        model: QGroundControl.flightMapSettings.mapTypes
-
-                        QGCButton {
-                            checkable:      true
-                            checked:        QGroundControl.flightMapSettings.mapType === text
-                            text:           modelData
-                            width:          clearButton.width
-                            exclusiveGroup: mapTypeButtonsExclusiveGroup
-
-                            onClicked: {
-                                QGroundControl.flightMapSettings.mapType = text
-                                checked = true
-                                dropButtonsExclusiveGroup.current = null
-                            }
+                    QGCButton {
+                        checkable:      true
+                        checked:        QGroundControl.flightMapSettings.mapType === text
+                        text:           modelData
+                        exclusiveGroup: _mapTypeButtonsExclusiveGroup
+                        onClicked: {
+                            QGroundControl.flightMapSettings.mapType = text
+                            dropPanel.hide()
                         }
                     }
                 }
-
-                QGCButton {
-                    id:         clearButton
-                    text:       qsTr("Clear Flight Trails")
-                    enabled:    QGroundControl.multiVehicleManager.activeVehicle
-                    onClicked: {
-                        QGroundControl.multiVehicleManager.activeVehicle.clearTrajectoryPoints()
-                        dropButtonsExclusiveGroup.current = null
-                    }
-                }
             }
-        }
-    }
-
-    //-- Zoom Map In
-    RoundButton {
-        id:                 mapZoomPlus
-        anchors.topMargin:  ScreenTools.defaultFontPixelHeight
-        anchors.top:        mapTypeButton.bottom
-        anchors.left:       mapTypeButton.left
-        visible:            !ScreenTools.isTinyScreen && _mainIsMap
-        buttonImage:        "/qmlimages/ZoomPlus.svg"
-        exclusiveGroup:     dropButtonsExclusiveGroup
-        z:                  QGroundControl.zOrderWidgets
-        lightBorders:       isSatelliteMap
-        onClicked: {
-            if(_flightMap)
-                _flightMap.zoomLevel += 0.5
-            checked = false
-        }
-    }
-
-    //-- Zoom Map Out
-    RoundButton {
-        id:                 mapZoomMinus
-        anchors.topMargin:  ScreenTools.defaultFontPixelHeight
-        anchors.top:        mapZoomPlus.bottom
-        anchors.left:       mapZoomPlus.left
-        visible:            !ScreenTools.isTinyScreen && _mainIsMap
-        buttonImage:        "/qmlimages/ZoomMinus.svg"
-        exclusiveGroup:     dropButtonsExclusiveGroup
-        z:                  QGroundControl.zOrderWidgets
-        lightBorders:       isSatelliteMap
-        onClicked: {
-            if(_flightMap)
-                _flightMap.zoomLevel -= 0.5
-            checked = false
         }
     }
 
@@ -239,7 +199,7 @@ FlightMap {
             vehicle:        object
             coordinate:     object.coordinate
             isSatellite:    flightMap.isSatelliteMap
-            size:           _mainIsMap ? ScreenTools.defaultFontPixelHeight * 5 : ScreenTools.defaultFontPixelHeight * 2
+            size:           _mainIsMap ? ScreenTools.defaultFontPixelHeight * 3 : ScreenTools.defaultFontPixelHeight
             z:              QGroundControl.zOrderMapItems - 1
         }
     }
@@ -274,7 +234,8 @@ FlightMap {
 
     // GeoFence breach return point
     MapQuickItem {
-        anchorPoint:    Qt.point(sourceItem.width / 2, sourceItem.height / 2)
+        anchorPoint.x:  sourceItem.anchorPointX
+        anchorPoint.y:  sourceItem.anchorPointY
         coordinate:     geoFenceController.breachReturnPoint
         visible:        geoFenceController.breachReturnEnabled
         sourceItem:     MissionItemIndexLabel { label: "F" }
@@ -287,7 +248,8 @@ FlightMap {
 
         delegate: MapQuickItem {
             id:             itemIndicator
-            anchorPoint:    Qt.point(sourceItem.width / 2, sourceItem.height / 2)
+            anchorPoint.x:  sourceItem.anchorPointX
+            anchorPoint.y:  sourceItem.anchorPointY
             coordinate:     object.coordinate
             z:              QGroundControl.zOrderMapItems
 
@@ -303,8 +265,8 @@ FlightMap {
         coordinate:     _gotoHereCoordinate
         visible:        _activeVehicle && _activeVehicle.guidedMode && _gotoHereCoordinate.isValid
         z:              QGroundControl.zOrderMapItems
-        anchorPoint.x:  sourceItem.width  / 2
-        anchorPoint.y:  sourceItem.height / 2
+        anchorPoint.x:  sourceItem.anchorPointX
+        anchorPoint.y:  sourceItem.anchorPointY
 
         sourceItem: MissionItemIndexLabel {
             checked: true

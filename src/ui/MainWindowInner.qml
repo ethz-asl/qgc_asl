@@ -8,10 +8,10 @@
  ****************************************************************************/
 
 
-import QtQuick          2.5
+import QtQuick          2.3
 import QtQuick.Controls 1.2
 import QtQuick.Dialogs  1.2
-import QtPositioning    5.2
+import QtPositioning    5.3
 
 import QGroundControl                       1.0
 import QGroundControl.Palette               1.0
@@ -255,7 +255,7 @@ Item {
 
     MainToolBar {
         id:                 toolBar
-        height:             ScreenTools.defaultFontPixelHeight * 3
+        height:             ScreenTools.toolbarHeight
         anchors.left:       parent.left
         anchors.right:      parent.right
         anchors.top:        parent.top
@@ -530,5 +530,14 @@ Item {
             }
         }
     }
+
+    //-------------------------------------------------------------------------
+    //-- Loader helper for any child, no matter how deep can display an element
+    //   in the middle of the main window.
+    Loader {
+        id: rootLoader
+        anchors.centerIn: parent
+    }
+
 }
 

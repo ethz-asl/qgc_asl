@@ -17,8 +17,8 @@
 #include "JsonHelper.h"
 #include "MissionCommandTree.h"
 #include "MissionCommandUIInfo.h"
-
-const double SimpleMissionItem::defaultAltitude =           50.0;
+#include "QGroundControlQmlGlobal.h"
+#include "SettingsManager.h"
 
 FactMetaData* SimpleMissionItem::_altitudeMetaData =        NULL;
 FactMetaData* SimpleMissionItem::_commandMetaData =         NULL;
@@ -65,12 +65,16 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, QObject* parent)
     , _syncingAltitudeRelativeToHomeAndFrame    (false)
     , _syncingHeadingDegreesAndParam4           (false)
 {
+    _editorQml = QStringLiteral("qrc:/qml/SimpleItemEditor.qml");
+
     _altitudeRelativeToHomeFact.setRawValue(true);
 
     _setupMetaData();
     _connectSignals();
 
     setDefaultsForCommand();
+
+    connect(&_missionItem, &MissionItem::flightSpeedChanged, this, &SimpleMissionItem::flightSpeedChanged);
 }
 
 SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missionItem, QObject* parent)
@@ -93,6 +97,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missio
     , _syncingAltitudeRelativeToHomeAndFrame    (false)
     , _syncingHeadingDegreesAndParam4           (false)
 {
+    _editorQml = QStringLiteral("qrc:/qml/SimpleItemEditor.qml");
+
     _altitudeRelativeToHomeFact.setRawValue(true);
 
     _setupMetaData();
@@ -118,6 +124,8 @@ SimpleMissionItem::SimpleMissionItem(const SimpleMissionItem& other, QObject* pa
     , _syncingAltitudeRelativeToHomeAndFrame    (false)
     , _syncingHeadingDegreesAndParam4           (false)
 {
+    _editorQml = QStringLiteral("qrc:/qml/SimpleItemEditor.qml");
+
     _setupMetaData();
     _connectSignals();
 
@@ -335,25 +343,25 @@ QmlObjectListModel* SimpleMissionItem::textFieldFacts(void)
     QmlObjectListModel* model = new QmlObjectListModel(this);
     
     if (rawEdit()) {
-        _missionItem._param1Fact._setName("Param1:");
+        _missionItem._param1Fact._setName("Param1");
         _missionItem._param1Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param1Fact);
-        _missionItem._param2Fact._setName("Param2:");
+        _missionItem._param2Fact._setName("Param2");
         _missionItem._param2Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param2Fact);
-        _missionItem._param3Fact._setName("Param3:");
+        _missionItem._param3Fact._setName("Param3");
         _missionItem._param3Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param3Fact);
-        _missionItem._param4Fact._setName("Param4:");
+        _missionItem._param4Fact._setName("Param4");
         _missionItem._param4Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param4Fact);
-        _missionItem._param5Fact._setName("Lat/X:");
+        _missionItem._param5Fact._setName("Lat/X");
         _missionItem._param5Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param5Fact);
-        _missionItem._param6Fact._setName("Lon/Y:");
+        _missionItem._param6Fact._setName("Lon/Y");
         _missionItem._param6Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param6Fact);
-        _missionItem._param7Fact._setName("Alt/Z:");
+        _missionItem._param7Fact._setName("Alt/Z");
         _missionItem._param7Fact.setMetaData(_defaultParamMetaData);
         model->append(&_missionItem._param7Fact);
     } else {
@@ -391,7 +399,7 @@ QmlObjectListModel* SimpleMissionItem::textFieldFacts(void)
         }
 
         if (specifiesCoordinate() && !altitudeAdded) {
-            _missionItem._param7Fact._setName("Altitude:");
+            _missionItem._param7Fact._setName("Altitude");
             _missionItem._param7Fact.setMetaData(_altitudeMetaData);
             model->append(&_missionItem._param7Fact);
         }
@@ -526,7 +534,7 @@ void SimpleMissionItem::_syncFrameToAltitudeRelativeToHome(void)
 void SimpleMissionItem::setDefaultsForCommand(void)
 {
     // We set these global defaults first, then if there are param defaults they will get reset
-    _missionItem.setParam7(defaultAltitude);
+    _missionItem.setParam7(qgcApp()->toolbox()->settingsManager()->appSettings()->defaultMissionItemAltitude()->rawValue().toDouble());
 
     MAV_CMD command = (MAV_CMD)this->command();
     const MissionCommandUIInfo* uiInfo = _commandTree->getUIInfo(_vehicle, command);
@@ -606,4 +614,9 @@ void SimpleMissionItem::setSequenceNumber(int sequenceNumber)
         // This is too likely to ignore
         emit abbreviationChanged();
     }
+}
+
+double SimpleMissionItem::flightSpeed(void)
+{
+    return missionItem().flightSpeed();
 }

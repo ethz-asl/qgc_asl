@@ -18,7 +18,6 @@ class FirmwarePluginManager;
 class FlightMapSettings;
 class GAudioOutput;
 class GPSManager;
-class HomePositionManager;
 class JoystickManager;
 class FollowMe;
 class LinkManager;
@@ -33,6 +32,7 @@ class QGCPositionManager;
 class VideoManager;
 class MAVLinkLogManager;
 class QGCCorePlugin;
+class SettingsManager;
 
 /// This is used to manage all of our top level services/tools
 class QGCToolbox {
@@ -44,7 +44,6 @@ public:
     FirmwarePluginManager*      firmwarePluginManager(void)     { return _firmwarePluginManager; }
     FlightMapSettings*          flightMapSettings(void)         { return _flightMapSettings; }
     GAudioOutput*               audioOutput(void)               { return _audioOutput; }
-    HomePositionManager*        homePositionManager(void)       { return _homePositionManager; }
     JoystickManager*            joystickManager(void)           { return _joystickManager; }
     LinkManager*                linkManager(void)               { return _linkManager; }
     MAVLinkProtocol*            mavlinkProtocol(void)           { return _mavlinkProtocol; }
@@ -58,6 +57,7 @@ public:
     VideoManager*               videoManager(void)              { return _videoManager; }
     MAVLinkLogManager*          mavlinkLogManager(void)         { return _mavlinkLogManager; }
     QGCCorePlugin*              corePlugin(void)                { return _corePlugin; }
+    SettingsManager*            settingsManager(void)           { return _settingsManager; }
 
 #ifndef __mobile__
     GPSManager*                 gpsManager(void)                { return _gpsManager; }
@@ -75,20 +75,20 @@ private:
 #ifndef __mobile__
     GPSManager*                 _gpsManager;
 #endif
-    HomePositionManager*        _homePositionManager;
     QGCImageProvider*           _imageProvider;
     JoystickManager*            _joystickManager;
     LinkManager*                _linkManager;
     MAVLinkProtocol*            _mavlinkProtocol;
     MissionCommandTree*         _missionCommandTree;
     MultiVehicleManager*        _multiVehicleManager;
-    QGCMapEngineManager*         _mapEngineManager;
+    QGCMapEngineManager*        _mapEngineManager;
     UASMessageHandler*          _uasMessageHandler;
     FollowMe*                   _followMe;
     QGCPositionManager*         _qgcPositionManager;
     VideoManager*               _videoManager;
     MAVLinkLogManager*          _mavlinkLogManager;
     QGCCorePlugin*              _corePlugin;
+    SettingsManager*            _settingsManager;
 
     friend class QGCApplication;
 };

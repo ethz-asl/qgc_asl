@@ -10,6 +10,7 @@
 #include "FirmwarePlugin.h"
 #include "QGCApplication.h"
 #include "Generic/GenericAutoPilotPlugin.h"
+#include "CameraMetaData.h"
 
 #include <QDebug>
 
@@ -17,11 +18,20 @@ static FirmwarePluginFactoryRegister* _instance = NULL;
 
 const char* guided_mode_not_supported_by_vehicle = "Guided mode not supported by Vehicle.";
 
+QVariantList FirmwarePlugin::_cameraList;
+
 const char* FirmwarePlugin::px4FollowMeFlightMode = "Follow Me";
 
 FirmwarePluginFactory::FirmwarePluginFactory(void)
 {
     FirmwarePluginFactoryRegister::instance()->registerPluginFactory(this);
+}
+
+QList<MAV_TYPE> FirmwarePluginFactory::supportedVehicleTypes(void) const
+{
+    QList<MAV_TYPE> vehicleTypes;
+    vehicleTypes << MAV_TYPE_FIXED_WING << MAV_TYPE_QUADROTOR << MAV_TYPE_VTOL_QUADROTOR << MAV_TYPE_GROUND_ROVER << MAV_TYPE_SUBMARINE;
+    return vehicleTypes;
 }
 
 FirmwarePluginFactoryRegister* FirmwarePluginFactoryRegister::instance(void)
@@ -106,6 +116,11 @@ int FirmwarePlugin::manualControlReservedButtonCount(void)
     return -1;
 }
 
+int FirmwarePlugin::defaultJoystickTXMode(void)
+{
+    return 2;
+}
+
 bool FirmwarePlugin::supportsThrottleModeCenterZero(void)
 {
     // By default, this is supported
@@ -118,6 +133,16 @@ bool FirmwarePlugin::supportsManualControl(void)
 }
 
 bool FirmwarePlugin::supportsRadio(void)
+{
+    return true;
+}
+
+bool FirmwarePlugin::supportsCalibratePressure(void)
+{
+    return false;
+}
+
+bool FirmwarePlugin::supportsMotorInterference(void)
 {
     return true;
 }
@@ -281,4 +306,128 @@ int FirmwarePlugin::remapParamNameHigestMinorVersionNumber(int majorVersionNumbe
 {
     Q_UNUSED(majorVersionNumber);
     return 0;
+}
+
+QString FirmwarePlugin::missionFlightMode(void)
+{
+    return QString();
+}
+
+QString FirmwarePlugin::rtlFlightMode(void)
+{
+    return QString();
+}
+
+QString FirmwarePlugin::takeControlFlightMode(void)
+{
+    return QString();
+}
+
+QString FirmwarePlugin::vehicleImageOpaque(const Vehicle* vehicle) const
+{
+    Q_UNUSED(vehicle);
+    return QStringLiteral("/qmlimages/vehicleArrowOpaque.svg");
+}
+
+QString FirmwarePlugin::vehicleImageOutline(const Vehicle* vehicle) const
+{
+    Q_UNUSED(vehicle);
+    return QStringLiteral("/qmlimages/vehicleArrowOutline.svg");
+}
+
+QString FirmwarePlugin::vehicleImageCompass(const Vehicle* vehicle) const
+{
+    Q_UNUSED(vehicle);
+    return QStringLiteral("/qmlimages/compassInstrumentArrow.svg");
+}
+
+const QVariantList &FirmwarePlugin::toolBarIndicators(const Vehicle* vehicle)
+{
+    Q_UNUSED(vehicle);
+    //-- Default list of indicators for all vehicles.
+    if(_toolBarIndicatorList.size() == 0) {
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/MessageIndicator.qml")));
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/GPSIndicator.qml")));
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/TelemetryRSSIIndicator.qml")));
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/RCRSSIIndicator.qml")));
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/BatteryIndicator.qml")));
+        _toolBarIndicatorList.append(QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/ModeIndicator.qml")));
+    }
+    return _toolBarIndicatorList;
+}
+
+const QVariantList& FirmwarePlugin::cameraList(const Vehicle* vehicle)
+{
+    Q_UNUSED(vehicle);
+
+    if (_cameraList.size() == 0) {
+        CameraMetaData* metaData;
+
+        metaData = new CameraMetaData(tr("Typhoon H CGO3+"),    // Camera name
+                                      6.264,                    // sensorWidth
+                                      4.698,                    // sensorHeight
+                                      4000,                     // imageWidth
+                                      3000,                     // imageHeight
+                                      14,                       // focalLength
+                                      true,                     // landscape orientation
+                                      true,                     // camera orientation is fixed
+                                      this);                    // parent
+        _cameraList.append(QVariant::fromValue(metaData));
+
+        metaData = new CameraMetaData(tr("Sony ILCE-QX1"),  //http://www.sony.co.uk/electronics/interchangeable-lens-cameras/ilce-qx1-body-kit/specifications
+                                      23.2,                 //http://www.sony.com/electronics/camera-lenses/sel16f28/specifications
+                                      15.4,
+                                      5456,
+                                      3632,
+                                      16,
+                                      true,
+                                      false,
+                                      this);
+        _cameraList.append(QVariant::fromValue(metaData));
+
+        metaData = new CameraMetaData(tr("Canon S100 PowerShot"),
+                                      7.6,
+                                      5.7,
+                                      4000,
+                                      3000,
+                                      5.2,
+                                      true,
+                                      false,
+                                      this);
+        _cameraList.append(QVariant::fromValue(metaData));
+
+        metaData = new CameraMetaData(tr("Canon SX260 HS PowerShot"),
+                                      6.17,
+                                      4.55,
+                                      4000,
+                                      3000,
+                                      4.5,
+                                      true,
+                                      false,
+                                      this);
+
+        metaData = new CameraMetaData(tr("Canon EOS-M 22mm"),
+                                      22.3,
+                                      14.9,
+                                      5184,
+                                      3456,
+                                      22,
+                                      true,
+                                      false,
+                                      this);
+        _cameraList.append(QVariant::fromValue(metaData));
+
+        metaData = new CameraMetaData(tr("Sony a6000 16mm"),    //http://www.sony.co.uk/electronics/interchangeable-lens-cameras/ilce-6000-body-kit#product_details_default
+                                      23.5,
+                                      15.6,
+                                      6000,
+                                      4000,
+                                      16,
+                                      true,
+                                      false,
+                                      this);
+        _cameraList.append(QVariant::fromValue(metaData));
+    }
+
+    return _cameraList;
 }
