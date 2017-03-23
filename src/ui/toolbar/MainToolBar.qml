@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-import QtQuick              2.5
+import QtQuick              2.3
 import QtQuick.Layouts      1.2
 import QtQuick.Controls     1.2
 
@@ -41,8 +41,6 @@ Rectangle {
     signal showPlanView
     signal showFlyView
     signal showAnalyzeView
-
-    MainToolBarController { id: _controller }
 
     function checkSettingsButton() {
         settingsButton.checked = true
@@ -210,7 +208,6 @@ Rectangle {
             anchors.top:        parent.top
             anchors.bottom:     parent.bottom
             Layout.fillWidth:   true
-            visible:            _activeVehicle
         }
     }
 

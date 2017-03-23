@@ -15,6 +15,7 @@
 #include "FollowMe.h"
 #include "QGroundControlQmlGlobal.h"
 #include "ParameterManager.h"
+#include "SettingsManager.h"
 
 #if defined (__ios__) || defined(__android__)
 #include "MobileScreenMgr.h"
@@ -62,22 +63,35 @@ void MultiVehicleManager::setToolbox(QGCToolbox *toolbox)
 
    connect(_mavlinkProtocol, &MAVLinkProtocol::vehicleHeartbeatInfo, this, &MultiVehicleManager::_vehicleHeartbeatInfo);
 
-   _offlineEditingVehicle = new Vehicle(static_cast<MAV_AUTOPILOT>(QGroundControlQmlGlobal::offlineEditingFirmwareType()->rawValue().toInt()),
-                                        static_cast<MAV_TYPE>(QGroundControlQmlGlobal::offlineEditingVehicleType()->rawValue().toInt()),
+   SettingsManager* settingsManager = toolbox->settingsManager();
+   _offlineEditingVehicle = new Vehicle(static_cast<MAV_AUTOPILOT>(settingsManager->appSettings()->offlineEditingFirmwareType()->rawValue().toInt()),
+                                        static_cast<MAV_TYPE>(settingsManager->appSettings()->offlineEditingVehicleType()->rawValue().toInt()),
                                         _firmwarePluginManager,
                                         this);
 }
 
-void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType)
+void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType)
 {
-    if (_ignoreVehicleIds.contains(vehicleId) || getVehicleById(vehicleId)
-            || vehicleId == 0) {
+    if (_ignoreVehicleIds.contains(vehicleId) || getVehicleById(vehicleId) || vehicleId == 0) {
         return;
     }
 
-    qCDebug(MultiVehicleManagerLog()) << "Adding new vehicle link:vehicleId:vehicleMavlinkVersion:vehicleFirmwareType:vehicleType "
+    switch (vehicleType) {
+    case MAV_TYPE_GCS:
+    case MAV_TYPE_ONBOARD_CONTROLLER:
+    case MAV_TYPE_GIMBAL:
+    case MAV_TYPE_ADSB:
+        // These are not vehicles, so don't create a vehicle for them
+        return;
+    default:
+        // All other MAV_TYPEs create vehicles
+        break;
+    }
+
+    qCDebug(MultiVehicleManagerLog()) << "Adding new vehicle link:vehicleId:componentId:vehicleMavlinkVersion:vehicleFirmwareType:vehicleType "
                                       << link->getName()
                                       << vehicleId
+                                      << componentId
                                       << vehicleMavlinkVersion
                                       << vehicleFirmwareType
                                       << vehicleType;
@@ -96,7 +110,7 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
 //        return;
 //    }
 
-    Vehicle* vehicle = new Vehicle(link, vehicleId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, _firmwarePluginManager, _joystickManager);
+    Vehicle* vehicle = new Vehicle(link, vehicleId, componentId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, _firmwarePluginManager, _joystickManager);
     connect(vehicle, &Vehicle::allLinksInactive, this, &MultiVehicleManager::_deleteVehiclePhase1);
     connect(vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, &MultiVehicleManager::_vehicleParametersReadyChanged);
 
