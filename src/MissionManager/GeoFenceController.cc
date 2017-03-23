@@ -48,7 +48,19 @@ void GeoFenceController::start(bool editMode)
     qCDebug(GeoFenceControllerLog) << "start editMode" << editMode;
 
     PlanElementController::start(editMode);
+    _init();
+}
 
+void GeoFenceController::startStaticActiveVehicle(Vehicle* vehicle)
+{
+    qCDebug(GeoFenceControllerLog) << "startStaticActiveVehicle";
+
+    PlanElementController::startStaticActiveVehicle(vehicle);
+    _init();
+}
+
+void GeoFenceController::_init(void)
+{
     connect(&_polygon, &QGCMapPolygon::dirtyChanged, this, &GeoFenceController::_polygonDirtyChanged);
 }
 
@@ -202,7 +214,7 @@ void GeoFenceController::loadFromFile(const QString& filename)
     QFile file(filename);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        errorString = file.errorString();
+        errorString = file.errorString() + QStringLiteral(" ") + filename;
     } else {
         QJsonDocument   jsonDoc;
         QByteArray      bytes = file.readAll();
@@ -267,7 +279,7 @@ void GeoFenceController::saveToFile(const QString& filename)
             paramNames.append(params[i].value<Fact*>()->name());
         }
         if (paramNames.count() > 0) {
-            paramMgr->saveToJson(paramMgr->defaultComponentId(), paramNames, fenceFileObject);
+            paramMgr->saveToJson(_activeVehicle->defaultComponentId(), paramNames, fenceFileObject);
         }
 
         if (breachReturnEnabled()) {

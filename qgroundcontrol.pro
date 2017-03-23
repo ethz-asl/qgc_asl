@@ -21,6 +21,7 @@ include(QGCCommon.pri)
 
 TARGET   = QGroundControl
 TEMPLATE = app
+QGCROOT  = $$PWD
 
 DebugBuild {
     DESTDIR  = $${OUT_PWD}/debug
@@ -290,6 +291,7 @@ INCLUDEPATH += \
     src/QmlControls \
     src/QtLocationPlugin \
     src/QtLocationPlugin/QMLControl \
+    src/Settings \
     src/VehicleSetup \
     src/ViewWidgets \
     src/audio \
@@ -423,13 +425,13 @@ HEADERS += \
     src/FlightMap/Widgets/ValuesWidgetController.h \
     src/FollowMe/FollowMe.h \
     src/GAudioOutput.h \
-    src/HomePositionManager.h \
     src/Joystick/Joystick.h \
     src/Joystick/JoystickManager.h \
     src/JsonHelper.h \
     src/LogCompressor.h \
     src/MG.h \
     src/MissionManager/ComplexMissionItem.h \
+    src/MissionManager/FixedWingLandingComplexItem.h \
     src/MissionManager/GeoFenceController.h \
     src/MissionManager/GeoFenceManager.h \
     src/MissionManager/MissionCommandList.h \
@@ -459,6 +461,7 @@ HEADERS += \
     src/QGCMapPalette.h \
     src/QGCMobileFileDialogController.h \
     src/QGCPalette.h \
+    src/QGCQGeoCoordinate.h \
     src/QGCQmlWidgetHolder.h \
     src/QGCQuickWidget.h \
     src/QGCTemporaryFile.h \
@@ -473,6 +476,12 @@ HEADERS += \
     src/QmlControls/RCChannelMonitorController.h \
     src/QmlControls/ScreenToolsController.h \
     src/QtLocationPlugin/QMLControl/QGCMapEngineManager.h \
+    src/Settings/AppSettings.h \
+    src/Settings/AutoConnectSettings.h \
+    src/Settings/SettingsGroup.h \
+    src/Settings/SettingsManager.h \
+    src/Settings/UnitsSettings.h \
+    src/Settings/VideoSettings.h \
     src/Vehicle/MAVLinkLogManager.h \
     src/VehicleSetup/JoystickConfigController.h \
     src/audio/QGCAudioWorker.h \
@@ -487,7 +496,6 @@ HEADERS += \
     src/uas/UAS.h \
     src/uas/UASInterface.h \
     src/uas/UASMessageHandler.h \
-    src/ui/toolbar/MainToolBarController.h \
 
 DebugBuild {
 HEADERS += \
@@ -588,12 +596,12 @@ SOURCES += \
     src/FlightMap/Widgets/ValuesWidgetController.cc \
     src/FollowMe/FollowMe.cc \
     src/GAudioOutput.cc \
-    src/HomePositionManager.cc \
     src/Joystick/Joystick.cc \
     src/Joystick/JoystickManager.cc \
     src/JsonHelper.cc \
     src/LogCompressor.cc \
     src/MissionManager/ComplexMissionItem.cc \
+    src/MissionManager/FixedWingLandingComplexItem.cc \
     src/MissionManager/GeoFenceController.cc \
     src/MissionManager/GeoFenceManager.cc \
     src/MissionManager/MissionCommandList.cc \
@@ -622,6 +630,7 @@ SOURCES += \
     src/QGCMapPalette.cc \
     src/QGCMobileFileDialogController.cc \
     src/QGCPalette.cc \
+    src/QGCQGeoCoordinate.cc \
     src/QGCQmlWidgetHolder.cpp \
     src/QGCQuickWidget.cc \
     src/QGCTemporaryFile.cc \
@@ -635,6 +644,12 @@ SOURCES += \
     src/QmlControls/RCChannelMonitorController.cc \
     src/QmlControls/ScreenToolsController.cc \
     src/QtLocationPlugin/QMLControl/QGCMapEngineManager.cc \
+    src/Settings/AppSettings.cc \
+    src/Settings/AutoConnectSettings.cc \
+    src/Settings/SettingsGroup.cc \
+    src/Settings/SettingsManager.cc \
+    src/Settings/UnitsSettings.cc \
+    src/Settings/VideoSettings.cc \
     src/Vehicle/MAVLinkLogManager.cc \
     src/VehicleSetup/JoystickConfigController.cc \
     src/audio/QGCAudioWorker.cpp \
@@ -648,7 +663,6 @@ SOURCES += \
     src/main.cc \
     src/uas/UAS.cc \
     src/uas/UASMessageHandler.cc \
-    src/ui/toolbar/MainToolBarController.cc \
 
 DebugBuild {
 SOURCES += \
@@ -738,9 +752,11 @@ HEADERS+= \
     src/AutoPilotPlugins/AutoPilotPlugin.h \
     src/AutoPilotPlugins/Common/ESP8266Component.h \
     src/AutoPilotPlugins/Common/ESP8266ComponentController.h \
+    src/AutoPilotPlugins/Common/MixersComponent.h \
     src/AutoPilotPlugins/Common/MotorComponent.h \
     src/AutoPilotPlugins/Common/RadioComponentController.h \
     src/AutoPilotPlugins/Generic/GenericAutoPilotPlugin.h \
+    src/FirmwarePlugin/CameraMetaData.h \
     src/FirmwarePlugin/FirmwarePlugin.h \
     src/FirmwarePlugin/FirmwarePluginManager.h \
     src/Vehicle/MultiVehicleManager.h \
@@ -759,9 +775,11 @@ SOURCES += \
     src/AutoPilotPlugins/AutoPilotPlugin.cc \
     src/AutoPilotPlugins/Common/ESP8266Component.cc \
     src/AutoPilotPlugins/Common/ESP8266ComponentController.cc \
+    src/AutoPilotPlugins/Common/MixersComponent.cc \
     src/AutoPilotPlugins/Common/MotorComponent.cc \
     src/AutoPilotPlugins/Common/RadioComponentController.cc \
     src/AutoPilotPlugins/Generic/GenericAutoPilotPlugin.cc \
+    src/FirmwarePlugin/CameraMetaData.cc \
     src/FirmwarePlugin/FirmwarePlugin.cc \
     src/FirmwarePlugin/FirmwarePluginManager.cc \
     src/Vehicle/MultiVehicleManager.cc \

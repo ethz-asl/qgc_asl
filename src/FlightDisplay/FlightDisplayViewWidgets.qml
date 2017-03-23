@@ -8,44 +8,84 @@
  ****************************************************************************/
 
 
-import QtQuick                  2.4
-import QtQuick.Controls         1.3
-import QtQuick.Controls.Styles  1.2
+import QtQuick                  2.3
+import QtQuick.Controls         1.2
+import QtQuick.Controls.Styles  1.4
 import QtQuick.Dialogs          1.2
 import QtLocation               5.3
-import QtPositioning            5.2
+import QtPositioning            5.3
 
-import QGroundControl               1.0
-import QGroundControl.ScreenTools   1.0
-import QGroundControl.Controls      1.0
-import QGroundControl.Palette       1.0
-import QGroundControl.Vehicle       1.0
-import QGroundControl.FlightMap     1.0
+import QGroundControl                           1.0
+import QGroundControl.ScreenTools               1.0
+import QGroundControl.Controls                  1.0
+import QGroundControl.Palette                   1.0
+import QGroundControl.Vehicle                   1.0
+import QGroundControl.FlightMap                 1.0
 
 Item {
     id: _root
 
-    property alias  guidedModeBar:      _guidedModeBar
-    property bool   gotoEnabled:        _activeVehicle && _activeVehicle.guidedMode && _activeVehicle.flying
+    property alias  guidedModeBar:          _guidedModeBar
+    property bool   gotoEnabled:            _activeVehicle && _activeVehicle.guidedMode && _activeVehicle.flying
     property var    qgcView
     property bool   isBackgroundDark
 
-    property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
-    property bool   _isSatellite:               _mainIsMap ? (_flightMap ? _flightMap.isSatelliteMap : true) : true
-    property bool   _lightWidgetBorders:        _isSatellite
-    property bool   _useAlternateInstruments:   QGroundControl.virtualTabletJoystick || ScreenTools.isTinyScreen
+    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
+    property bool   _isSatellite:           _mainIsMap ? (_flightMap ? _flightMap.isSatelliteMap : true) : true
+    property bool   _lightWidgetBorders:    _isSatellite
 
-    readonly property real _margins:                ScreenTools.defaultFontPixelHeight / 2
+    readonly property real _margins:        ScreenTools.defaultFontPixelHeight * 0.5
 
     QGCMapPalette { id: mapPal; lightColors: isBackgroundDark }
-    QGCPalette { id: qgcPal }
+    QGCPalette    { id: qgcPal }
 
-    function getGadgetWidth() {
+    function getPreferredInstrumentWidth() {
         if(ScreenTools.isMobile) {
             return ScreenTools.isTinyScreen ? mainWindow.width * 0.2 : mainWindow.width * 0.15
         }
         var w = mainWindow.width * 0.15
         return Math.min(w, 200)
+    }
+
+    function _setInstrumentWidget() {
+        if(QGroundControl.corePlugin.options.instrumentWidget.source.toString().length) {
+            instrumentsLoader.source = QGroundControl.corePlugin.options.instrumentWidget.source
+            switch(QGroundControl.corePlugin.options.instrumentWidget.widgetPosition) {
+            case CustomInstrumentWidget.POS_TOP_RIGHT:
+                instrumentsLoader.state  = "topMode"
+                break;
+            case CustomInstrumentWidget.POS_BOTTOM_RIGHT:
+                instrumentsLoader.state  = "bottomMode"
+                break;
+            case CustomInstrumentWidget.POS_CENTER_RIGHT:
+            default:
+                instrumentsLoader.state  = "centerMode"
+                break;
+            }
+        } else {
+            var useAlternateInstruments = QGroundControl.settingsManager.appSettings.virtualJoystick.value || ScreenTools.isTinyScreen
+            if(useAlternateInstruments) {
+                instrumentsLoader.source = "qrc:/qml/QGCInstrumentWidgetAlternate.qml"
+                instrumentsLoader.state  = "topMode"
+            } else {
+                instrumentsLoader.source = "qrc:/qml/QGCInstrumentWidget.qml"
+                instrumentsLoader.state  = QGroundControl.settingsManager.appSettings.showLargeCompass.value == 1 ? "centerMode" : "topMode"
+            }
+        }
+    }
+
+    Connections {
+        target:         QGroundControl.settingsManager.appSettings.virtualJoystick
+        onValueChanged: _setInstrumentWidget()
+    }
+
+    Connections {
+        target:         QGroundControl.settingsManager.appSettings.showLargeCompass
+        onValueChanged: _setInstrumentWidget()
+    }
+
+    Component.onCompleted: {
+        _setInstrumentWidget()
     }
 
     //-- Map warnings
@@ -74,55 +114,43 @@ Item {
     }
 
     //-- Instrument Panel
-    QGCInstrumentWidget {
-        id:                     instrumentGadget
+    Loader {
+        id:                     instrumentsLoader
         anchors.margins:        ScreenTools.defaultFontPixelHeight / 2
         anchors.right:          altitudeSlider.visible ? altitudeSlider.left : parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        visible:                !_useAlternateInstruments
-        size:                   getGadgetWidth()
-        active:                 _activeVehicle != null
-        heading:                _heading
-        rollAngle:              _roll
-        pitchAngle:             _pitch
-        groundSpeedFact:        _groundSpeedFact
-        airSpeedFact:           _airSpeedFact
-        lightBorders:           _lightWidgetBorders
         z:                      QGroundControl.zOrderWidgets
-        qgcView:                _root.qgcView
-        maxHeight:              parent.height - (anchors.margins * 2)
+        property var  qgcView:  _root.qgcView
+        property real maxHeight:parent.height - (anchors.margins * 2)
+        states: [
+            State {
+                name:   "topMode"
+                AnchorChanges {
+                    target:                 instrumentsLoader
+                    anchors.verticalCenter: undefined
+                    anchors.bottom:         undefined
+                    anchors.top:            _root ? _root.top : undefined
+                }
+            },
+            State {
+                name:   "centerMode"
+                AnchorChanges {
+                    target:                 instrumentsLoader
+                    anchors.top:            undefined
+                    anchors.bottom:         undefined
+                    anchors.verticalCenter: _root ? _root.verticalCenter : undefined
+                }
+            },
+            State {
+                name:   "bottomMode"
+                AnchorChanges {
+                    target:                 instrumentsLoader
+                    anchors.top:            undefined
+                    anchors.verticalCenter: undefined
+                    anchors.bottom:         _root ? _root.bottom : undefined
+                }
+            }
+        ]
     }
-
-    QGCInstrumentWidgetAlternate {
-        id:                     instrumentGadgetAlternate
-        anchors.margins:        ScreenTools.defaultFontPixelHeight / 2
-        anchors.top:            parent.top
-        anchors.right:          altitudeSlider.visible ? altitudeSlider.left : parent.right
-        visible:                _useAlternateInstruments
-        width:                  ScreenTools.isTinyScreen ? getGadgetWidth() * 1.5 : getGadgetWidth()
-        active:                 _activeVehicle != null
-        heading:                _heading
-        rollAngle:              _roll
-        pitchAngle:             _pitch
-        groundSpeedFact:        _groundSpeedFact
-        airSpeedFact:           _airSpeedFact
-        lightBorders:           _lightWidgetBorders
-        qgcView:                _root.qgcView
-        maxHeight:              parent.height - (anchors.margins * 2)
-        z:                      QGroundControl.zOrderWidgets
-    }
-
-    /*
-    ValuesWidget {
-        anchors.topMargin:          ScreenTools.defaultFontPixelHeight
-        anchors.top:                instrumentGadgetAlternate.bottom
-        anchors.horizontalCenter:   instrumentGadgetAlternate.horizontalCenter
-        width:                      getGadgetWidth()
-        qgcView:                    _root.qgcView
-        textColor:                  _isSatellite ? "white" : "black"
-        visible:                    _useAlternateInstruments
-        maxHeight:                  virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.y - y : parent.height - anchors.margins - y
-    }*/
 
     //-- Guided mode buttons
     Rectangle {
@@ -133,7 +161,7 @@ Item {
         width:                      guidedModeColumn.width  + (_margins * 2)
         height:                     guidedModeColumn.height + (_margins * 2)
         radius:                     ScreenTools.defaultFontPixelHeight * 0.25
-        color:                      _lightWidgetBorders ? Qt.rgba(qgcPal.mapWidgetBorderLight.r, qgcPal.mapWidgetBorderLight.g, qgcPal.mapWidgetBorderLight.b, 0.8) : Qt.rgba(qgcPal.mapWidgetBorderDark.r, qgcPal.mapWidgetBorderDark.g, qgcPal.mapWidgetBorderDark.b, 0.75)
+        color:                      _isSatellite ? Qt.rgba(qgcPal.mapWidgetBorderLight.r, qgcPal.mapWidgetBorderLight.g, qgcPal.mapWidgetBorderLight.b, 0.8) : Qt.rgba(qgcPal.mapWidgetBorderDark.r, qgcPal.mapWidgetBorderDark.g, qgcPal.mapWidgetBorderDark.b, 0.75)
         visible:                    _activeVehicle
         z:                          QGroundControl.zOrderWidgets
         state:                      "Shown"
@@ -177,7 +205,7 @@ Item {
             interval:       7000
             running:        true
             onTriggered: {
-                if (ScreenTools.isShortScreen) {
+                if (ScreenTools.isTinyScreen) {
                     _guidedModeBar.state = "Hidden"
                 }
             }
@@ -193,6 +221,7 @@ Item {
         readonly property int confirmGoTo:          8
         readonly property int confirmRetask:        9
         readonly property int confirmOrbit:         10
+        readonly property int confirmAbort:         11
 
         property int    confirmActionCode
         property real   _showMargin:    _margins
@@ -239,6 +268,9 @@ Item {
                 _activeVehicle.guidedModeOrbit()
                 //-- Center on current flight map position and orbit with a 50m radius (velocity/direction controlled by the RC)
                 //_activeVehicle.guidedModeOrbit(QGroundControl.flightMapPosition, 50.0)
+                break;
+            case confirmAbort:
+                _activeVehicle.abortLanding(50)     // hardcoded value for climbOutAltitude that is currently ignored
                 break;
             default:
                 console.warn(qsTr("Internal error: unknown confirmActionCode"), confirmActionCode)
@@ -291,6 +323,9 @@ Item {
             case confirmOrbit:
                 guidedModeConfirm.confirmText = qsTr("enter orbit mode")
                 break;
+            case confirmAbort:
+                guidedModeConfirm.confirmText = qsTr("abort landing")
+                break;
             }
             _guidedModeBar.visible = false
             guidedModeConfirm.visible = true
@@ -305,7 +340,7 @@ Item {
 
             QGCLabel {
                 anchors.horizontalCenter: parent.horizontalCenter
-                color:      _lightWidgetBorders ? qgcPal.mapWidgetBorderDark : qgcPal.mapWidgetBorderLight
+                color:      _isSatellite ? qgcPal.mapWidgetBorderDark : qgcPal.mapWidgetBorderLight
                 text:       "Click in map to move vehicle"
                 visible:    gotoEnabled
             }
@@ -356,6 +391,13 @@ Item {
                     text:       qsTr("Orbit")
                     visible:    (_activeVehicle && _activeVehicle.flying) && _activeVehicle.orbitModeSupported && _activeVehicle.armed
                     onClicked:  _guidedModeBar.confirmAction(_guidedModeBar.confirmOrbit)
+                }
+
+                QGCButton {
+                    pointSize:  _guidedModeBar._fontPointSize
+                    text:       qsTr("Abort")
+                    visible:    _activeVehicle && _activeVehicle.flying && _activeVehicle.fixedWing
+                    onClicked:  _guidedModeBar.confirmAction(_guidedModeBar.confirmAbort)
                 }
 
             } // Row
@@ -452,8 +494,8 @@ Item {
             anchors.left:       parent.left
             anchors.right:      parent.right
             orientation:        Qt.Vertical
-            minimumValue:       QGroundControl.metersToAppSettingsDistanceUnits(2)
-            maximumValue:       QGroundControl.metersToAppSettingsDistanceUnits((_activeVehicle && _activeVehicle.flying) ? 100 : 10)
+            minimumValue:       QGroundControl.metersToAppSettingsDistanceUnits(0)
+            maximumValue:       QGroundControl.metersToAppSettingsDistanceUnits((_activeVehicle && _activeVehicle.flying) ? Math.round((_activeVehicle.altitudeRelative.value + 100) / 100) * 100 : 10)
         }
     }
 }

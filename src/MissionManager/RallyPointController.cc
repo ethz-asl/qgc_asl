@@ -20,6 +20,8 @@
 #include "ParameterManager.h"
 #include "JsonHelper.h"
 #include "SimpleMissionItem.h"
+#include "QGroundControlQmlGlobal.h"
+#include "SettingsManager.h"
 
 #ifndef __mobile__
 #include "QGCFileDialog.h"
@@ -44,13 +46,6 @@ RallyPointController::RallyPointController(QObject* parent)
 RallyPointController::~RallyPointController()
 {
 
-}
-
-void RallyPointController::start(bool editMode)
-{
-    qCDebug(RallyPointControllerLog) << "start editMode" << editMode;
-
-    PlanElementController::start(editMode);
 }
 
 void RallyPointController::_activeVehicleBeingRemoved(void)
@@ -118,7 +113,7 @@ void RallyPointController::loadFromFile(const QString& filename)
     QFile file(filename);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        errorString = file.errorString();
+        errorString = file.errorString() + QStringLiteral(" ") + filename;
     } else {
         QJsonDocument   jsonDoc;
         QByteArray      bytes = file.readAll();
@@ -273,7 +268,7 @@ void RallyPointController::addPoint(QGeoCoordinate point)
     if (_points.count()) {
         defaultAlt = qobject_cast<RallyPoint*>(_points[_points.count() - 1])->coordinate().altitude();
     } else {
-        defaultAlt = SimpleMissionItem::defaultAltitude;
+        defaultAlt = qgcApp()->toolbox()->settingsManager()->appSettings()->defaultMissionItemAltitude()->rawValue().toDouble();
     }
     point.setAltitude(defaultAlt);
     RallyPoint* newPoint = new RallyPoint(point, this);
