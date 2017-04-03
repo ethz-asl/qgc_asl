@@ -42,9 +42,9 @@ EnergyBudget::EnergyBudget(const QString &title, QAction *action, QWidget *paren
 QGCDockWidget(title, action, parent),
 ui(new Ui::EnergyBudget),
 m_scene(new QGraphicsScene(this)),
-m_propPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Prop"))),
-m_cellPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Solarcell"))),
-m_batPixmap(m_scene->addPixmap(QPixmap("/qmlimages/EnergyBudget/Battery"))),
+m_propPixmap(m_scene->addPixmap(QPixmap(":/qmlimages/EnergyBudget/Prop"))),
+m_cellPixmap(m_scene->addPixmap(QPixmap(":/qmlimages/EnergyBudget/Solarcell"))),
+m_batPixmap(m_scene->addPixmap(QPixmap(":/qmlimages/EnergyBudget/Battery"))),
 m_chargePath(m_scene->addPath(QPainterPath())),
 m_cellToPropPath(m_scene->addPath(QPainterPath())),
 m_batToPropPath(m_scene->addPath(QPainterPath())),
@@ -71,7 +71,7 @@ m_MPPTUpdateReset(new QTimer(this))
     ui->overviewGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->buildGraphicsImage();
 	ui->overviewGraphicsView->setScene(m_scene);
-	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+    ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
     //connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
 	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
@@ -102,12 +102,12 @@ void EnergyBudget::buildGraphicsImage()
 	qreal penWidth(40);
 	// scale and place images
 
-    QRectF tempRectF=m_propPixmap->boundingRect();
-    m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
-    tempRectF=m_cellPixmap->boundingRect();
-    m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
-    tempRectF=m_batPixmap->boundingRect();
-    m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
+	QRectF tempRectF=m_propPixmap->boundingRect();
+	m_propPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
+	tempRectF=m_cellPixmap->boundingRect();
+	m_cellPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
+	tempRectF=m_batPixmap->boundingRect();
+	m_batPixmap->setScale(this->adjustImageScale(m_scene->sceneRect(), tempRectF ));
 	double maxheight(std::fmax(m_propPixmap->mapRectToScene(m_propPixmap->boundingRect()).height(), m_batPixmap->mapRectToScene(m_batPixmap->boundingRect()).height()));
 	m_propPixmap->setOffset(0.0, m_propPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_propPixmap->mapRectFromScene(QRectF(0.0,0.0,1.0,maxheight)).height()/2.0 - m_propPixmap->boundingRect().height() / 2.0);
 	m_batPixmap->setOffset(m_batPixmap->mapRectFromScene(m_scene->sceneRect()).width() - m_batPixmap->boundingRect().width(), m_batPixmap->mapRectFromScene(m_scene->sceneRect()).height() - m_batPixmap->mapRectFromScene(QRectF(0.0, 0.0, 1.0, maxheight)).height() / 2.0 - m_batPixmap->boundingRect().height() / 2.0);
