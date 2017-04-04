@@ -64,8 +64,6 @@ public:
     Fact* clipCount2    (void) { return &_clipCount2Fact; }
     Fact* clipCount3    (void) { return &_clipCount3Fact; }
 
-    void setVehicle(Vehicle* vehicle);
-
     static const char* _xAxisFactName;
     static const char* _yAxisFactName;
     static const char* _zAxisFactName;
@@ -74,7 +72,6 @@ public:
     static const char* _clipCount3FactName;
 
 private:
-    Vehicle*    _vehicle;
     Fact        _xAxisFact;
     Fact        _yAxisFact;
     Fact        _zAxisFact;
@@ -98,14 +95,11 @@ public:
     Fact* speed         (void) { return &_speedFact; }
     Fact* verticalSpeed (void) { return &_verticalSpeedFact; }
 
-    void setVehicle(Vehicle* vehicle);
-
     static const char* _directionFactName;
     static const char* _speedFactName;
     static const char* _verticalSpeedFactName;
 
 private:
-    Vehicle*    _vehicle;
     Fact        _directionFact;
     Fact        _speedFact;
     Fact        _verticalSpeedFact;
@@ -130,8 +124,6 @@ public:
     Fact* count             (void) { return &_countFact; }
     Fact* lock              (void) { return &_lockFact; }
 
-    void setVehicle(Vehicle* vehicle);
-
     static const char* _hdopFactName;
     static const char* _vdopFactName;
     static const char* _courseOverGroundFactName;
@@ -139,7 +131,6 @@ public:
     static const char* _lockFactName;
 
 private:
-    Vehicle*    _vehicle;
     Fact        _hdopFact;
     Fact        _vdopFact;
     Fact        _courseOverGroundFact;
@@ -169,8 +160,6 @@ public:
     Fact* cellCount                 (void) { return &_cellCountFact; }
 
 
-    void setVehicle(Vehicle* vehicle);
-
     static const char* _voltageFactName;
     static const char* _percentRemainingFactName;
     static const char* _mahConsumedFactName;
@@ -188,7 +177,6 @@ public:
     static const int    _cellCountUnavailable;
 
 private:
-    Vehicle*        _vehicle;
     Fact            _voltageFact;
     Fact            _percentRemainingFact;
     Fact            _mahConsumedFact;
@@ -663,6 +651,7 @@ public:
     /// and destroyed when the vehicle goes away.
     void setFirmwarePluginInstanceData(QObject* firmwarePluginInstanceData);
 
+<<<<<<< HEAD
     QString vehicleImageOpaque  () const;
     QString vehicleImageOutline () const;
     QString vehicleImageCompass () const;
@@ -671,9 +660,11 @@ public:
     const QVariantList& cameraList          (void) const;
 
     bool supportsMissionItemInt(void) const { return _supportsMissionItemInt; }
+=======
     //asluav
     int SendCommandLong(MAV_CMD CmdID, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
     int SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
+>>>>>>> feature/asl_widgets
 
 public slots:
     /// Sets the firmware plugin instance data associated with this Vehicle. This object will be parented to the Vehicle
@@ -853,6 +844,8 @@ private:
     void _commonInit(void);
     void _startMissionRequest(void);
 
+<<<<<<< HEAD
+=======
     //asluav
     void _handleSensPower(mavlink_message_t& message);
     void _handleSensPowerBoard(mavlink_message_t& message);
@@ -862,6 +855,7 @@ private:
     void _handleSensorpodStatus(mavlink_message_t& message);
 
 private:
+>>>>>>> feature/asl_widgets
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
     bool    _active;

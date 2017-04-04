@@ -39,6 +39,10 @@
 #include "QGCDockWidget.h"
 #include "QGCQmlWidgetHolder.h"
 
+#include "AutoTrim.h"
+#include "EnergyBudget.h"
+#include "SensorpodStatus.h"
+
 #include "ui_MainWindow.h"
 
 #if (defined QGC_MOUSE_ENABLED_WIN) | (defined QGC_MOUSE_ENABLED_LINUX)
