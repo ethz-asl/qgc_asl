@@ -51,6 +51,9 @@ MissionItem::MissionItem(QObject* parent)
     _frameFact.setRawValue(MAV_FRAME_GLOBAL_RELATIVE_ALT);
 
     setAutoContinue(true);
+
+    connect(&_param2Fact, &Fact::rawValueChanged, this, &MissionItem::_param2Changed);
+    connect(&_param3Fact, &Fact::rawValueChanged, this, &MissionItem::_param3Changed);
 }
 
 MissionItem::MissionItem(int             sequenceNumber,
@@ -95,6 +98,9 @@ MissionItem::MissionItem(int             sequenceNumber,
     _param5Fact.setRawValue(param5);
     _param6Fact.setRawValue(param6);
     _param7Fact.setRawValue(param7);
+
+    connect(&_param2Fact, &Fact::rawValueChanged, this, &MissionItem::_param2Changed);
+    connect(&_param3Fact, &Fact::rawValueChanged, this, &MissionItem::_param3Changed);
 }
 
 MissionItem::MissionItem(const MissionItem& other, QObject* parent)
@@ -117,6 +123,9 @@ MissionItem::MissionItem(const MissionItem& other, QObject* parent)
     _frameFact.setRawValue(MAV_FRAME_GLOBAL_RELATIVE_ALT);
 
     *this = other;
+
+    connect(&_param2Fact, &Fact::rawValueChanged, this, &MissionItem::_param2Changed);
+    connect(&_param3Fact, &Fact::rawValueChanged, this, &MissionItem::_param3Changed);
 }
 
 const MissionItem& MissionItem::operator=(const MissionItem& other)
@@ -139,8 +148,10 @@ const MissionItem& MissionItem::operator=(const MissionItem& other)
 
     return *this;
 }
+
 MissionItem::~MissionItem()
 {    
+
 }
 
 void MissionItem::save(QJsonObject& json) const
@@ -374,4 +385,46 @@ void MissionItem::setCoordinate(const QGeoCoordinate& coordinate)
 QGeoCoordinate MissionItem::coordinate(void) const
 {
     return QGeoCoordinate(param5(), param6(), param7());
+}
+
+double MissionItem::specifiedFlightSpeed(void) const
+{
+    double flightSpeed = std::numeric_limits<double>::quiet_NaN();
+
+    if (_commandFact.rawValue().toInt() == MAV_CMD_DO_CHANGE_SPEED && _param2Fact.rawValue().toDouble() > 0) {
+        flightSpeed = _param2Fact.rawValue().toDouble();
+    }
+
+    return flightSpeed;
+}
+
+double MissionItem::specifiedGimbalYaw(void) const
+{
+    double gimbalYaw = std::numeric_limits<double>::quiet_NaN();
+
+    if (_commandFact.rawValue().toInt() == MAV_CMD_DO_MOUNT_CONTROL && _param7Fact.rawValue().toInt() == MAV_MOUNT_MODE_MAVLINK_TARGETING) {
+        gimbalYaw = _param3Fact.rawValue().toDouble();
+    }
+
+    return gimbalYaw;
+}
+
+void MissionItem::_param2Changed(QVariant value)
+{
+    Q_UNUSED(value);
+
+    double flightSpeed = specifiedFlightSpeed();
+    if (!qIsNaN(flightSpeed)) {
+        emit specifiedFlightSpeedChanged(flightSpeed);
+    }
+}
+
+void MissionItem::_param3Changed(QVariant value)
+{
+    Q_UNUSED(value);
+
+    double gimbalYaw = specifiedGimbalYaw();
+    if (!qIsNaN(gimbalYaw)) {
+        emit specifiedGimbalYawChanged(gimbalYaw);
+    }
 }

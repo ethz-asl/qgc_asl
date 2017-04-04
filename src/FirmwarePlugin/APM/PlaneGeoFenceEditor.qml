@@ -1,4 +1,4 @@
-import QtQuick          2.2
+import QtQuick          2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts  1.2
 
@@ -196,13 +196,15 @@ Column {
     FENCE_RET_RALLY - if set to 1 the aircraft will head to the nearest Rally Point rather than the fence return point when the fence is breached. Note that the loiter altitude of the Rally Point is used as the return altitude.
     */
 
-    QGCMapPolygonControls {
-        anchors.left:   parent.left
-        anchors.right:  parent.right
-        flightMap:      editorMap
-        polygon:        geoFenceController.polygon
-        sectionLabel:   qsTr("Fence Polygon:")
+    QGCButton {
+        text:       qsTr("Add fence")
+        visible:    geoFenceController.mapPolygon.count < 3
+        onClicked:  geoFenceController.addFence()
+    }
 
-        onPolygonEditCompleted: geoFenceController.validateBreachReturn()
+    QGCButton {
+        text:       qsTr("Remove fence")
+        visible:    geoFenceController.mapPolygon.count >= 3
+        onClicked:  geoFenceController.removeFence()
     }
 }

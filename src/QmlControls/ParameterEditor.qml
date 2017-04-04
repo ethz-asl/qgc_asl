@@ -11,8 +11,8 @@
 /// @file
 ///     @author Don Gagne <don@thegagnes.com>
 
-import QtQuick                  2.5
-import QtQuick.Controls         1.3
+import QtQuick                  2.3
+import QtQuick.Controls         1.2
 import QtQuick.Dialogs          1.2
 
 import QGroundControl               1.0
@@ -56,6 +56,17 @@ QGCView {
             anchors.right:  parent.right
             spacing:        ScreenTools.defaultFontPixelWidth
 
+            Timer {
+                id:         clearTimer
+                interval:   100;
+                running:    false;
+                repeat:     false
+                onTriggered: {
+                    searchText.text = ""
+                    controller.searchText = ""
+                }
+            }
+
             QGCLabel {
                 anchors.baseline:   clearButton.baseline
                 text:               qsTr("Search:")
@@ -71,7 +82,12 @@ QGCView {
             QGCButton {
                 id:         clearButton
                 text:       qsTr("Clear")
-                onClicked:  searchText.text = ""
+                onClicked: {
+                    if(ScreenTools.isMobile) {
+                        Qt.inputMethod.hide();
+                    }
+                    clearTimer.start()
+                }
             }
         } // Row - Header
 
@@ -95,21 +111,29 @@ QGCView {
                 MenuItem {
                     text:           qsTr("Load from file...")
                     onTriggered: {
-                        if (ScreenTools.isMobile) {
-                            qgcView.showDialog(mobileFilePicker, qsTr("Select Parameter File"), qgcView.showDialogDefaultWidth, StandardButton.Cancel)
-                        } else {
-                            controller.loadFromFilePicker()
-                        }
+                        var appSettings = QGroundControl.settingsManager.appSettings
+
+                        fileDialog.qgcView =        qgcView
+                        fileDialog.title =          qsTr("Select Parameter File")
+                        fileDialog.selectExisting = true
+                        fileDialog.folder =         appSettings.parameterSavePath
+                        fileDialog.fileExtension =  appSettings.parameterFileExtension
+                        fileDialog.nameFilters =    [ qsTr("Parameter Files (*.%1)").arg(appSettings.parameterFileExtension) , qsTr("All Files (*.*)") ]
+                        fileDialog.openForLoad()
                     }
                 }
                 MenuItem {
                     text:           qsTr("Save to file...")
                     onTriggered: {
-                        if (ScreenTools.isMobile) {
-                            qgcView.showDialog(mobileFileSaver, qsTr("Save Parameter File"), qgcView.showDialogDefaultWidth, StandardButton.Save | StandardButton.Cancel)
-                        } else {
-                            controller.saveToFilePicker()
-                        }
+                        var appSettings = QGroundControl.settingsManager.appSettings
+
+                        fileDialog.qgcView =        qgcView
+                        fileDialog.title =          qsTr("Save Parameters")
+                        fileDialog.selectExisting = false
+                        fileDialog.folder =         appSettings.parameterSavePath
+                        fileDialog.fileExtension =  appSettings.parameterFileExtension
+                        fileDialog.nameFilters =    [ qsTr("Parameter Files (*.%1)").arg(appSettings.parameterFileExtension) , qsTr("All Files (*.*)") ]
+                        fileDialog.openForSave()
                     }
                 }
                 MenuSeparator { visible: _showRCToParam }
@@ -117,6 +141,11 @@ QGCView {
                     text:           qsTr("Clear RC to Param")
                     onTriggered:	controller.clearRCToParam()
                     visible:        _showRCToParam
+                }
+                MenuSeparator { }
+                MenuItem {
+                    text:           qsTr("Reboot Vehicle")
+                    onTriggered:    showDialog(rebootVehicleConfirmComponent, qsTr("Reboot Vehicle"), qgcView.showDialogDefaultWidth, StandardButton.Cancel | StandardButton.Ok)
                 }
             }
         }
@@ -251,30 +280,26 @@ QGCView {
         }
     } // QGCViewPanel
 
+    QGCFileDialog {
+        id: fileDialog
+
+        onAcceptedForSave: {
+            controller.saveToFile(file)
+            close()
+        }
+
+        onAcceptedForLoad: {
+            controller.loadFromFile(file)
+            close()
+        }
+    }
+
     Component {
         id: editorDialogComponent
 
         ParameterEditorDialog {
             fact:           _editorDialogFact
             showRCToParam:  _showRCToParam
-        }
-    }
-
-    Component {
-        id: mobileFilePicker
-
-        QGCMobileFileOpenDialog {
-            fileExtension:      QGroundControl.parameterFileExtension
-            onFilenameReturned: controller.loadFromFile(filename)
-        }
-    }
-
-    Component {
-        id: mobileFileSaver
-
-        QGCMobileFileSaveDialog {
-            fileExtension:      QGroundControl.parameterFileExtension
-            onFilenameReturned: controller.saveToFile(filename)
         }
     }
 
@@ -291,6 +316,23 @@ QGCView {
                 width:              parent.width
                 wrapMode:           Text.WordWrap
                 text:               qsTr("Select Reset to reset all parameters to their defaults.")
+            }
+        }
+    }
+
+    Component {
+        id: rebootVehicleConfirmComponent
+
+        QGCViewDialog {
+            function accept() {
+                QGroundControl.multiVehicleManager.activeVehicle.rebootVehicle()
+                hideDialog()
+            }
+
+            QGCLabel {
+                width:              parent.width
+                wrapMode:           Text.WordWrap
+                text:               qsTr("Select Ok to reboot vehicle.")
             }
         }
     }

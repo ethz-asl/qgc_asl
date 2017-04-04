@@ -11,13 +11,16 @@
 #include "LogDownloadController.h"
 #include "MultiVehicleManager.h"
 #include "QGCMAVLink.h"
-#include "QGCFileDialog.h"
+#if !defined(__mobile__)
+#include "QGCQFileDialog.h"
+#include "MainWindow.h"
+#endif
 #include "UAS.h"
 #include "QGCApplication.h"
 #include "QGCToolbox.h"
 #include "QGCMapEngine.h"
+#include "ParameterManager.h"
 #include "Vehicle.h"
-#include "MainWindow.h"
 
 #include <QDebug>
 #include <QSettings>
@@ -502,13 +505,22 @@ LogDownloadController::_requestLogList(uint32_t start, uint32_t end)
 
 //----------------------------------------------------------------------------------------
 void
-LogDownloadController::download(void)
+LogDownloadController::download(QString path)
 {
-    QString dir = QGCFileDialog::getExistingDirectory(
+    QString dir = path;
+#if defined(__mobile__)
+    if(dir.isEmpty()) {
+        dir = QDir::homePath();
+    }
+#else
+    if(dir.isEmpty()) {
+        dir = QGCQFileDialog::getExistingDirectory(
                 MainWindow::instance(),
                 "Log Download Directory",
                 QDir::homePath(),
-                QGCFileDialog::ShowDirsOnly | QGCFileDialog::DontResolveSymlinks);
+                QGCQFileDialog::ShowDirsOnly | QGCQFileDialog::DontResolveSymlinks);
+    }
+#endif
     downloadToDirectory(dir);
 }
 
@@ -583,8 +595,14 @@ LogDownloadController::_prepareLogDownload()
     }
     _downloadData = new LogDownloadData(entry);
     _downloadData->filename = QString("log_") + QString::number(entry->id()) + "_" + ftime;
-    if(_vehicle->firmwareType() == MAV_AUTOPILOT_PX4) {
-        _downloadData->filename += ".px4log";
+    if (_vehicle->firmwareType() == MAV_AUTOPILOT_PX4) {
+
+        // This is a stopgap and should be removed once log file types are properly supported by the log download protocol
+        if (_vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, "SYS_LOGGER")->rawValue().toInt() == 0) {
+            _downloadData->filename += ".px4log";
+        } else {
+            _downloadData->filename += ".ulg";
+        }
     } else {
         _downloadData->filename += ".bin";
     }

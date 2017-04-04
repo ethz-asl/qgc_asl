@@ -36,7 +36,12 @@ public:
     
     bool inProgress(void);
     const QList<MissionItem*>& missionItems(void) { return _missionItems; }
-    int currentItem(void) { return _currentMissionItem; }
+
+    /// Current mission item as reported by MISSION_CURRENT
+    int currentItem(void) const { return _currentMissionItem; }
+
+    /// Last current mission item reported while in Mission flight mode
+    int lastCurrentItem(void) const { return _lastCurrentItem; }
     
     void requestMissionItems(void);
     
@@ -48,6 +53,13 @@ public:
     ///     @param gotoCoord Coordinate to move to
     ///     @param altChangeOnly true: only altitude change, false: lat/lon/alt change
     void writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoCoord, bool altChangeOnly);
+
+    /// Removes all mission items from vehicle
+    void removeAll(void);
+
+    /// Generates a new mission which starts from the specified index. It will include all the CMD_DO items
+    /// from mission start to resumeIndex in the generate mission.
+    void generateResumeMission(int resumeIndex);
 
     /// Error codes returned in error signal
     typedef enum {
@@ -66,11 +78,13 @@ public:
     static const int _maxRetryCount = 5;
     
 signals:
-    void newMissionItemsAvailable(void);
+    void newMissionItemsAvailable(bool removeAllRequested);
     void inProgressChanged(bool inProgress);
     void error(int errorCode, const QString& errorMsg);
     void currentItemChanged(int currentItem);
-    
+    void lastCurrentItemChanged(int lastCurrentMissionItem);
+    void resumeMissionReady(void);
+
 private slots:
     void _mavlinkMessageReceived(const mavlink_message_t& message);
     void _ackTimeout(void);
@@ -88,8 +102,8 @@ private:
     bool _checkForExpectedAck(AckType_t receivedAck);
     void _readTransactionComplete(void);
     void _handleMissionCount(const mavlink_message_t& message);
-    void _handleMissionItem(const mavlink_message_t& message);
-    void _handleMissionRequest(const mavlink_message_t& message);
+    void _handleMissionItem(const mavlink_message_t& message, bool missionItemInt);
+    void _handleMissionRequest(const mavlink_message_t& message, bool missionItemInt);
     void _handleMissionAck(const mavlink_message_t& message);
     void _handleMissionCurrent(const mavlink_message_t& message);
     void _requestNextMissionItem(void);
@@ -100,6 +114,8 @@ private:
     void _finishTransaction(bool success);
     void _requestList(void);
     void _writeMissionCount(void);
+    void _writeMissionItemsWorker(void);
+    void _clearAndDeleteMissionItems(void);
 
 private:
     Vehicle*            _vehicle;
@@ -111,6 +127,7 @@ private:
     
     bool        _readTransactionInProgress;
     bool        _writeTransactionInProgress;
+    bool        _resumeMission;
     QList<int>  _itemIndicesToWrite;    ///< List of mission items which still need to be written to vehicle
     QList<int>  _itemIndicesToRead;     ///< List of mission items which still need to be requested from vehicle
     
@@ -118,6 +135,7 @@ private:
     
     QList<MissionItem*> _missionItems;
     int                 _currentMissionItem;
+    int                 _lastCurrentItem;
 };
 
 #endif

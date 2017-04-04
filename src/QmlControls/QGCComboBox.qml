@@ -1,7 +1,6 @@
-import QtQuick 2.2
+import QtQuick 2.3
 import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Controls.Private 1.0
+import QtQuick.Controls.Styles 1.4
 
 import QGroundControl.Palette 1.0
 import QGroundControl.ScreenTools 1.0
@@ -18,8 +17,8 @@ ComboBox {
                     control._qgcPal.buttonText
 
         background: Item {
-            implicitWidth:      Math.round(ScreenTools.defaultFontPixelWidth * 4.5)
-            implicitHeight:     ScreenTools.isMobile ? Math.max(25, Math.round(ScreenTools.defaultFontPixelHeight * 2)) : Math.max(25, Math.round(ScreenTools.defaultFontPixelHeight * 1.2))
+            implicitWidth:  ScreenTools.implicitComboBoxWidth
+            implicitHeight: ScreenTools.implicitComboBoxHeight
 
             Rectangle {
                 anchors.fill:   parent
@@ -28,14 +27,36 @@ ComboBox {
                 border.color:  control._qgcPal.buttonText
             }
 
-            Image {
-                id: imageItem
-                source: "/qmlimages/arrow-down.png"
+            QGCColoredImage {
+                id:                     image
+                width:                  ScreenTools.defaultFontPixelHeight / 2
+                height:                 width
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.right
-                anchors.rightMargin: dropDownButtonWidth / 2
-                opacity: control.enabled ? 0.6 : 0.3
+                anchors.right:          parent.right
+                anchors.rightMargin:    dropDownButtonWidth / 2
+                source:                 "/qmlimages/arrow-down.png"
+                color:                  qgcPal.text
             }
+        }
+    }
+
+    // Capture Wheel events to disable scrolling options in ComboBox.
+    // As a side effect, this also prevents scrolling the page when
+    // mouse is over a ComboBox, but this would also the case when
+    // scrolling items in the ComboBox is enabled.
+    MouseArea {
+        anchors.fill: parent
+        onWheel: {
+            // do nothing
+            wheel.accepted = true;
+        }
+        onPressed: {
+            // propogate to ComboBox
+            mouse.accepted = false;
+        }
+        onReleased: {
+            // propogate to ComboBox
+            mouse.accepted = false;
         }
     }
 }

@@ -15,6 +15,7 @@
 #include "FollowMe.h"
 #include "QGroundControlQmlGlobal.h"
 #include "ParameterManager.h"
+#include "SettingsManager.h"
 
 #if defined (__ios__) || defined(__android__)
 #include "MobileScreenMgr.h"
@@ -62,41 +63,54 @@ void MultiVehicleManager::setToolbox(QGCToolbox *toolbox)
 
    connect(_mavlinkProtocol, &MAVLinkProtocol::vehicleHeartbeatInfo, this, &MultiVehicleManager::_vehicleHeartbeatInfo);
 
-   _offlineEditingVehicle = new Vehicle(static_cast<MAV_AUTOPILOT>(QGroundControlQmlGlobal::offlineEditingFirmwareType()->rawValue().toInt()),
-                                        static_cast<MAV_TYPE>(QGroundControlQmlGlobal::offlineEditingVehicleType()->rawValue().toInt()),
+   SettingsManager* settingsManager = toolbox->settingsManager();
+   _offlineEditingVehicle = new Vehicle(static_cast<MAV_AUTOPILOT>(settingsManager->appSettings()->offlineEditingFirmwareType()->rawValue().toInt()),
+                                        static_cast<MAV_TYPE>(settingsManager->appSettings()->offlineEditingVehicleType()->rawValue().toInt()),
                                         _firmwarePluginManager,
                                         this);
 }
 
-void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType)
+void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType)
 {
-    if (_ignoreVehicleIds.contains(vehicleId) || getVehicleById(vehicleId)
-            || vehicleId == 0) {
+    if (_ignoreVehicleIds.contains(vehicleId) || getVehicleById(vehicleId) || vehicleId == 0) {
         return;
     }
 
-    qCDebug(MultiVehicleManagerLog()) << "Adding new vehicle link:vehicleId:vehicleMavlinkVersion:vehicleFirmwareType:vehicleType "
+    switch (vehicleType) {
+    case MAV_TYPE_GCS:
+    case MAV_TYPE_ONBOARD_CONTROLLER:
+    case MAV_TYPE_GIMBAL:
+    case MAV_TYPE_ADSB:
+        // These are not vehicles, so don't create a vehicle for them
+        return;
+    default:
+        // All other MAV_TYPEs create vehicles
+        break;
+    }
+
+    qCDebug(MultiVehicleManagerLog()) << "Adding new vehicle link:vehicleId:componentId:vehicleMavlinkVersion:vehicleFirmwareType:vehicleType "
                                       << link->getName()
                                       << vehicleId
+                                      << componentId
                                       << vehicleMavlinkVersion
                                       << vehicleFirmwareType
                                       << vehicleType;
 
     if (vehicleId == _mavlinkProtocol->getSystemId()) {
-        _app->showMessage(QString("Warning: A vehicle is using the same system id as QGroundControl: %1").arg(vehicleId));
+        _app->showMessage(QString("Warning: A vehicle is using the same system id as %1: %2").arg(qgcApp()->applicationName()).arg(vehicleId));
     }
 
 //    QSettings settings;
 //    bool mavlinkVersionCheck = settings.value("VERSION_CHECK_ENABLED", true).toBool();
 //    if (mavlinkVersionCheck && vehicleMavlinkVersion != MAVLINK_VERSION) {
 //        _ignoreVehicleIds += vehicleId;
-//        _app->showMessage(QString("The MAVLink protocol version on vehicle #%1 and QGroundControl differ! "
+//        _app->showMessage(QString("The MAVLink protocol version on vehicle #%1 and %2 differ! "
 //                                  "It is unsafe to use different MAVLink versions. "
-//                                  "QGroundControl therefore refuses to connect to vehicle #%1, which sends MAVLink version %2 (QGroundControl uses version %3).").arg(vehicleId).arg(vehicleMavlinkVersion).arg(MAVLINK_VERSION));
+//                                  "%2 therefore refuses to connect to vehicle #%1, which sends MAVLink version %3 (%2 uses version %4).").arg(vehicleId).arg(qgcApp()->applicationName()).arg(vehicleMavlinkVersion).arg(MAVLINK_VERSION));
 //        return;
 //    }
 
-    Vehicle* vehicle = new Vehicle(link, vehicleId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, _firmwarePluginManager, _joystickManager);
+    Vehicle* vehicle = new Vehicle(link, vehicleId, componentId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, _firmwarePluginManager, _joystickManager);
     connect(vehicle, &Vehicle::allLinksInactive, this, &MultiVehicleManager::_deleteVehiclePhase1);
     connect(vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, &MultiVehicleManager::_vehicleParametersReadyChanged);
 

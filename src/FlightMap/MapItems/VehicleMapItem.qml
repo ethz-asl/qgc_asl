@@ -11,7 +11,7 @@
 /// @file
 ///     @author Don Gagne <don@thegagnes.com>
 
-import QtQuick          2.4
+import QtQuick          2.3
 import QtLocation       5.3
 import QtPositioning    5.3
 
@@ -26,11 +26,11 @@ MapQuickItem {
 
     anchorPoint.x:  vehicleIcon.width  / 2
     anchorPoint.y:  vehicleIcon.height / 2
-    visible:        vehicle && vehicle.coordinateValid
+    visible:        vehicle && vehicle.coordinate.isValid
 
     sourceItem: Image {
         id:                 vehicleIcon
-        source:             isSatellite ? "/qmlimages/vehicleArrowOpaque.svg" : "/qmlimages/vehicleArrowOutline.svg"
+        source:             isSatellite ? vehicle.vehicleImageOpaque : vehicle.vehicleImageOutline
         mipmap:             true
         width:              size
         sourceSize.width:   size

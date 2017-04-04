@@ -35,6 +35,7 @@
 #include "QGCApplication.h"
 #include "QGCLoggingCategory.h"
 #include "MultiVehicleManager.h"
+#include "SettingsManager.h"
 
 Q_DECLARE_METATYPE(mavlink_message_t)
 
@@ -102,9 +103,10 @@ void MAVLinkProtocol::setToolbox(QGCToolbox *toolbox)
        }
    }
 
-   connect(this, &MAVLinkProtocol::protocolStatusMessage, _app, &QGCApplication::criticalMessageBoxOnMainThread);
+   connect(this, &MAVLinkProtocol::protocolStatusMessage,   _app, &QGCApplication::criticalMessageBoxOnMainThread);
 #ifndef __mobile__
-   connect(this, &MAVLinkProtocol::saveTempFlightDataLog, _app, &QGCApplication::saveTempFlightDataLogOnMainThread);
+   connect(this, &MAVLinkProtocol::saveTelemetryLog,        _app, &QGCApplication::saveTelemetryLogOnMainThread);
+   connect(this, &MAVLinkProtocol::checkTelemetrySavePath,  _app, &QGCApplication::checkTelemetrySavePathOnMainThread);
 #endif
 
    connect(_multiVehicleManager->vehicles(), &QmlObjectListModel::countChanged, this, &MAVLinkProtocol::_vehicleCountChanged);
@@ -191,7 +193,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 {
                     warnedUserNonMavlink = true;
                     emit protocolStatusMessage(tr("MAVLink Protocol"), tr("There is a MAVLink Version or Baud Rate Mismatch. "
-                                                                          "Please check if the baud rates of QGroundControl and your autopilot are the same."));
+                                                                          "Please check if the baud rates of %1 and your autopilot are the same.").arg(qgcApp()->applicationName()));
                 }
             }
         }
@@ -283,7 +285,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
 
                 mavlink_heartbeat_t heartbeat;
                 mavlink_msg_heartbeat_decode(&message, &heartbeat);
-                emit vehicleHeartbeatInfo(link, message.sysid, heartbeat.mavlink_version, heartbeat.autopilot, heartbeat.type);
+                emit vehicleHeartbeatInfo(link, message.sysid, message.compid, heartbeat.mavlink_version, heartbeat.autopilot, heartbeat.type);
             }
 
             // Increase receive counter
@@ -401,6 +403,10 @@ bool MAVLinkProtocol::_closeLogFile(void)
 
 void MAVLinkProtocol::_startLogging(void)
 {
+    if (qgcApp()->runningUnitTests()) {
+        return;
+    }
+
     if (!_tempLogFile.isOpen()) {
         if (!_logSuspendReplay) {
             if (!_tempLogFile.open()) {
@@ -412,6 +418,7 @@ void MAVLinkProtocol::_startLogging(void)
             }
 
             qDebug() << "Temp log" << _tempLogFile.fileName();
+            emit checkTelemetrySavePath();
 
             _logSuspendError = false;
         }
@@ -421,9 +428,9 @@ void MAVLinkProtocol::_startLogging(void)
 void MAVLinkProtocol::_stopLogging(void)
 {
     if (_closeLogFile()) {
-        // If the signals are not connected it means we are running a unit test. In that case just delete log files
-        if ((_vehicleWasArmed || _app->promptFlightDataSaveNotArmed()) && _app->promptFlightDataSave()) {
-            emit saveTempFlightDataLog(_tempLogFile.fileName());
+        SettingsManager* settingsManager = _app->toolbox()->settingsManager();
+        if ((_vehicleWasArmed || settingsManager->appSettings()->telemetrySaveNotArmed()->rawValue().toBool()) && settingsManager->appSettings()->telemetrySave()->rawValue().toBool()) {
+            emit saveTelemetryLog(_tempLogFile.fileName());
         } else {
             QFile::remove(_tempLogFile.fileName());
         }
@@ -450,12 +457,7 @@ void MAVLinkProtocol::checkForLostLogFiles(void)
             continue;
         }
 
-        // Give the user a chance to save the orphaned log file
-        emit protocolStatusMessage(tr("Found unsaved Flight Data"),
-                                   tr("This can happen if QGroundControl crashes during Flight Data collection. "
-                                      "If you want to save the unsaved Flight Data, select the file you want to save it to. "
-                                      "If you do not want to keep the Flight Data, select 'Cancel' on the next dialog."));
-        emit saveTempFlightDataLog(fileInfo.filePath());
+        emit saveTelemetryLog(fileInfo.filePath());
     }
 }
 

@@ -37,10 +37,10 @@
 #include "MAVLinkDecoder.h"
 #include "QGCApplication.h"
 #include "MultiVehicleManager.h"
-#include "HomePositionManager.h"
 #include "LogCompressor.h"
 #include "UAS.h"
 #include "QGCImageProvider.h"
+#include "QGCCorePlugin.h"
 
 #ifndef __mobile__
 #include "Linecharts.h"
@@ -176,6 +176,9 @@ MainWindow::MainWindow()
     _ui.menuWidgets->addAction(qmlTestAction);
 #endif
 
+    connect(qgcApp()->toolbox()->corePlugin(), &QGCCorePlugin::showAdvancedUIChanged, this, &MainWindow::_showAdvancedUIChanged);
+    _showAdvancedUIChanged(qgcApp()->toolbox()->corePlugin()->showAdvancedUI());
+
     // Status Bar
     setStatusBar(new QStatusBar(this));
     statusBar()->setSizeGripEnabled(true);
@@ -275,6 +278,11 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+    // Enforce thread-safe shutdown of the mavlink decoder
+    mavlinkDecoder->finish();
+    mavlinkDecoder->wait(1000);
+    mavlinkDecoder->deleteLater();
+
     // This needs to happen before we get into the QWidget dtor
     // otherwise  the QML engine reads freed data and tries to
     // destroy MainWindow a second time.
@@ -291,8 +299,7 @@ QString MainWindow::_getWindowGeometryKey()
 void MainWindow::_buildCommonWidgets(void)
 {
     // Add generic MAVLink decoder
-    // TODO: This is never deleted
-    mavlinkDecoder = new MAVLinkDecoder(qgcApp()->toolbox()->mavlinkProtocol(), this);
+    mavlinkDecoder = new MAVLinkDecoder(qgcApp()->toolbox()->mavlinkProtocol());
     connect(mavlinkDecoder.data(), &MAVLinkDecoder::valueChanged, this, &MainWindow::valueChanged);
 
     // Log player
@@ -460,11 +467,6 @@ void MainWindow::configureWindowName()
 **/
 void MainWindow::connectCommonActions()
 {
-    // Audio output
-    _ui.actionMuteAudioOutput->setChecked(qgcApp()->toolbox()->audioOutput()->isMuted());
-    connect(qgcApp()->toolbox()->audioOutput(), &GAudioOutput::mutedChanged, _ui.actionMuteAudioOutput, &QAction::setChecked);
-    connect(_ui.actionMuteAudioOutput, &QAction::triggered, qgcApp()->toolbox()->audioOutput(), &GAudioOutput::mute);
-
     // Connect internal actions
     connect(qgcApp()->toolbox()->multiVehicleManager(), &MultiVehicleManager::vehicleAdded, this, &MainWindow::_vehicleAdded);
 }
@@ -559,4 +561,14 @@ void MainWindow::_storeVisibleWidgetsSettings(void)
 QObject* MainWindow::rootQmlObject(void)
 {
     return _mainQmlWidgetHolder->getRootObject();
+}
+
+void MainWindow::_showAdvancedUIChanged(bool advanced)
+{
+    if (advanced) {
+        menuBar()->addMenu(_ui.menuFile);
+        menuBar()->addMenu(_ui.menuWidgets);
+    } else {
+        menuBar()->clear();
+    }
 }
