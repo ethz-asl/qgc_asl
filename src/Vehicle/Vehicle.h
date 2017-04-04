@@ -671,9 +671,6 @@ public:
     const QVariantList& cameraList          (void) const;
 
     bool supportsMissionItemInt(void) const { return _supportsMissionItemInt; }
-    //asluav
-    int SendCommandLong(MAV_CMD CmdID, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
-    int SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1 = 0.0f, float param2 = 0.0f, float param3 = 0.0f, float param4 = 0.0f, float param5 = 0.0f, float param6 = 0.0f, float param7 = 0.0f);
 
 public slots:
     /// Sets the firmware plugin instance data associated with this Vehicle. This object will be parented to the Vehicle
@@ -681,10 +678,6 @@ public slots:
     void setLatitude    (double latitude);
     void setLongitude   (double longitude);
     void setAltitude    (double altitude);
-
-    //asluav
-    void setBatterySpecs(const QString& specs);
-
 
 signals:
     void allLinksInactive(Vehicle* vehicle);
@@ -727,6 +720,8 @@ signals:
     void SensPowerChanged(float vspb_volt, float cspb_amp, float cs1_amp, float cs2_amp);
     void SensPowerBoardChanged(uint8_t pwr_brd_status);
     void speedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
+    void thrustChanged(Vehicle* vehicle, double thrust);
+
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);

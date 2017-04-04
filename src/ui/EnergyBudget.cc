@@ -11,7 +11,7 @@
 #include "UASInterface.h"
 #include "MultiVehicleManager.h"
 #include "QGCApplication.h"
-#include "GAudioOutput.h"
+#include "SettingsManager.h"
 
 #define OVERVIEWTOIMAGEHEIGHTSCALE (3.0)
 #define OVERVIEWTOIMAGEWIDTHSCALE (3.0)
@@ -26,6 +26,7 @@
 #define BATPOWERLOWMIN -3
 #define BATPOWERLOWMAX -1
 #define MPPTRESETTIMEMS 3000
+
 
 class Hysteresisf
 {
@@ -146,7 +147,7 @@ void EnergyBudget::buildGraphicsImage()
 	m_BckpBatText->setVisible(false);
 
     // set the right textcolor
-    //this->styleChanged(qgcApp()->styleIsDark());
+    this->styleChanged(qgcApp()->toolbox()->settingsManager()->appSettings()->indoorPalette()->rawValue().toBool());
 	// Recalc scene bounding rect
 	m_scene->setSceneRect(QRectF(0.0, 0.0, 0.0, 0.0));
 }
@@ -168,7 +169,7 @@ void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float cur
 	updateGraphicsImage();
 }
 
-void EnergyBudget::OnSensPowerBoardChanged(uint8_t pwr_brd_status)
+void EnergyBudget::onSensPowerBoardChanged(uint8_t pwr_brd_status)
 {
 #define BCKPBATREG 0x20
     if (pwr_brd_status & BCKPBATREG)
@@ -178,7 +179,7 @@ void EnergyBudget::OnSensPowerBoardChanged(uint8_t pwr_brd_status)
         if ((QGC::groundTimeUsecs() - m_lastBckpBatWarn) > 10000000)
         {
             m_lastBckpBatWarn = QGC::groundTimeUsecs();
-            //GAudioOutput::instance()->say(QString("Critical, System switched to backup battery!"));
+            qgcApp()->toolbox()->audioOutput()->say("Critical, System switched to backup battery!");
         }
     }
     else
@@ -354,8 +355,8 @@ void EnergyBudget::setActiveUAS(void)
 	disconnect(this, SLOT(updatePower(float, float, float, float)));
 	disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
 	disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
-	disconnect(this, SLOT(changeThrust(UASInterface*, double)));
-	disconnect(this, SLOT(updatePwrBrdStat(uint8_t)));
+    disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
+    disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
 
 	//connect the uas if asluas
     Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
@@ -364,9 +365,8 @@ void EnergyBudget::setActiveUAS(void)
         connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
         connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
         connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
-        //connect(tempUAS, SIGNAL(thrustChanged(UASInterface*, double)), this, SLOT(changeThrust(UASInterface*, double)));
-        connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)), this, SLOT(OnSensPowerBoardChanged(uint8_t,uint8_t,float,float,float,float,float,float,float,float,float)));
-
+        connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
+        connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));
 	}
 	//else set to standard output
 	else
@@ -447,11 +447,35 @@ void EnergyBudget::ResetMPPTCmd(void)
 	if (reply == QMessageBox::Yes) {
 		int MPPTNr = ui->ResetMPPTEdit->text().toInt();
 
-		//Send the message via the currently active UAS
+        //Send the message via the currently active UAS
         Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
-        if (tempUAS) tempUAS->SendCommandLong(MAV_CMD_RESET_MPPT, (float) MPPTNr);
-	}
+        if (tempUAS) {
 
+            mavlink_message_t       msg;
+            mavlink_command_long_t  cmd;
+
+            cmd.command = MAV_CMD_RESET_MPPT;
+            cmd.confirmation = 0;
+
+            cmd.param1 = (float) MPPTNr;
+            cmd.param2 = 0.0f;
+            cmd.param3 = 0.0f;
+            cmd.param4 = 0.0f;
+            cmd.param5 = 0.0f;
+            cmd.param6 = 0.0f;
+            cmd.param7 = 0.0f;
+
+            cmd.target_system = tempUAS->id();
+            cmd.target_component = tempUAS->defaultComponentId();
+            mavlink_msg_command_long_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
+                                                 qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
+                                                 tempUAS->priorityLink()->mavlinkChannel(),
+                                                 &msg,
+                                                 &cmd);
+
+            tempUAS->sendMessageOnLink(tempUAS->priorityLink(), msg);
+        }
+	}
 }
 
 void EnergyBudget::styleChanged(bool darkStyle)
@@ -485,9 +509,9 @@ void EnergyBudget::MPPTTimerTimeout(void)
 	ui->mppt3ALabel->setText(QString("--"));
 }
 
-void EnergyBudget::changeThrust(UASInterface *uas, double thrust)
+void EnergyBudget::onThrustChanged(Vehicle* vehicle, double thrust)
 {
-	Q_UNUSED(uas);
+    Q_UNUSED(vehicle);
 	m_thrust = thrust;
 }
 

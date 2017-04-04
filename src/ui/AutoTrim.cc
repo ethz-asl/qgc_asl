@@ -190,6 +190,9 @@ void AutoTrim::OnAslctrlDataChanged(float uElev, float uAil, float uRud, float u
 
 void AutoTrim::OnSpeedChanged(Vehicle* vehicle, double groundspeed, double airspeed)
 {
+    Q_UNUSED(vehicle);
+    Q_UNUSED(groundspeed);
+
     if (bConnected) {
             // Update current data text fields.
             m_ui->e_cur_airspeed->setText(QString("%1").arg(airspeed, 0, 'f', 2));
@@ -210,6 +213,9 @@ void AutoTrim::OnSpeedChanged(Vehicle* vehicle, double groundspeed, double airsp
 
 void AutoTrim::OnSensPowerChanged(float volt, float currpb, float curr_1, float curr_2)
 {
+    Q_UNUSED(curr_1);
+    Q_UNUSED(curr_2);
+
     // Battery charge/time remaining/voltage calculations
     _lpVoltage_ext = volt;
     _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_lpVoltage_ext;
@@ -228,7 +234,7 @@ void AutoTrim::OnSensPowerChanged(float volt, float currpb, float curr_1, float 
         /* warn only every 12 seconds */
         && (QGC::groundTimeUsecs() - lastVoltageWarning) > 12000000)
     {
-        //GAudioOutput::instance()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(getUASID()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
+        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
         lastVoltageWarning = QGC::groundTimeUsecs();
         _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
     }

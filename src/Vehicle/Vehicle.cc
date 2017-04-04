@@ -650,6 +650,7 @@ void Vehicle::_handleVfrHud(mavlink_message_t& message)
     _groundSpeedFact.setRawValue(qIsNaN(vfrHud.groundspeed) ? 0 : vfrHud.groundspeed);
     _climbRateFact.setRawValue(qIsNaN(vfrHud.climb) ? 0 : vfrHud.climb);
     emit speedChanged(this, vfrHud.groundspeed, vfrHud.airspeed);
+    emit thrustChanged(this, vfrHud.throttle/100.0);
 
 }
 
@@ -1098,78 +1099,16 @@ void Vehicle::_handleScaledPressure(mavlink_message_t& message) {
     _temperatureFactGroup.temperature1()->setRawValue(pressure.temperature / 100.0);
 }
 
-//asluav
-void Vehicle::setBatterySpecs(const QString& specs)
-{
-//    if (specs.length() == 0) return;
-
-//    batteryRemainingEstimateEnabled = false;
-//    QString stringList = specs;
-//    stringList = stringList.remove("V");
-//    stringList = stringList.remove("v");
-//    QStringList parts = stringList.split(",");
-
-//    bool ok;
-//    float temp;
-
-//    // Assign first battery spec value: PX4-internal voltage sensor
-//    if (parts.at(0).contains("%")) {
-//        QString percent = parts.at(0);
-//        percent = percent.remove("%");
-//        float temp = percent.toFloat(&ok);
-
-//        if (ok)	warnLevelPercent = temp;
-//        else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
-//    }
-//    else {
-//        temp = parts.at(0).toFloat(&ok);
-//        if (ok) tickVoltage = temp;
-//        else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
-//    }
-
-//    // Assign second battery spec value if available: External voltage sensor
-//    if (parts.length() > 1) {
-//        if (parts.at(1).contains("%")) {
-//            emit textMessageReceived(0, 0, 0, "External voltage sensor does not support relative warn levels, but requires absolute voltage warning limit!");
-//        }
-//        else {
-//            temp = parts.at(1).toFloat(&ok);
-//            if (ok) tickVoltage_ext = temp;
-//            else emit textMessageReceived(0, 0, 0, "Could not set battery options, format is wrong");
-//        }
-//    }
-}
-
 void Vehicle::_handleScaledPressure2(mavlink_message_t& message) {
     mavlink_scaled_pressure2_t pressure;
     mavlink_msg_scaled_pressure2_decode(&message, &pressure);
     _temperatureFactGroup.temperature2()->setRawValue(pressure.temperature / 100.0);
 }
 
-int Vehicle::SendCommandLong(MAV_CMD CmdID, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
-{
-//    mavlink_message_t msg;
-//    mavlink_msg_command_long_pack(mavlink->getSystemId(), mavlink->getComponentId(), &msg, uasId, 0, CmdID, 1, param1, param2, param3, param4, param5, param6, param7);
-//    sendMessage(msg);
-
-//    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent." << std::endl;
-    return 0;
-}
-
 void Vehicle::_handleScaledPressure3(mavlink_message_t& message) {
     mavlink_scaled_pressure3_t pressure;
     mavlink_msg_scaled_pressure3_decode(&message, &pressure);
     _temperatureFactGroup.temperature3()->setRawValue(pressure.temperature / 100.0);
-}
-
-int Vehicle::SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
-{
-//    mavlink_message_t msg;
-//    mavlink_msg_command_long_pack(mavlink->getSystemId(), mavlink->getComponentId(), &msg, uasId, target_component, CmdID, 1, param1, param2, param3, param4, param5, param6, param7);
-//    sendMessage(msg);
-
-//    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent to component " << (int) target_component << "." << std::endl;
-    return 0;
 }
 
 void Vehicle::_handleSensPower(mavlink_message_t& message)
