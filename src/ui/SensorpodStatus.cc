@@ -86,16 +86,38 @@ void SensorpodStatus::PowerCycleSensorpodCmd(void)
 		//Send the message via the currently active UAS
         Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
         if (tempUAS) {
-            float cmd1 = 0.0f, cmd2 = 0.0f;
 
-            if(ui->powerOn1->isChecked()) cmd1 = 0.5f;
-            else if(ui->powerOff1->isChecked()) cmd1 = -0.5f;
-            else if(ui->powerCycle1->isChecked()) cmd1 = 1.0f;
+            mavlink_message_t       msg;
+            mavlink_command_long_t  cmd;
 
-            if(ui->powerOn2->isChecked()) cmd2 = 0.5f;
-            else if(ui->powerOff2->isChecked()) cmd2 = -0.5f;
+            cmd.command = MAV_CMD_PAYLOAD_CONTROL;
+            cmd.confirmation = 0;
 
-            tempUAS->SendCommandLong(MAV_CMD_PAYLOAD_CONTROL, cmd1, cmd2);
+            cmd.param1 = 0.0f;
+            cmd.param2 = 0.0f;
+
+            if(ui->powerOn1->isChecked()) cmd.param1 = 0.5f;
+            else if(ui->powerOff1->isChecked()) cmd.param1 = -0.5f;
+            else if(ui->powerCycle1->isChecked()) cmd.param1 = 1.0f;
+
+            if(ui->powerOn2->isChecked()) cmd.param2 = 0.5f;
+            else if(ui->powerOff2->isChecked()) cmd.param2 = -0.5f;
+
+            cmd.param3 = 0.0f;
+            cmd.param4 = 0.0f;
+            cmd.param5 = 0.0f;
+            cmd.param6 = 0.0f;
+            cmd.param7 = 0.0f;
+
+            cmd.target_system = tempUAS->id();
+            cmd.target_component = tempUAS->defaultComponentId();
+            mavlink_msg_command_long_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
+                                                 qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
+                                                 tempUAS->priorityLink()->mavlinkChannel(),
+                                                 &msg,
+                                                 &cmd);
+
+            tempUAS->sendMessageOnLink(tempUAS->priorityLink(), msg);
 
             ui->noCommand1->setChecked(true);
             ui->noCommand2->setChecked(true);
