@@ -637,26 +637,6 @@
     <string>Power [W]:</string>
    </property>
   </widget>
-  <zorder>pb_StartTrim</zorder>
-  <zorder>pb_StopTrim</zorder>
-  <zorder>gb_Data</zorder>
-  <zorder>l_Notes_Text</zorder>
-  <zorder>pb_Connect</zorder>
-  <zorder>label_19</zorder>
-  <zorder>label_15</zorder>
-  <zorder>label_16</zorder>
-  <zorder>label_11</zorder>
-  <zorder>label_13</zorder>
-  <zorder>label_17</zorder>
-  <zorder>label_18</zorder>
-  <zorder>label_12</zorder>
-  <zorder>label_14</zorder>
-  <zorder>gb_Refs</zorder>
-  <zorder>gb_CurrentTrims</zorder>
-  <zorder>gb_timerscounters</zorder>
-  <zorder>label_20</zorder>
-  <zorder>e_timeelapsed</zorder>
-  <zorder>e_timeelapsed</zorder>
  </widget>
  <resources/>
  <connections/>

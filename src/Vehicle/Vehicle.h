@@ -726,6 +726,7 @@ signals:
     void SensorpodStatusChanged(uint8_t rate1, uint8_t rate2, uint8_t rate3, uint8_t rate4, uint8_t numRecordTopics, uint8_t cpuTemp, uint16_t freeSpace);
     void SensPowerChanged(float vspb_volt, float cspb_amp, float cs1_amp, float cs2_amp);
     void SensPowerBoardChanged(uint8_t pwr_brd_status);
+    void speedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);

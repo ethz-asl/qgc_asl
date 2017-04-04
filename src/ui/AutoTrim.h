@@ -34,7 +34,7 @@ public slots:
 		
 	//External slots
     void OnAslctrlDataChanged(float uElev, float uAil, float uRud, float uThrot, float roll, float pitch, float yaw, float roll_ref, float pitch_ref,float h);
-    void OnSpeedChanged(UASInterface* uas, double groundSpeed, double airspeed, quint64 timestamp);
+    void OnSpeedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
     void OnSensPowerChanged(float volt, float currpb, float curr_1, float curr_2);
     //void OnSensPowerBoardChanged(uint8_t pwr_brd_status, uint8_t pwr_brd_led_status, float pwr_brd_system_volt, float pwr_brd_servo_volt, float pwr_brd_mot_l_amp, float pwr_brd_mot_r_amp, float pwr_brd_servo_1_amp, float pwr_brd_servo_2_amp, float pwr_brd_servo_3_amp, float pwr_brd_servo_4_amp, float pwr_brd_aux_amp);
 

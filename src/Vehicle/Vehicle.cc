@@ -32,8 +32,8 @@
 QGC_LOGGING_CATEGORY(VehicleLog, "VehicleLog")
 
 #define UPDATE_TIMER 50
-#define DEFAULT_LAT  38.965767f
-#define DEFAULT_LON -120.083923f
+#define DEFAULT_LAT  47.377914f
+#define DEFAULT_LON  8.546333f
 
 extern const char* guided_mode_not_supported_by_vehicle;
 
@@ -649,6 +649,8 @@ void Vehicle::_handleVfrHud(mavlink_message_t& message)
     _airSpeedFact.setRawValue(qIsNaN(vfrHud.airspeed) ? 0 : vfrHud.airspeed);
     _groundSpeedFact.setRawValue(qIsNaN(vfrHud.groundspeed) ? 0 : vfrHud.groundspeed);
     _climbRateFact.setRawValue(qIsNaN(vfrHud.climb) ? 0 : vfrHud.climb);
+    emit speedChanged(this, vfrHud.groundspeed, vfrHud.airspeed);
+
 }
 
 void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
@@ -1151,7 +1153,7 @@ int Vehicle::SendCommandLong(MAV_CMD CmdID, float param1, float param2, float pa
 //    sendMessage(msg);
 
 //    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent." << std::endl;
-//    return 0;
+    return 0;
 }
 
 void Vehicle::_handleScaledPressure3(mavlink_message_t& message) {
@@ -1167,7 +1169,7 @@ int Vehicle::SendCommandLongTarget(MAV_CMD CmdID, uint8_t target_component, floa
 //    sendMessage(msg);
 
 //    std::cout << "ASLUAV: Command with ID #"<<CmdID<<" sent to component " << (int) target_component << "." << std::endl;
-//    return 0;
+    return 0;
 }
 
 void Vehicle::_handleSensPower(mavlink_message_t& message)
@@ -1181,6 +1183,9 @@ void Vehicle::_handleSensPowerBoard(mavlink_message_t &message)
 {
     mavlink_sens_power_board_t data;
     mavlink_msg_sens_power_board_decode(&message, &data);
+    float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
+
+    emit SensPowerChanged(data.pwr_brd_system_volt/1000, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
     emit SensPowerBoardChanged(data.pwr_brd_status);
 }
 
