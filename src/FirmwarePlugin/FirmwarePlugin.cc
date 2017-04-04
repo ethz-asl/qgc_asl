@@ -237,13 +237,6 @@ void FirmwarePlugin::setGuidedMode(Vehicle* vehicle, bool guidedMode)
     qgcApp()->showMessage(guided_mode_not_supported_by_vehicle);
 }
 
-bool FirmwarePlugin::isPaused(const Vehicle* vehicle) const
-{
-    // Not supported by generic vehicle
-    Q_UNUSED(vehicle);
-    return false;
-}
-
 void FirmwarePlugin::pauseVehicle(Vehicle* vehicle)
 {
     // Not supported by generic vehicle
@@ -265,11 +258,10 @@ void FirmwarePlugin::guidedModeLand(Vehicle* vehicle)
     qgcApp()->showMessage(guided_mode_not_supported_by_vehicle);
 }
 
-void FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle, double altitudeRel)
+void FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle)
 {
     // Not supported by generic vehicle
     Q_UNUSED(vehicle);
-    Q_UNUSED(altitudeRel);
     qgcApp()->showMessage(guided_mode_not_supported_by_vehicle);
 }
 
@@ -295,6 +287,13 @@ void FirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double altitudeR
     qgcApp()->showMessage(guided_mode_not_supported_by_vehicle);
 }
 
+void FirmwarePlugin::startMission(Vehicle* vehicle)
+{
+    // Not supported by generic vehicle
+    Q_UNUSED(vehicle);
+    qgcApp()->showMessage(guided_mode_not_supported_by_vehicle);
+}
+
 const FirmwarePlugin::remapParamNameMajorVersionMap_t& FirmwarePlugin::paramNameRemapMajorVersionMap(void) const
 {
     static const remapParamNameMajorVersionMap_t remap;
@@ -306,21 +305,6 @@ int FirmwarePlugin::remapParamNameHigestMinorVersionNumber(int majorVersionNumbe
 {
     Q_UNUSED(majorVersionNumber);
     return 0;
-}
-
-QString FirmwarePlugin::missionFlightMode(void)
-{
-    return QString();
-}
-
-QString FirmwarePlugin::rtlFlightMode(void)
-{
-    return QString();
-}
-
-QString FirmwarePlugin::takeControlFlightMode(void)
-{
-    return QString();
 }
 
 QString FirmwarePlugin::vehicleImageOpaque(const Vehicle* vehicle) const
@@ -430,4 +414,34 @@ const QVariantList& FirmwarePlugin::cameraList(const Vehicle* vehicle)
     }
 
     return _cameraList;
+}
+
+bool FirmwarePlugin::vehicleYawsToNextWaypointInMission(const Vehicle* vehicle) const
+{
+    return vehicle->multiRotor() ? false : true;
+}
+
+bool FirmwarePlugin::_armVehicle(Vehicle* vehicle)
+{
+    if (!vehicle->armed()) {
+        vehicle->setArmed(true);
+    }
+
+    // Wait for vehicle to return armed state for 2 seconds
+    for (int i=0; i<20; i++) {
+        if (vehicle->armed()) {
+            break;
+        }
+        QGC::SLEEP::msleep(100);
+        qgcApp()->processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+    return vehicle->armed();
+}
+
+void FirmwarePlugin::batteryConsumptionData(Vehicle* vehicle, int& mAhBattery, int& hoverAmps, int& cruiseAmps) const
+{
+    Q_UNUSED(vehicle);
+    mAhBattery = 0;
+    hoverAmps = 0;
+    cruiseAmps = 0;
 }

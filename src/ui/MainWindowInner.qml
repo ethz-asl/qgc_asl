@@ -19,7 +19,6 @@ import QGroundControl.Controls              1.0
 import QGroundControl.FlightDisplay         1.0
 import QGroundControl.ScreenTools           1.0
 import QGroundControl.MultiVehicleManager   1.0
-import QGroundControl.QGCPositionManager   1.0
 
 /// Inner common QML for mainWindow
 Item {
@@ -29,7 +28,6 @@ Item {
 
     QGCPalette { id: qgcPal; colorGroupEnabled: true }
 
-    property var    gcsPosition:        QtPositioning.coordinate()  // Starts as invalid coordinate
     property var    currentPopUp:       null
     property real   currentCenterX:     0
     property var    activeVehicle:      QGroundControl.multiVehicleManager.activeVehicle
@@ -39,7 +37,7 @@ Item {
 
     readonly property string _settingsViewSource:   "AppSettings.qml"
     readonly property string _setupViewSource:      "SetupView.qml"
-    readonly property string _planViewSource:       "MissionEditor.qml"
+    readonly property string _planViewSource:       "PlanView.qml"
     readonly property string _analyzeViewSource:    "AnalyzeView.qml"
 
     onHeightChanged: {
@@ -53,6 +51,7 @@ Item {
         for (var i=0; i<_viewList.length; i++) {
             _viewList[i].visible = false
         }
+        planToolBar.visible = false
     }
 
     function showSettingsView() {
@@ -93,7 +92,7 @@ Item {
         ScreenTools.availableHeight = parent.height - toolBar.height
         hideAllViews()
         planViewLoader.visible = true
-        toolBar.checkPlanButton()
+        planToolBar.visible = true
     }
 
     function showFlyView() {
@@ -134,7 +133,7 @@ Item {
 
     MessageDialog {
         id:                 unsavedMissionCloseDialog
-        title:              qsTr("QGroundControl close")
+        title:              qsTr("%1 close").arg(QGroundControl.appName)
         text:               qsTr("You have a mission edit in progress which has not been saved/sent. If you close you will lose changes. Are you sure you want to close?")
         standardButtons:    StandardButton.Yes | StandardButton.No
         modality:           Qt.ApplicationModal
@@ -153,7 +152,7 @@ Item {
 
     MessageDialog {
         id:                 activeConnectionsCloseDialog
-        title:              qsTr("QGroundControl close")
+        title:              qsTr("%1 close").arg(QGroundControl.appName)
         text:               qsTr("There are still active connections to vehicles. Do you want to disconnect these before closing?")
         standardButtons:    StandardButton.Yes | StandardButton.Cancel
         modality:           Qt.ApplicationModal
@@ -177,24 +176,6 @@ Item {
 
         onTriggered: {
             mainWindow.reallyClose()
-        }
-    }
-
-    //-- Detect tablet position
-    Connections {
-        target: QGroundControl.qgcPositionManger
-        onLastPositionUpdated: {
-            if(valid) {
-                if(lastPosition.latitude) {
-                    if(Math.abs(lastPosition.latitude)  > 0.001) {
-                        if(lastPosition.longitude) {
-                            if(Math.abs(lastPosition.longitude)  > 0.001) {
-                                gcsPosition = QtPositioning.coordinate(lastPosition.latitude,lastPosition.longitude)
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -259,7 +240,7 @@ Item {
         anchors.left:       parent.left
         anchors.right:      parent.right
         anchors.top:        parent.top
-        isBackgroundDark:   flightView.isBackgroundDark
+        opacity:            planToolBar.visible ? 0 : 1
         z:                  QGroundControl.zOrderTopMost
 
         Component.onCompleted:  ScreenTools.availableHeight = parent.height - toolBar.height
@@ -268,6 +249,20 @@ Item {
         onShowPlanView:         mainWindow.showPlanView()
         onShowFlyView:          mainWindow.showFlyView()
         onShowAnalyzeView:      mainWindow.showAnalyzeView()
+    }
+
+    PlanToolBar {
+        id:                 planToolBar
+        height:             ScreenTools.toolbarHeight
+        anchors.left:       parent.left
+        anchors.right:      parent.right
+        anchors.top:        parent.top
+        z:                  toolBar.z + 1
+
+        onShowFlyView: {
+            planToolBar.visible = false
+            mainWindow.showFlyView()
+        }
     }
 
     Loader {
@@ -293,12 +288,16 @@ Item {
         anchors.top:        toolBar.bottom
         anchors.bottom:     parent.bottom
         visible:            false
+
+        property var planToolBar: planToolBar
     }
 
     Loader {
         id:                 planViewLoader
         anchors.fill:       parent
         visible:            false
+
+        property var toolbar: planToolBar
     }
 
     FlightDisplayView {
@@ -430,13 +429,13 @@ Item {
         id:                         criticalMmessageArea
         width:                      mainWindow.width  * 0.55
         height:                     Math.min(criticalMessageText.height + _textMargins * 2, ScreenTools.defaultFontPixelHeight * 6)
-        color:                      "#eecc44"
+        color:                      qgcPal.alertBackground
         visible:                    false
         radius:                     ScreenTools.defaultFontPixelHeight * 0.5
         anchors.horizontalCenter:   parent.horizontalCenter
         anchors.top:                parent.top
         anchors.topMargin:          toolBar.height + ScreenTools.defaultFontPixelHeight / 2
-        border.color:               "#808080"
+        border.color:               qgcPal.alertBorder
         border.width:               2
 
         readonly property real _textMargins: ScreenTools.defaultFontPixelHeight
@@ -485,7 +484,7 @@ Item {
                 font.pointSize: ScreenTools.defaultFontPointSize
                 font.family:    ScreenTools.demiboldFontFamily
                 wrapMode:       TextEdit.WordWrap
-                color:          "black"
+                color:          qgcPal.alertText
             }
         }
 
@@ -500,7 +499,7 @@ Item {
             sourceSize.height:  width
             source:             "/res/XDelete.svg"
             fillMode:           Image.PreserveAspectFit
-            color:              "black"
+            color:              qgcPal.alertText
             MouseArea {
                 anchors.fill:       parent
                 anchors.margins:    ScreenTools.isMobile ? -ScreenTools.defaultFontPixelHeight : 0
@@ -521,7 +520,7 @@ Item {
             source:             "/res/ArrowDown.svg"
             fillMode:           Image.PreserveAspectFit
             visible:            criticalMessageText.lineCount > 5
-            color:              "black"
+            color:              qgcPal.alertText
             MouseArea {
                 anchors.fill:   parent
                 onClicked: {

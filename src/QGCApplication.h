@@ -63,12 +63,6 @@ public:
     QGCApplication(int &argc, char* argv[], bool unitTesting);
     ~QGCApplication();
 
-    static const char* parameterFileExtension;
-    static const char* missionFileExtension;
-    static const char* fenceFileExtension;
-    static const char* rallyPointFileExtension;
-    static const char* telemetryFileExtension;
-
     /// @brief Sets the persistent flag to delete all settings the next time QGroundControl is started.
     void deleteAllSettingsNextBoot(void);
 
@@ -97,9 +91,6 @@ public:
 
     /// Do we have Bluetooth Support?
     bool isBluetoothAvailable() { return _bluetoothAvailable; }
-
-    QGeoCoordinate lastKnownHomePosition(void) { return _lastKnownHomePosition; }
-    void setLastKnownHomePosition(QGeoCoordinate& lastKnownHomePosition);
 
 public slots:
     /// You can connect to this slot to show an information message box from a different thread.
@@ -183,13 +174,8 @@ private:
 
     bool _bluetoothAvailable;
 
-    QGeoCoordinate _lastKnownHomePosition;    ///< Map position when all other sources fail
-
     static const char* _settingsVersionKey;             ///< Settings key which hold settings version
     static const char* _deleteAllSettingsKey;           ///< If this settings key is set on boot, all settings will be deleted
-    static const char* _lastKnownHomePositionLatKey;
-    static const char* _lastKnownHomePositionLonKey;
-    static const char* _lastKnownHomePositionAltKey;
 
     /// Unit Test have access to creating and destroying singletons
     friend class UnitTest;

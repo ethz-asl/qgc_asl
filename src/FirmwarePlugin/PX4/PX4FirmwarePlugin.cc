@@ -220,7 +220,7 @@ bool PX4FirmwarePlugin::supportsManualControl(void)
 bool PX4FirmwarePlugin::isCapable(const Vehicle *vehicle, FirmwareCapabilities capabilities)
 {
     if (vehicle->multiRotor()) {
-        return (capabilities & (MavCmdPreflightStorageCapability | GuidedModeCapability | SetFlightModeCapability | PauseVehicleCapability | OrbitModeCapability)) == capabilities;
+        return (capabilities & (MavCmdPreflightStorageCapability | GuidedModeCapability | SetFlightModeCapability | PauseVehicleCapability /*| OrbitModeCapability still NYI*/)) == capabilities;
     } else {
         return (capabilities & (MavCmdPreflightStorageCapability | GuidedModeCapability | SetFlightModeCapability | PauseVehicleCapability)) == capabilities;
     }
@@ -266,7 +266,9 @@ QList<MAV_CMD> PX4FirmwarePlugin::supportedMissionCommands(void)
          << MAV_CMD_DO_CHANGE_SPEED
          << MAV_CMD_DO_LAND_START
          << MAV_CMD_DO_MOUNT_CONFIGURE
-         << MAV_CMD_DO_MOUNT_CONTROL;
+         << MAV_CMD_DO_MOUNT_CONTROL
+         << MAV_CMD_IMAGE_START_CAPTURE << MAV_CMD_IMAGE_STOP_CAPTURE << MAV_CMD_VIDEO_START_CAPTURE << MAV_CMD_VIDEO_STOP_CAPTURE
+         << MAV_CMD_NAV_DELAY;
 
     return list;
 }
@@ -349,24 +351,33 @@ void PX4FirmwarePlugin::guidedModeOrbit(Vehicle* vehicle, const QGeoCoordinate& 
                             centerCoord.isValid() ? centerCoord.altitude()  : NAN);
 }
 
-void PX4FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle, double altitudeRel)
+void PX4FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle)
 {
-    Q_UNUSED(altitudeRel);
+    QString takeoffAltParam("MIS_TAKEOFF_ALT");
+
     if (qIsNaN(vehicle->altitudeAMSL()->rawValue().toDouble())) {
         qgcApp()->showMessage(tr("Unable to takeoff, vehicle position not known."));
         return;
     }
 
+    if (!vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, takeoffAltParam)) {
+        qgcApp()->showMessage(tr("Unable to takeoff, MIS_TAKEOFF_ALT parameter missing."));
+        return;
+    }
+    Fact* takeoffAlt = vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, takeoffAltParam);
+
+    if (!_armVehicle(vehicle)) {
+        qgcApp()->showMessage(tr("Unable to takeoff: Vehicle failed to arm."));
+        return;
+    }
+
     vehicle->sendMavCommand(vehicle->defaultComponentId(),
                             MAV_CMD_NAV_TAKEOFF,
-                            true,   // show error is fails
-                            -1.0f,
-                            0.0f,
-                            0.0f,
-                            NAN,
-                            NAN,
-                            NAN,
-                            vehicle->altitudeAMSL()->rawValue().toDouble() + altitudeRel);
+                            true,                           // show error is fails
+                            -1,                             // No pitch requested
+                            0, 0,                           // param 2-4 unused
+                            NAN, NAN, NAN,                  // No yaw, lat, lon
+                            vehicle->altitudeAMSL()->rawValue().toDouble() + takeoffAlt->rawValue().toDouble());
 }
 
 void PX4FirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoordinate& gotoCoord)
@@ -388,9 +399,9 @@ void PX4FirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoord
                             vehicle->altitudeAMSL()->rawValue().toFloat());
 }
 
-void PX4FirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double altitudeRel)
+void PX4FirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double altitudeChange)
 {
-    if (!vehicle->homePositionAvailable()) {
+    if (!vehicle->homePosition().isValid()) {
         qgcApp()->showMessage(tr("Unable to change altitude, home position unknown."));
         return;
     }
@@ -398,6 +409,17 @@ void PX4FirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double altitu
         qgcApp()->showMessage(tr("Unable to change altitude, home position altitude unknown."));
         return;
     }
+
+    // Don't allow altitude to fall below 3 meters above home
+    double currentAltRel = vehicle->altitudeRelative()->rawValue().toDouble();
+    double newAltRel = currentAltRel;
+    if (altitudeChange <= 0 && currentAltRel <= 3) {
+        return;
+    }
+    if (currentAltRel + altitudeChange < 3) {
+        altitudeChange = 3 - currentAltRel;
+    }
+    newAltRel = currentAltRel + altitudeChange;
 
     vehicle->sendMavCommand(vehicle->defaultComponentId(),
                             MAV_CMD_DO_REPOSITION,
@@ -408,7 +430,17 @@ void PX4FirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double altitu
                             NAN,
                             NAN,
                             NAN,
-                            vehicle->homePosition().altitude() + altitudeRel);
+                            vehicle->homePosition().altitude() + newAltRel);
+}
+
+void PX4FirmwarePlugin::startMission(Vehicle* vehicle)
+{
+    if (!_armVehicle(vehicle)) {
+        qgcApp()->showMessage(tr("Unable to start mission: Vehicle failed to arm."));
+        return;
+    }
+
+    vehicle->setFlightMode(missionFlightMode());
 }
 
 void PX4FirmwarePlugin::setGuidedMode(Vehicle* vehicle, bool guidedMode)
@@ -483,17 +515,11 @@ void PX4FirmwarePlugin::_handleAutopilotVersion(Vehicle* vehicle, mavlink_messag
     }
 }
 
-QString PX4FirmwarePlugin::missionFlightMode(void)
+bool PX4FirmwarePlugin::vehicleYawsToNextWaypointInMission(const Vehicle* vehicle) const
 {
-    return QString(_missionFlightMode);
-}
-
-QString PX4FirmwarePlugin::rtlFlightMode(void)
-{
-    return QString(_rtlFlightMode);
-}
-
-QString PX4FirmwarePlugin::takeControlFlightMode(void)
-{
-    return QString(_manualFlightMode);
+    if ( vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, QStringLiteral("MIS_YAWMODE"))) {
+        Fact* yawMode = vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, QStringLiteral("MIS_YAWMODE"));
+        return yawMode && yawMode->rawValue().toInt() == 1;
+    }
+    return false;
 }

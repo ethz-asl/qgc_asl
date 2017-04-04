@@ -17,11 +17,11 @@
 #include "QGCToolbox.h"
 #include "QGCApplication.h"
 #include "LinkManager.h"
-#include "FlightMapSettings.h"
 #include "SettingsFact.h"
 #include "FactMetaData.h"
 #include "SimulatedPosition.h"
 #include "QGCLoggingCategory.h"
+#include "AppSettings.h"
 
 #ifdef QT_DEBUG
 #include "MockLink.h"
@@ -37,7 +37,8 @@ public:
     QGroundControlQmlGlobal(QGCApplication* app);
     ~QGroundControlQmlGlobal();
 
-    Q_PROPERTY(FlightMapSettings*   flightMapSettings   READ flightMapSettings      CONSTANT)
+    Q_PROPERTY(QString              appName             READ appName                CONSTANT)
+
     Q_PROPERTY(LinkManager*         linkManager         READ linkManager            CONSTANT)
     Q_PROPERTY(MultiVehicleManager* multiVehicleManager READ multiVehicleManager    CONSTANT)
     Q_PROPERTY(QGCMapEngineManager* mapEngineManager    READ mapEngineManager       CONSTANT)
@@ -59,9 +60,9 @@ public:
     Q_PROPERTY(bool     isVersionCheckEnabled   READ isVersionCheckEnabled      WRITE setIsVersionCheckEnabled      NOTIFY isVersionCheckEnabledChanged)
     Q_PROPERTY(int      mavlinkSystemID         READ mavlinkSystemID            WRITE setMavlinkSystemID            NOTIFY mavlinkSystemIDChanged)
 
-    Q_PROPERTY(QGeoCoordinate lastKnownHomePosition READ lastKnownHomePosition  CONSTANT)
-    Q_PROPERTY(QGeoCoordinate flightMapPosition     MEMBER _flightMapPosition   NOTIFY flightMapPositionChanged)
-    Q_PROPERTY(double         flightMapZoom         MEMBER _flightMapZoom       NOTIFY flightMapZoomChanged)
+    Q_PROPERTY(QGeoCoordinate flightMapPosition     READ flightMapPosition      WRITE setFlightMapPosition          NOTIFY flightMapPositionChanged)
+    Q_PROPERTY(double         flightMapZoom         READ flightMapZoom          WRITE setFlightMapZoom              NOTIFY flightMapZoomChanged)
+    Q_PROPERTY(double         flightMapInitialZoom  MEMBER _flightMapInitialZoom                                    CONSTANT)                               ///< Zoom level to use when either gcs or vehicle shows up for first time
 
     Q_PROPERTY(QString  parameterFileExtension  READ parameterFileExtension CONSTANT)
     Q_PROPERTY(QString  missionFileExtension    READ missionFileExtension   CONSTANT)
@@ -119,11 +120,9 @@ public:
 
     Q_INVOKABLE bool linesIntersect(QPointF xLine1, QPointF yLine1, QPointF xLine2, QPointF yLine2);
 
-    Q_INVOKABLE QString urlToLocalFile(QUrl url) { return url.toLocalFile(); }
-
     // Property accesors
 
-    FlightMapSettings*      flightMapSettings   ()  { return _flightMapSettings; }
+    QString                 appName             ()  { return qgcApp()->applicationName(); }
     LinkManager*            linkManager         ()  { return _linkManager; }
     MultiVehicleManager*    multiVehicleManager ()  { return _multiVehicleManager; }
     QGCMapEngineManager*    mapEngineManager    ()  { return _mapEngineManager; }
@@ -133,6 +132,8 @@ public:
     MAVLinkLogManager*      mavlinkLogManager   ()  { return _mavlinkLogManager; }
     QGCCorePlugin*          corePlugin          ()  { return _corePlugin; }
     SettingsManager*        settingsManager     ()  { return _settingsManager; }
+    static QGeoCoordinate   flightMapPosition   ();
+    static double           flightMapZoom       ();
 
     qreal                   zOrderTopMost       ()  { return 1000; }
     qreal                   zOrderWidgets       ()  { return 100; }
@@ -141,18 +142,18 @@ public:
     bool    isVersionCheckEnabled   () { return _toolbox->mavlinkProtocol()->versionCheckEnabled(); }
     int     mavlinkSystemID         () { return _toolbox->mavlinkProtocol()->getSystemId(); }
 
-    QGeoCoordinate lastKnownHomePosition() { return qgcApp()->lastKnownHomePosition(); }
-
     int     supportedFirmwareCount  ();
     bool    skipSetupPage           () { return _skipSetupPage; }
     void    setSkipSetupPage        (bool skip);
 
     void    setIsVersionCheckEnabled    (bool enable);
     void    setMavlinkSystemID          (int  id);
+    void    setFlightMapPosition        (QGeoCoordinate& coordinate);
+    void    setFlightMapZoom            (double zoom);
 
-    QString parameterFileExtension(void) const  { return QGCApplication::parameterFileExtension; }
-    QString missionFileExtension(void) const    { return QGCApplication::missionFileExtension; }
-    QString telemetryFileExtension(void) const  { return QGCApplication::telemetryFileExtension; }
+    QString parameterFileExtension(void) const  { return AppSettings::parameterFileExtension; }
+    QString missionFileExtension(void) const    { return AppSettings::missionFileExtension; }
+    QString telemetryFileExtension(void) const  { return AppSettings::telemetryFileExtension; }
 
     QString qgcVersion(void) const { return qgcApp()->applicationVersion(); }
 
@@ -169,7 +170,7 @@ signals:
     void skipSetupPageChanged           ();
 
 private:
-    FlightMapSettings*      _flightMapSettings;
+    double                  _flightMapInitialZoom;
     LinkManager*            _linkManager;
     MultiVehicleManager*    _multiVehicleManager;
     QGCMapEngineManager*    _mapEngineManager;
@@ -181,9 +182,12 @@ private:
     FirmwarePluginManager*  _firmwarePluginManager;
     SettingsManager*        _settingsManager;
 
-    QGeoCoordinate          _flightMapPosition;
-    double                  _flightMapZoom;
     bool                    _skipSetupPage;
+
+    static const char* _flightMapPositionSettingsGroup;
+    static const char* _flightMapPositionLatitudeSettingsKey;
+    static const char* _flightMapPositionLongitudeSettingsKey;
+    static const char* _flightMapZoomSettingsKey;
 };
 
 #endif
