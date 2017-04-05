@@ -49,7 +49,7 @@
 #include "CustomCommandWidgetController.h"
 #include "ESP8266ComponentController.h"
 #include "ScreenToolsController.h"
-#include "QGCMobileFileDialogController.h"
+#include "QFileDialogController.h"
 #include "RCChannelMonitorController.h"
 #include "AutoPilotPlugin.h"
 #include "VehicleComponent.h"
@@ -86,7 +86,7 @@
 #endif
 
 #ifndef __mobile__
-#include "QGCFileDialog.h"
+#include "QGCQFileDialog.h"
 #include "QGCMessageBox.h"
 #include "FirmwareUpgradeController.h"
 #include "MainWindow.h"
@@ -108,17 +108,8 @@
 
 QGCApplication* QGCApplication::_app = NULL;
 
-const char* QGCApplication::parameterFileExtension =    "params";
-const char* QGCApplication::missionFileExtension =      "mission";
-const char* QGCApplication::fenceFileExtension =        "fence";
-const char* QGCApplication::rallyPointFileExtension =   "rally";
-const char* QGCApplication::telemetryFileExtension =     "tlog";
-
 const char* QGCApplication::_deleteAllSettingsKey           = "DeleteAllSettingsNextBoot";
 const char* QGCApplication::_settingsVersionKey             = "SettingsVersion";
-const char* QGCApplication::_lastKnownHomePositionLatKey    = "LastKnownHomePositionLat";
-const char* QGCApplication::_lastKnownHomePositionLonKey    = "LastKnownHomePositionLon";
-const char* QGCApplication::_lastKnownHomePositionAltKey    = "LastKnownHomePositionAlt";
 
 const char* QGCApplication::_darkStyleFile          = ":/res/styles/style-dark.css";
 const char* QGCApplication::_lightStyleFile         = ":/res/styles/style-light.css";
@@ -173,7 +164,6 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
     #endif
     , _toolbox(NULL)
     , _bluetoothAvailable(false)
-    , _lastKnownHomePosition(37.803784, -122.462276, 0.0)
 {
     Q_ASSERT(_app == NULL);
     _app = this;
@@ -191,12 +181,12 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
     if (!_runningUnitTests) {
         if (getuid() == 0) {
             QMessageBox msgBox;
-            msgBox.setInformativeText("You are running QGroundControl as root. "
-                                      "You should not do this since it will cause other issues with QGroundControl. "
-                                      "QGroundControl will now exit. "
+            msgBox.setInformativeText(tr("You are running %1 as root. "
+                                      "You should not do this since it will cause other issues with %1. "
+                                      "%1 will now exit. "
                                       "If you are having serial port issues on Ubuntu, execute the following commands to fix most issues:\n"
                                       "sudo usermod -a -G dialout $USER\n"
-                                      "sudo apt-get remove modemmanager");
+                                      "sudo apt-get remove modemmanager").arg(qgcApp()->applicationName()));
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.exec();
@@ -308,10 +298,6 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
     // Set up our logging filters
     QGCLoggingCategoryRegister::instance()->setFilterRulesFromSettings(loggingOptions);
 
-    _lastKnownHomePosition.setLatitude(settings.value(_lastKnownHomePositionLatKey, 37.803784).toDouble());
-    _lastKnownHomePosition.setLongitude(settings.value(_lastKnownHomePositionLonKey, -122.462276).toDouble());
-    _lastKnownHomePosition.setAltitude(settings.value(_lastKnownHomePositionAltKey, 0.0).toDouble());
-
     // Initialize Bluetooth
 #ifdef QGC_ENABLE_BLUETOOTH
     QBluetoothLocalDevice localDevice;
@@ -382,14 +368,14 @@ void QGCApplication::_initCommon(void)
     qmlRegisterType<GeoFenceController>                 ("QGroundControl.Controllers", 1, 0, "GeoFenceController");
     qmlRegisterType<RallyPointController>               ("QGroundControl.Controllers", 1, 0, "RallyPointController");
     qmlRegisterType<ValuesWidgetController>             ("QGroundControl.Controllers", 1, 0, "ValuesWidgetController");
-    qmlRegisterType<QGCMobileFileDialogController>      ("QGroundControl.Controllers", 1, 0, "QGCMobileFileDialogController");
+    qmlRegisterType<QFileDialogController>      ("QGroundControl.Controllers", 1, 0, "QFileDialogController");
     qmlRegisterType<RCChannelMonitorController>         ("QGroundControl.Controllers", 1, 0, "RCChannelMonitorController");
     qmlRegisterType<JoystickConfigController>           ("QGroundControl.Controllers", 1, 0, "JoystickConfigController");
+    qmlRegisterType<LogDownloadController>              ("QGroundControl.Controllers", 1, 0, "LogDownloadController");
 #ifndef __mobile__
     qmlRegisterType<ViewWidgetController>           ("QGroundControl.Controllers", 1, 0, "ViewWidgetController");
     qmlRegisterType<CustomCommandWidgetController>  ("QGroundControl.Controllers", 1, 0, "CustomCommandWidgetController");
     qmlRegisterType<FirmwareUpgradeController>      ("QGroundControl.Controllers", 1, 0, "FirmwareUpgradeController");
-    qmlRegisterType<LogDownloadController>          ("QGroundControl.Controllers", 1, 0, "LogDownloadController");
     qmlRegisterType<GeoTagController>               ("QGroundControl.Controllers", 1, 0, "GeoTagController");
 #endif
 
@@ -503,7 +489,7 @@ void QGCApplication::saveTelemetryLogOnMainThread(QString tempLogfile)
     // The vehicle is gone now and we are shutting down so we need to use a message box for errors to hold shutdown and show the error
     if (_checkTelemetrySavePath(true /* useMessageBox */)) {
 
-        QString saveDirPath = _toolbox->settingsManager()->appSettings()->telemetrySavePath()->rawValue().toString();
+        QString saveDirPath = _toolbox->settingsManager()->appSettings()->telemetrySavePath();
         QDir saveDir(saveDirPath);
 
         QString nameFormat("%1%2.tlog");
@@ -535,9 +521,9 @@ bool QGCApplication::_checkTelemetrySavePath(bool useMessageBox)
 {
     QString errorTitle = tr("Telemetry save error");
 
-    QString saveDirPath = _toolbox->settingsManager()->appSettings()->telemetrySavePath()->rawValue().toString();
+    QString saveDirPath = _toolbox->settingsManager()->appSettings()->telemetrySavePath();
     if (saveDirPath.isEmpty()) {
-        QString error = tr("Unable to save telemetry log. Telemetry save directory is not set.");
+        QString error = tr("Unable to save telemetry log. Application save directory is not set.");
         if (useMessageBox) {
             QGCMessageBox::warning(errorTitle, error);
         } else {
@@ -672,15 +658,4 @@ void QGCApplication::showSetupView(void)
 void QGCApplication::qmlAttemptWindowClose(void)
 {
     QMetaObject::invokeMethod(_rootQmlObject(), "attemptWindowClose");
-}
-
-
-void QGCApplication::setLastKnownHomePosition(QGeoCoordinate& lastKnownHomePosition)
-{
-    QSettings settings;
-
-    settings.setValue(_lastKnownHomePositionLatKey, lastKnownHomePosition.latitude());
-    settings.setValue(_lastKnownHomePositionLonKey, lastKnownHomePosition.longitude());
-    settings.setValue(_lastKnownHomePositionAltKey, lastKnownHomePosition.altitude());
-    _lastKnownHomePosition = lastKnownHomePosition;
 }

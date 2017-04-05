@@ -24,6 +24,7 @@ Rectangle {
     property alias  model:              repeater.model
     property var    showAlternateIcon                   ///< List of bool values, one for each button in strip - true: show alternate icon, false: show normal icon
     property var    rotateImage                         ///< List of bool values, one for each button in strip - true: animation rotation, false: static image
+    property var    animateImage                        ///< List of bool values, one for each button in strip - true: animate image, false: static image
     property var    buttonEnabled                       ///< List of bool values, one for each button in strip - true: button enabled, false: button disabled
     property var    buttonVisible                       ///< List of bool values, one for each button in strip - true: button visible, false: button invisible
     property real   maxHeight                           ///< Maximum height for control, determines whether text is hidden to make control shorter
@@ -119,10 +120,14 @@ Rectangle {
                 property bool checked: false
                 property ExclusiveGroup exclusiveGroup: dropButtonsExclusiveGroup
 
-                property var    _iconSource:        modelData.iconSource
+                QGCPalette { id: _repeaterPal; colorGroupEnabled: _buttonEnabled }
+
+                property bool   _buttonEnabled:         _root.buttonEnabled ? _root.buttonEnabled[index] : true
+                property var    _iconSource:            modelData.iconSource
                 property var    _alternateIconSource:   modelData.alternateIconSource
                 property var    _source:                (_root.showAlternateIcon && _root.showAlternateIcon[index]) ? _alternateIconSource : _iconSource
                 property bool   rotateImage:            _root.rotateImage ? _root.rotateImage[index] : false
+                property bool   animateImage:           _root.animateImage ? _root.animateImage[index] : false
 
                 onExclusiveGroupChanged: {
                     if (exclusiveGroup) {
@@ -139,6 +144,15 @@ Rectangle {
                     }
                 }
 
+                onAnimateImageChanged: {
+                    if (animateImage) {
+                        opacityAnimation.running = true
+                    } else {
+                        opacityAnimation.running = false
+                        button.opacity = 1
+                    }
+                }
+
                 Item {
                     width:      1
                     height:     _buttonSpacing
@@ -149,7 +163,7 @@ Rectangle {
                     anchors.left:   parent.left
                     anchors.right:  parent.right
                     height:         width
-                    color:          checked ? qgcPal.buttonHighlight : qgcPal.button
+                    color:          checked ? _repeaterPal.buttonHighlight : _repeaterPal.button
 
                     QGCColoredImage {
                         id:                 button
@@ -159,7 +173,7 @@ Rectangle {
                         fillMode:           Image.PreserveAspectFit
                         mipmap:             true
                         smooth:             true
-                        color:              checked ? qgcPal.buttonHighlightText : qgcPal.buttonText
+                        color:              checked ? _repeaterPal.buttonHighlightText : _repeaterPal.buttonText
 
                         RotationAnimation on rotation {
                             id:             imageRotation
@@ -170,6 +184,14 @@ Rectangle {
                             running:        false
                         }
 
+                        NumberAnimation on opacity {
+                            id:         opacityAnimation
+                            running:    false
+                            from:       0
+                            to:         1.0
+                            loops:      Animation.Infinite
+                            duration:   2000
+                        }
                     }
 
                     QGCMouseArea {
@@ -180,7 +202,7 @@ Rectangle {
                         anchors.right:          parent.right
                         anchors.top:            parent.top
                         height:                 parent.height + (_showOptionalElements? buttonLabel.height + buttonColumn.spacing : 0)
-                        visible:                _root.buttonEnabled ? _root.buttonEnabled[index] : true
+                        visible:                _buttonEnabled
                         preventStealing:        true
 
                         onClicked: {
@@ -214,6 +236,7 @@ Rectangle {
                     font.pointSize:             ScreenTools.smallFontPointSize
                     text:                       modelData.name
                     visible:                    _showOptionalElements
+                    enabled:                    _buttonEnabled
                 }
             }
         }

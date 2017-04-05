@@ -32,6 +32,7 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",
+            "cameraSection":        true,
             "param1": {
                 "label":            "Hold",
                 "units":            "secs",
@@ -181,25 +182,20 @@
         { "id": 24, "rawName": "MAV_CMD_NAV_TAKEOFF_LOCAL", "friendlyName": "Takeoff local" },
         { "id": 25, "rawName": "MAV_CMD_NAV_FOLLOW", "friendlyName": "Nav follow" },
         {
-            "id":                    30,
-            "rawName":              "MAV_CMD_NAV_CONTINUE_AND_CHANGE_ALT",
-            "friendlyName":         "Change Altitude",
-            "description":          "Continue on the current course and climb/descend to specified altitude. When the altitude is reached continue to the next command.",
-            "specifiesCoordinate":  false,
-            "friendlyEdit":         true,
-            "category":             "Flight control",
+            "id":                       30,
+            "rawName":                  "MAV_CMD_NAV_CONTINUE_AND_CHANGE_ALT",
+            "friendlyName":             "Change Altitude",
+            "description":              "Continue on the current course and climb/descend to specified altitude. When the altitude is reached continue to the next command.",
+            "specifiesCoordinate":      false,
+            "specifiesAltitudeOnly":    true,
+            "friendlyEdit":             true,
+            "category":                 "Flight control",
             "param1": {
                 "label":            "Mode",
                 "enumStrings":      "Climb,Neutral,Descend",
                 "enumValues":       "1,0,2",
                 "default":          1,
                 "decimalPlaces":    0
-            },
-            "param7": {
-                "label":            "Altitude",
-                "units":            "m",
-                "default":          55,
-                "decimalPlaces":    2
             }
         },
         {
@@ -390,21 +386,17 @@
             }
         },
         {
-            "id":           113,
-            "rawName":      "MAV_CMD_CONDITION_CHANGE_ALT",
-            "description":  "Delay the mission until the specified altitide is reached.",
-            "friendlyName": "Wait for altitude",
-            "category":     "Conditionals",
+            "id":                           113,
+            "rawName":                  "MAV_CMD_CONDITION_CHANGE_ALT",
+            "description":              "Delay the mission until the specified altitide is reached.",
+            "friendlyName":             "Wait for altitude",
+            "category":                 "Conditionals",
+            "specifiesCoordinate":      false,
+            "specifiesAltitudeOnly":    true,
             "param1": {
                 "label":            "Rate",
                 "units":            "m/s",
                 "default":          5,
-                "decimalPlaces":    2
-            },
-            "param7": {
-                "label":            "Altitude",
-                "units":            "m",
-                "default":          55,
                 "decimalPlaces":    2
             }
         },
@@ -825,11 +817,11 @@
             }
         },
         {
-            "id":           206,
-            "rawName":      "MAV_CMD_DO_SET_CAM_TRIGG_DIST",
-            "friendlyName": "Camera trigger distance",
-            "description":  "Set camera trigger distance.",
-            "category":     "Camera",
+            "id":                   206,
+            "rawName":              "MAV_CMD_DO_SET_CAM_TRIGG_DIST",
+            "friendlyName":         "Camera trigger distance",
+            "description":          "Set camera trigger distance.",
+            "category":             "Camera",
             "param1": {
                 "label":            "Distance",
                 "default":          25,
@@ -965,11 +957,70 @@
         { "id": 510, "rawName": "MAV_CMD_GET_MESSAGE_INTERVAL", "friendlyName": "Get message interval" },
         { "id": 511, "rawName": "MAV_CMD_SET_MESSAGE_INTERVAL", "friendlyName": "Set message interval" },
         { "id": 520, "rawName": "MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES", "friendlyName": "Get capabilities" },
-        { "id": 2000, "rawName": "MAV_CMD_IMAGE_START_CAPTURE", "friendlyName": "Start image capture" },
+        {
+            "id":           2000,
+            "rawName":      "MAV_CMD_IMAGE_START_CAPTURE",
+            "friendlyName": "Start image capture" ,
+            "description":  "Start taking one or more photos.",
+            "category":     "Camera",
+            "param1": {
+                "label":            "Interval",
+                "default":          0,
+                "units":            "secs",
+                "decimalPlaces":    0
+            },
+            "param2": {
+                "label":            "Photo count",
+                "default":          1,
+                "decimalPlaces":    0
+            },
+            "param3": {
+                "label":            "Resolution",
+                "default":          -1,
+                "decimalPlaces":    0
+            },
+            "param6": {
+                "label":            "Camera id",
+                "default":          0,
+                "decimalPlaces":    0
+            }
+        },
         { "id": 2001, "rawName": "MAV_CMD_IMAGE_STOP_CAPTURE", "friendlyName": "Stop image capture" },
         { "id": 2003, "rawName": "MAV_CMD_DO_TRIGGER_CONTROL", "friendlyName": "Trigger control" },
-        { "id": 2500, "rawName": "MAV_CMD_VIDEO_START_CAPTURE", "friendlyName": "Start video capture" },
-        { "id": 2501, "rawName": "MAV_CMD_VIDEO_STOP_CAPTURE", "friendlyName": "Stop video cpture" },
+        {
+            "id":           2500,
+            "rawName":      "MAV_CMD_VIDEO_START_CAPTURE",
+            "friendlyName": "Start video capture",
+            "description":  "Start video capture.",
+            "category":     "Camera",
+            "param1": {
+                "label":            "Camera id",
+                "default":          0,
+                "decimalPlaces":    0
+            },
+            "param2": {
+                "label":            "FPS",
+                "default":          -1,
+                "decimalPlaces":    0
+            },
+            "param3": {
+                "label":            "Resolution",
+                "default":          -1,
+                "decimalPlaces":    0
+            }
+        },
+        {
+            "id":           2501,
+            "rawName":      "MAV_CMD_VIDEO_STOP_CAPTURE",
+            "friendlyName": "Stop video capture",
+            "description":  "Stop video capture.",
+            "category":     "Camera",
+            "param1": {
+                "label":            "Camera id",
+                "default":          0,
+                "decimalPlaces":    0
+            }
+        },
         { "id": 2800, "rawName": "MAV_CMD_PANORAMA_CREATE", "friendlyName": "Create panorama" },
         {
             "id": 3000,

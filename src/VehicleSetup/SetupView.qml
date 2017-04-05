@@ -36,6 +36,7 @@ Rectangle {
 
     property string _messagePanelText:              "missing message panel text"
     property bool   _fullParameterVehicleAvailable: QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable && !QGroundControl.multiVehicleManager.activeVehicle.parameterManager.missingParameters
+    property var    _corePlugin:                    QGroundControl.corePlugin
 
     function showSummaryPanel()
     {
@@ -140,7 +141,7 @@ Rectangle {
                 horizontalAlignment:    Text.AlignHCenter
                 wrapMode:               Text.WordWrap
                 font.pointSize:         ScreenTools.mediumFontPointSize
-                text:                   "QGroundControl does not currently support setup of your vehicle type. " +
+                text:                   tr("%1 does not currently support setup of your vehicle type. ").arg(QGroundControl.appName) +
                                         "If your vehicle is already configured you can still Fly."
 
                 onLinkActivated: Qt.openUrlExternally(link)
@@ -161,7 +162,7 @@ Rectangle {
                 horizontalAlignment:    Text.AlignHCenter
                 wrapMode:               Text.WordWrap
                 font.pointSize:         ScreenTools.largeFontPointSize
-                text:                   "Connect vehicle to your device and QGroundControl will automatically detect it." +
+                text:                   qsTr("Connect vehicle to your device and %1 will automatically detect it.").arg(QGroundControl.appName) +
                                         (ScreenTools.isMobile ? "" : " Click Firmware on the left to upgrade your vehicle.")
 
                 onLinkActivated: Qt.openUrlExternally(link)
@@ -231,14 +232,14 @@ Rectangle {
             }
 
             Repeater {
-                model:              QGroundControl.corePlugin.settingsPages
-                visible:            QGroundControl.corePlugin.options.combineSettingsAndSetup
+                model:                  _corePlugin ? _corePlugin.settingsPages : []
+                visible:                _corePlugin && _corePlugin.options.combineSettingsAndSetup
                 SubMenuButton {
                     imageResource:      modelData.icon
                     setupIndicator:     false
                     exclusiveGroup:     setupButtonGroup
                     text:               modelData.title
-                    visible:            QGroundControl.corePlugin.options.combineSettingsAndSetup
+                    visible:            _corePlugin && _corePlugin.options.combineSettingsAndSetup
                     onClicked:          panelLoader.setSource(modelData.url)
                     Layout.fillWidth:   true
                 }
@@ -261,7 +262,7 @@ Rectangle {
                 imageResource:      "/qmlimages/FirmwareUpgradeIcon.png"
                 setupIndicator:     false
                 exclusiveGroup:     setupButtonGroup
-                visible:            !ScreenTools.isMobile
+                visible:            !ScreenTools.isMobile && _corePlugin.options.showFirmwareUpgrade
                 text:               "Firmware"
                 Layout.fillWidth:   true
 
@@ -311,7 +312,7 @@ Rectangle {
             SubMenuButton {
                 setupIndicator:     false
                 exclusiveGroup:     setupButtonGroup
-                visible:            QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable && QGroundControl.corePlugin.showAdvancedUI
+                visible:            QGroundControl.multiVehicleManager && QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable && _corePlugin.showAdvancedUI
                 text:               "Parameters"
                 Layout.fillWidth:   true
 

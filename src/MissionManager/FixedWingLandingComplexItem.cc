@@ -12,6 +12,7 @@
 #include "MissionController.h"
 #include "QGCGeo.h"
 #include "QGroundControlQmlGlobal.h"
+#include "SimpleMissionItem.h"
 
 #include <QPolygonF>
 
@@ -105,8 +106,10 @@ void FixedWingLandingComplexItem::setDirty(bool dirty)
     }
 }
 
-void FixedWingLandingComplexItem::save(QJsonObject& saveObject) const
+void FixedWingLandingComplexItem::save(QJsonArray&  missionItems)
 {
+    QJsonObject saveObject;
+
     saveObject[JsonHelper::jsonVersionKey] =                    1;
     saveObject[VisualMissionItem::jsonTypeKey] =                VisualMissionItem::jsonTypeComplexItemValue;
     saveObject[ComplexMissionItem::jsonComplexItemTypeKey] =    jsonComplexItemTypeValue;
@@ -128,6 +131,8 @@ void FixedWingLandingComplexItem::save(QJsonObject& saveObject) const
     saveObject[_jsonLoiterClockwiseKey] =           _loiterClockwise;
     saveObject[_jsonLoiterAltitudeRelativeKey] =    _loiterAltitudeRelative;
     saveObject[_jsonLandingAltitudeRelativeKey] =   _landingAltitudeRelative;
+
+    missionItems.append(saveObject);
 }
 
 void FixedWingLandingComplexItem::setSequenceNumber(int sequenceNumber)
@@ -159,11 +164,13 @@ bool FixedWingLandingComplexItem::load(const QJsonObject& complexObject, int seq
     QString itemType = complexObject[VisualMissionItem::jsonTypeKey].toString();
     QString complexType = complexObject[ComplexMissionItem::jsonComplexItemTypeKey].toString();
     if (itemType != VisualMissionItem::jsonTypeComplexItemValue || complexType != jsonComplexItemTypeValue) {
-        errorString = tr("QGroundControl does not support loading this complex mission item type: %1:2").arg(itemType).arg(complexType);
+        errorString = tr("%1 does not support loading this complex mission item type: %2:%3").arg(qgcApp()->applicationName()).arg(itemType).arg(complexType);
         return false;
     }
 
     setSequenceNumber(sequenceNumber);
+
+    _ignoreRecalcSignals = true;
 
     QGeoCoordinate coordinate;
     if (!JsonHelper::loadGeoCoordinate(complexObject[_jsonLoiterCoordinateKey], true /* altitudeRequired */, coordinate, errorString)) {
@@ -184,7 +191,9 @@ bool FixedWingLandingComplexItem::load(const QJsonObject& complexObject, int seq
     _landingAltitudeRelative = complexObject[_jsonLandingAltitudeRelativeKey].toBool();
 
     _landingCoordSet = true;
-    _recalcFromHeadingAndDistanceChange();
+
+    _ignoreRecalcSignals = false;
+    _recalcFromCoordinateChange();
 
     return true;
 }
@@ -199,11 +208,11 @@ bool FixedWingLandingComplexItem::specifiesCoordinate(void) const
     return true;
 }
 
-QmlObjectListModel* FixedWingLandingComplexItem::getMissionItems(void) const
+void FixedWingLandingComplexItem::appendMissionItems(QList<MissionItem*>& items, QObject* missionItemParent)
 {
-    QmlObjectListModel* pMissionItems = new QmlObjectListModel;
-
     int seqNum = _sequenceNumber;
+
+    // IMPORTANT NOTE: Any changes here must also be taken into account in scanForItem
 
     MissionItem* item = new MissionItem(seqNum++,                           // sequence number
                                         MAV_CMD_DO_LAND_START,              // MAV_CMD
@@ -211,8 +220,8 @@ QmlObjectListModel* FixedWingLandingComplexItem::getMissionItems(void) const
                                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  // param 1-7
                                         true,                               // autoContinue
                                         false,                              // isCurrentItem
-                                        pMissionItems);                     // parent - allow delete on pMissionItems to delete everthing
-    pMissionItems->append(item);
+                                        missionItemParent);
+    items.append(item);
 
     float loiterRadius = _loiterRadiusFact.rawValue().toDouble() * (_loiterClockwise ? 1.0 : -1.0);
     item = new MissionItem(seqNum++,
@@ -227,8 +236,8 @@ QmlObjectListModel* FixedWingLandingComplexItem::getMissionItems(void) const
                            _loiterAltitudeFact.rawValue().toDouble(),
                            true,                            // autoContinue
                            false,                           // isCurrentItem
-                           pMissionItems);                  // parent - allow delete on pMissionItems to delete everthing
-    pMissionItems->append(item);
+                           missionItemParent);
+    items.append(item);
 
     item = new MissionItem(seqNum++,
                            MAV_CMD_NAV_LAND,
@@ -236,24 +245,92 @@ QmlObjectListModel* FixedWingLandingComplexItem::getMissionItems(void) const
                            0.0, 0.0, 0.0, 0.0,                 // param 1-4
                            _landingCoordinate.latitude(),
                            _landingCoordinate.longitude(),
-                           0.0,                                // altitude
+                           _landingAltitudeFact.rawValue().toDouble(),
                            true,                               // autoContinue
                            false,                              // isCurrentItem
-                           pMissionItems);                     // parent - allow delete on pMissionItems to delete everthing
-    pMissionItems->append(item);
+                           missionItemParent);
+    items.append(item);
+}
 
-    return pMissionItems;
+bool FixedWingLandingComplexItem::scanForItem(QmlObjectListModel* visualItems, Vehicle* vehicle)
+{
+    qCDebug(FixedWingLandingComplexItemLog) << "FixedWingLandingComplexItem::scanForItem count" << visualItems->count();
+
+    if (visualItems->count() < 4) {
+        return false;
+    }
+
+    int lastItem = visualItems->count() - 1;
+
+    SimpleMissionItem* item = visualItems->value<SimpleMissionItem*>(lastItem--);
+    if (!item) {
+        return false;
+    }
+    MissionItem& missionItemLand = item->missionItem();
+    if (missionItemLand.command() != MAV_CMD_NAV_LAND ||
+            !(missionItemLand.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT || missionItemLand.frame() == MAV_FRAME_GLOBAL) ||
+            missionItemLand.param1() != 0 || missionItemLand.param2() != 0 || missionItemLand.param3() != 0 || missionItemLand.param4() == 1.0) {
+        return false;
+    }
+
+    item = visualItems->value<SimpleMissionItem*>(lastItem--);
+    if (!item) {
+        return false;
+    }
+    MissionItem& missionItemLoiter = item->missionItem();
+    if (missionItemLoiter.command() != MAV_CMD_NAV_LOITER_TO_ALT ||
+            !(missionItemLoiter.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT || missionItemLoiter.frame() == MAV_FRAME_GLOBAL) ||
+            missionItemLoiter.param1() != 1.0 || missionItemLoiter.param3() != 0 || missionItemLoiter.param4() != 1.0) {
+        return false;
+    }
+
+    item = visualItems->value<SimpleMissionItem*>(lastItem--);
+    if (!item) {
+        return false;
+    }
+    MissionItem& missionItemDoLandStart = item->missionItem();
+    if (missionItemDoLandStart.command() != MAV_CMD_DO_LAND_START ||
+            missionItemDoLandStart.param1() != 0 || missionItemDoLandStart.param2() != 0 || missionItemDoLandStart.param3() != 0 || missionItemDoLandStart.param4() != 0|| missionItemDoLandStart.param5() != 0|| missionItemDoLandStart.param6() != 0|| missionItemDoLandStart.param6() != 0) {
+        return false;
+    }
+
+    // We made it this far so we do have a Fixed Wing Landing Pattern item at the end of the mission
+
+    FixedWingLandingComplexItem* complexItem = new FixedWingLandingComplexItem(vehicle, visualItems);
+
+    complexItem->_ignoreRecalcSignals = true;
+
+    complexItem->_loiterAltitudeRelative = missionItemLoiter.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT;
+    complexItem->_loiterRadiusFact.setRawValue(qAbs(missionItemLoiter.param2()));
+    complexItem->_loiterClockwise = missionItemLoiter.param2() > 0;
+    complexItem->_loiterCoordinate.setLatitude(missionItemLoiter.param5());
+    complexItem->_loiterCoordinate.setLongitude(missionItemLoiter.param6());
+    complexItem->_loiterAltitudeFact.setRawValue(missionItemLoiter.param7());
+
+    complexItem->_landingAltitudeRelative = missionItemLand.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT;
+    complexItem->_landingCoordinate.setLatitude(missionItemLand.param5());
+    complexItem->_landingCoordinate.setLongitude(missionItemLand.param6());
+    complexItem->_landingAltitudeFact.setRawValue(missionItemLand.param7());
+
+    complexItem->_landingCoordSet = true;
+
+    complexItem->_ignoreRecalcSignals = false;
+    complexItem->_recalcFromCoordinateChange();
+    complexItem->setDirty(false);
+
+    lastItem = visualItems->count() - 1;
+    visualItems->removeAt(lastItem--)->deleteLater();
+    visualItems->removeAt(lastItem--)->deleteLater();
+    visualItems->removeAt(lastItem--)->deleteLater();
+
+    visualItems->append(complexItem);
+
+    return true;
 }
 
 double FixedWingLandingComplexItem::complexDistance(void) const
 {
     return _loiterCoordinate.distanceTo(_landingCoordinate);
-}
-
-void FixedWingLandingComplexItem::setCruiseSpeed(double cruiseSpeed)
-{
-    // We don't care about cruise speed
-    Q_UNUSED(cruiseSpeed);
 }
 
 void FixedWingLandingComplexItem::setLandingCoordinate(const QGeoCoordinate& coordinate)
@@ -335,6 +412,7 @@ void FixedWingLandingComplexItem::_recalcFromRadiusChange(void)
 
             _ignoreRecalcSignals = true;
             emit loiterCoordinateChanged(_loiterCoordinate);
+            emit coordinateChanged(_loiterCoordinate);
             _ignoreRecalcSignals = false;
         }
     }
@@ -372,6 +450,7 @@ void FixedWingLandingComplexItem::_recalcFromHeadingAndDistanceChange(void)
         _ignoreRecalcSignals = true;
         emit loiterTangentCoordinateChanged(_loiterTangentCoordinate);
         emit loiterCoordinateChanged(_loiterCoordinate);
+        emit coordinateChanged(_loiterCoordinate);
         _ignoreRecalcSignals = false;
     }
 }
@@ -441,3 +520,4 @@ void FixedWingLandingComplexItem::_setDirty(void)
 {
     setDirty(true);
 }
+

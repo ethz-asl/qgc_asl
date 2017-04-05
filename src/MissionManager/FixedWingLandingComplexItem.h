@@ -49,14 +49,15 @@ public:
     void setLandingCoordinate       (const QGeoCoordinate& coordinate);
     void setLoiterCoordinate        (const QGeoCoordinate& coordinate);
 
+    /// Scans the loaded items for a landing pattern complex item
+    static bool scanForItem(QmlObjectListModel* visualItems, Vehicle* vehicle);
+
     // Overrides from ComplexMissionItem
 
     double              complexDistance     (void) const final;
     int                 lastSequenceNumber  (void) const final;
-    QmlObjectListModel* getMissionItems     (void) const final;
     bool                load                (const QJsonObject& complexObject, int sequenceNumber, QString& errorString) final;
     double              greatestDistanceTo  (const QGeoCoordinate &other) const final;
-    void                setCruiseSpeed      (double cruiseSpeed) final;
     QString             mapVisualQML        (void) const final { return QStringLiteral("FWLandingPatternMapVisual.qml"); }
 
     // Overrides from VisualMissionItem
@@ -65,13 +66,16 @@ public:
     bool            isSimpleItem            (void) const final { return false; }
     bool            isStandaloneCoordinate  (void) const final { return false; }
     bool            specifiesCoordinate     (void) const final;
+    bool            specifiesAltitudeOnly   (void) const final { return false; }
     QString         commandDescription      (void) const final { return "Landing Pattern"; }
     QString         commandName             (void) const final { return "Landing Pattern"; }
     QString         abbreviation            (void) const final { return "L"; }
     QGeoCoordinate  coordinate              (void) const final { return _loiterCoordinate; }
     QGeoCoordinate  exitCoordinate          (void) const final { return _landingCoordinate; }
     int             sequenceNumber          (void) const final { return _sequenceNumber; }
-    double          flightSpeed             (void) final { return std::numeric_limits<double>::quiet_NaN(); }
+    double          specifiedFlightSpeed    (void) final { return std::numeric_limits<double>::quiet_NaN(); }
+    double          specifiedGimbalYaw      (void) final { return std::numeric_limits<double>::quiet_NaN(); }
+    void            appendMissionItems      (QList<MissionItem*>& items, QObject* missionItemParent) final;
 
     bool coordinateHasRelativeAltitude      (void) const final { return true; }
     bool exitCoordinateHasRelativeAltitude  (void) const final { return true; }
@@ -80,7 +84,7 @@ public:
     void setDirty           (bool dirty) final;
     void setCoordinate      (const QGeoCoordinate& coordinate) final { setLoiterCoordinate(coordinate); }
     void setSequenceNumber  (int sequenceNumber) final;
-    void save               (QJsonObject& saveObject) const final;
+    void save               (QJsonArray&  missionItems) final;
 
     static const char* jsonComplexItemTypeValue;
 
