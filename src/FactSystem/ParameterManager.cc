@@ -406,7 +406,9 @@ void ParameterManager::refreshAllParameters(uint8_t componentId)
                                              &msg,
                                              _vehicle->id(),
                                              componentId);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 
     QString what = (componentId == MAV_COMP_ID_ALL) ? "MAV_COMP_ID_ALL" : QString::number(componentId);
     qCDebug(ParameterManagerLog) << _logVehiclePrefix() << "Request to refresh all parameters for component ID:" << what;
@@ -708,6 +710,18 @@ void ParameterManager::_writeParameterRaw(int componentId, const QString& paramN
     p.target_component = (uint8_t)componentId;
 
     strncpy(p.param_id, paramName.toStdString().c_str(), sizeof(p.param_id));
+
+    bool isSatcomActive = qgcApp()->toolbox()->linkManager()->satcomActive();
+    QList<LinkInterface*> activeLinks = _vehicle->getActiveLinks();
+    for (int i=0; i<activeLinks.count(); i++) {
+        LinkInterface* checkLink = activeLinks[i];
+        if (checkLink->getLinkConfiguration()->type() == 0 && isSatcomActive == false) {
+            _vehicle->setPriorityLink(checkLink);
+        }
+        else if (checkLink->getLinkConfiguration()->type() == 1 && isSatcomActive == true) {
+            _vehicle->setPriorityLink(checkLink);
+        }
+    }
 
     mavlink_message_t msg;
     mavlink_msg_param_set_encode_chan(_mavlink->getSystemId(),

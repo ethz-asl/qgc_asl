@@ -268,6 +268,8 @@ public:
     Q_PROPERTY(bool                 genericFirmware         READ genericFirmware                                        CONSTANT)
     Q_PROPERTY(bool                 connectionLost          READ connectionLost                                         NOTIFY connectionLostChanged)
     Q_PROPERTY(bool                 connectionLostEnabled   READ connectionLostEnabled  WRITE setConnectionLostEnabled  NOTIFY connectionLostEnabledChanged)
+    Q_PROPERTY(int                  connectionLostVariable  READ connectionLostVariable WRITE setConnectionLostVariable NOTIFY connectionLostVariableChanged)
+    Q_PROPERTY(int                  mavCommandTimerVariable READ mavCommandTimerVariable    WRITE setMavCommandTimerVariable    NOTIFY mavCommandTimerVariableChanged)
     Q_PROPERTY(uint                 messagesReceived        READ messagesReceived                                       NOTIFY messagesReceivedChanged)
     Q_PROPERTY(uint                 messagesSent            READ messagesSent                                           NOTIFY messagesSentChanged)
     Q_PROPERTY(uint                 messagesLost            READ messagesLost                                           NOTIFY messagesLostChanged)
@@ -561,6 +563,8 @@ public:
     bool            genericFirmware         () const { return !px4Firmware() && !apmFirmware(); }
     bool            connectionLost          () const { return _connectionLost; }
     bool            connectionLostEnabled   () const { return _connectionLostEnabled; }
+    int             connectionLostVariable  () { return _connectionLostTimeoutMSecs; }
+    int             mavCommandTimerVariable () { return _mavCommandAckTimeoutMSecs; }
     uint            messagesReceived        () { return _messagesReceived; }
     uint            messagesSent            () { return _messagesSent; }
     uint            messagesLost            () { return _messagesLost; }
@@ -606,6 +610,8 @@ public:
     FactGroup* temperatureFactGroup (void) { return &_temperatureFactGroup; }
 
     void setConnectionLostEnabled(bool connectionLostEnabled);
+    void setConnectionLostVariable(int connectionLostVariable);
+    void setMavCommandTimerVariable(int mavCommandTimerVariable);
 
     ParameterManager* parameterManager(void) { return _parameterManager; }
     ParameterManager* parameterManager(void) const { return _parameterManager; }
@@ -655,6 +661,9 @@ public:
     /// and destroyed when the vehicle goes away.
     void setFirmwarePluginInstanceData(QObject* firmwarePluginInstanceData);
 
+    QList<LinkInterface*> getActiveLinks(void) { return _links; }
+    void setPriorityLink(LinkInterface* link);
+
     QString vehicleImageOpaque  () const;
     QString vehicleImageOutline () const;
     QString vehicleImageCompass () const;
@@ -682,6 +691,8 @@ signals:
     void hilActuatorControlsChanged(quint64 time, quint64 flags, float ctl_0, float ctl_1, float ctl_2, float ctl_3, float ctl_4, float ctl_5, float ctl_6, float ctl_7, float ctl_8, float ctl_9, float ctl_10, float ctl_11, float ctl_12, float ctl_13, float ctl_14, float ctl_15, quint8 mode);
     void connectionLostChanged(bool connectionLost);
     void connectionLostEnabledChanged(bool connectionLostEnabled);
+    void connectionLostVariableChanged(int connectionLostVariable);
+    void mavCommandTimerVariableChanged(int mavCommandTimerVariable);
     void autoDisconnectChanged(bool autoDisconnectChanged);
     void flyingChanged(bool flying);
     void guidedModeChanged(bool guidedMode);
@@ -804,6 +815,7 @@ private:
     void _handleGlobalPositionInt(mavlink_message_t& message);
     void _handleAltitude(mavlink_message_t& message);
     void _handleVfrHud(mavlink_message_t& message);
+    void _handleHighLatency(void);
     void _handleScaledPressure(mavlink_message_t& message);
     void _handleScaledPressure2(mavlink_message_t& message);
     void _handleScaledPressure3(mavlink_message_t& message);
@@ -890,7 +902,7 @@ private:
     QTimer                          _mavCommandAckTimer;
     int                             _mavCommandRetryCount;
     static const int                _mavCommandMaxRetryCount = 3;
-    static const int                _mavCommandAckTimeoutMSecs = 3000;
+    int                             _mavCommandAckTimeoutMSecs;
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;
@@ -899,7 +911,7 @@ private:
     // Lost connection handling
     bool                _connectionLost;
     bool                _connectionLostEnabled;
-    static const int    _connectionLostTimeoutMSecs = 3500;  // Signal connection lost after 3.5 seconds of missed heartbeat
+    int                 _connectionLostTimeoutMSecs;  // Signal connection lost after x seconds of missed heartbeat
     QTimer              _connectionLostTimer;
 
     MissionManager*     _missionManager;

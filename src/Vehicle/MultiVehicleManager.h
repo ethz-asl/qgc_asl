@@ -95,6 +95,8 @@ private slots:
     void _vehicleParametersReadyChanged(bool parametersReady);
     void _sendGCSHeartbeat(void);
     void _vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType);
+    void _highLatVehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType);
+    void _isSatcomActive(bool enable);
 
 private:
     bool _vehicleExists(int vehicleId);

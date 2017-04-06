@@ -28,6 +28,7 @@
 #include "MissionCommandTree.h"
 #include "QGroundControlQmlGlobal.h"
 #include "SettingsManager.h"
+#include <QDebug>
 
 QGC_LOGGING_CATEGORY(VehicleLog, "VehicleLog")
 
@@ -109,8 +110,10 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _telemetryRNoise(0)
     , _vehicleCapabilitiesKnown(false)
     , _supportsMissionItemInt(false)
+    , _mavCommandAckTimeoutMSecs(3000)
     , _connectionLost(false)
     , _connectionLostEnabled(true)
+    , _connectionLostTimeoutMSecs(3500)
     , _missionManager(NULL)
     , _missionManagerInitialRequestSent(false)
     , _geoFenceManager(NULL)
@@ -261,8 +264,10 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _defaultHoverSpeed(_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _vehicleCapabilitiesKnown(true)
     , _supportsMissionItemInt(false)
+    , _mavCommandAckTimeoutMSecs(3000)
     , _connectionLost(false)
     , _connectionLostEnabled(true)
+    , _connectionLostTimeoutMSecs(3500)
     , _missionManager(NULL)
     , _missionManagerInitialRequestSent(false)
     , _geoFenceManager(NULL)
@@ -571,6 +576,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
     case MAVLINK_MSG_ID_VFR_HUD:
         _handleVfrHud(message);
+        break;     
+    case MAVLINK_MSG_ID_HIGH_LATENCY:
+        _handleHighLatency();
         break;
     case MAVLINK_MSG_ID_SCALED_PRESSURE:
         _handleScaledPressure(message);
@@ -1021,6 +1029,20 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
     emit rcChannelsChanged(channelCount, pwmValues);
 }
 
+void Vehicle::_handleHighLatency(void)
+{
+    _connectionActive();
+
+    bool isSatcomActive = qgcApp()->toolbox()->linkManager()->satcomActive();
+
+    if (!isSatcomActive) {
+        qgcApp()->toolbox()->linkManager()->setSatcomActive(true);
+        qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(60000);
+        qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(60000);
+
+    }
+}
+
 void Vehicle::_handleScaledPressure(mavlink_message_t& message) {
     mavlink_scaled_pressure_t pressure;
     mavlink_msg_scaled_pressure_decode(&message, &pressure);
@@ -1088,6 +1110,8 @@ void Vehicle::_sendMessageOnLink(LinkInterface* link, mavlink_message_t message)
         return;
     }
 
+    qDebug() << "--> " << message.msgid;
+
 #if 0
     // Leaving in for ease in Mav 2.0 testing
     mavlink_status_t* mavlinkStatus = mavlink_get_channel_status(link->mavlinkChannel());
@@ -1111,7 +1135,7 @@ void Vehicle::_updatePriorityLink(void)
     LinkInterface* newPriorityLink = NULL;
 
 #ifndef NO_SERIAL_LINK
-    // Note that this routine specificallty does not clear _priorityLink when there are no links remaining.
+    // Note that this routine specifically does not clear _priorityLink when there are no links remaining.
     // By doing this we hold a reference on the last link as the Vehicle shuts down. Thus preventing shutdown
     // ordering NULL pointer crashes where priorityLink() is still called during shutdown sequence.
     for (int i=0; i<_links.count(); i++) {
@@ -1142,6 +1166,11 @@ void Vehicle::_updatePriorityLink(void)
     if (newPriorityLink) {
         _priorityLink = qgcApp()->toolbox()->linkManager()->sharedLinkInterfacePointerForLink(newPriorityLink);
     }
+}
+
+void Vehicle::setPriorityLink(LinkInterface* link)
+{
+    _priorityLink = qgcApp()->toolbox()->linkManager()->sharedLinkInterfacePointerForLink(link);
 }
 
 void Vehicle::_updateAttitude(UASInterface*, double roll, double pitch, double yaw, quint64)
@@ -1719,6 +1748,18 @@ void Vehicle::_connectionLostTimeout(void)
             disconnectInactiveVehicle();
         }
     }
+}
+
+void Vehicle::setConnectionLostVariable(int connectionLostVariable)
+{
+    _connectionLostTimeoutMSecs = connectionLostVariable;
+    _connectionLostTimer.setInterval(Vehicle::_connectionLostTimeoutMSecs);
+}
+
+void Vehicle::setMavCommandTimerVariable(int mavCommandTimerVariable)
+{
+    _mavCommandAckTimeoutMSecs = mavCommandTimerVariable;
+    _mavCommandAckTimer.setInterval(Vehicle::_mavCommandAckTimeoutMSecs);
 }
 
 void Vehicle::_connectionActive(void)

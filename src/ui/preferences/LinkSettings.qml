@@ -126,6 +126,8 @@ Rectangle {
             enabled:    _currentSelection && !_currentSelection.link
             onClicked: {
                 QGroundControl.linkManager.createConnectedLink(_currentSelection)
+                mainWindow.highLatencyCheck = QGroundControl.linkManager.connectedLinkHighLatency()
+                mainWindow.multipleLinks = QGroundControl.linkManager.multipleLinksConnected()
             }
         }
         QGCButton {
@@ -133,6 +135,8 @@ Rectangle {
             enabled:    _currentSelection && _currentSelection.link
             onClicked: {
                 QGroundControl.linkManager.disconnectLink(_currentSelection.link, false)
+                mainWindow.highLatencyCheck = QGroundControl.linkManager.connectedLinkHighLatency()
+                mainWindow.multipleLinks = QGroundControl.linkManager.multipleLinksConnected()
             }
         }
     }
@@ -271,21 +275,21 @@ Rectangle {
                         height: ScreenTools.defaultFontPixelHeight * 0.5
                         width:  parent.width
                     }
-                    //-- Auto Connect on Start
-                    QGCCheckBox {
-                        text:       "Automatically Connect on Start"
-                        checked:    false
-                        visible:    editConfig ? editConfig.autoConnectAllowed : false
-                        onCheckedChanged: {
-                            if(editConfig) {
-                                editConfig.autoConnect = checked
-                            }
-                        }
-                        Component.onCompleted: {
-                            if(editConfig)
-                                checked = editConfig.autoConnect
-                        }
-                    }
+//                    //-- Auto Connect on Start
+//                    QGCCheckBox {
+//                        text:       "Automatically Connect on Start"
+//                        checked:    false
+//                        visible:    editConfig ? editConfig.autoConnectAllowed : false
+//                        onCheckedChanged: {
+//                            if(editConfig) {
+//                                editConfig.autoConnect = checked
+//                            }
+//                        }
+//                        Component.onCompleted: {
+//                            if(editConfig)
+//                                checked = editConfig.autoConnect
+//                        }
+//                    }
                     Item {
                         height: ScreenTools.defaultFontPixelHeight
                         width:  parent.width
