@@ -37,9 +37,6 @@ public slots:
     void OnSpeedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
     void OnSensPowerChanged(float volt, float currpb, float curr_1, float curr_2);
 
-protected:
-    quint64 lastVoltageWarning; ///< Time at which the last voltage warning occured
-
 private:
     void SetTrimData(int velocityType);
     void ResetData(void);
@@ -72,13 +69,6 @@ private:
 
     int n_h;
     float h_Start;
-
-    // Add an external voltage sensor in addition to PX4-onboard sensor
-    float _lpVoltage_ext, _tickLowpassVoltage_ext, _lastTickVoltageValue_ext;
-    float _emptyVoltage_ext, _warnVoltage_ext, _fullVoltage_ext;
-    float _tickVoltage_ext;
-    float _startVoltage_ext;
-
 };
 
 #endif // AUTOTRIM_H

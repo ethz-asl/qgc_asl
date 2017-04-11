@@ -1037,5 +1037,18 @@ private:
     static const char* _joystickModeSettingsKey;
     static const char* _joystickEnabledSettingsKey;
 
+    // Add an external voltage sensor in addition to PX4-onboard sensor
+    double _currentVoltage_ext;
+    float _lpVoltage_ext;
+    float _tickLowpassVoltage_ext;
+    float _lastTickVoltageValue_ext;
+    float _emptyVoltage_ext;
+    float _warnVoltage_ext;
+    float _fullVoltage_ext;
+    float _tickVoltage_ext;
+    float _startVoltage_ext;
+    quint64 _lastVoltageWarning; ///< Time at which the last voltage warning occurred
+
+
 };
 #endif

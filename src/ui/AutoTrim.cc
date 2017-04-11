@@ -18,16 +18,7 @@ const float RAD2DEG = 180.0f/3.14159f; //assumes multiplication with this consta
 
 AutoTrim::AutoTrim(const QString& title, QAction* action, QWidget *parent) :
     QGCDockWidget(title, action, parent)
-  , lastVoltageWarning(0)
   , m_ui(new Ui::AutoTrim)
-  , _lpVoltage_ext(0.0)
-  , _tickLowpassVoltage_ext(0.0)
-  , _lastTickVoltageValue_ext(0.0)
-  , _emptyVoltage_ext(9.0)
-  , _warnVoltage_ext(10.5)
-  , _fullVoltage_ext(12.5)
-  , _tickVoltage_ext(_warnVoltage_ext)
-  , _startVoltage_ext(-1.0f)
 {
     m_ui->setupUi(this);
 
@@ -216,39 +207,14 @@ void AutoTrim::OnSensPowerChanged(float volt, float currpb, float curr_1, float 
     Q_UNUSED(curr_1);
     Q_UNUSED(curr_2);
 
-    // Battery charge/time remaining/voltage calculations
-    _lpVoltage_ext = volt;
-    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_lpVoltage_ext;
-    // We don't want to tick above the threshold
-    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
-    {
-        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
-    }
-    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
-        /* warn if lower than treshold */
-        && (_lpVoltage_ext < _tickVoltage_ext)
-        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
-        && (_lpVoltage_ext > 3.3f)
-        /* warn only if current voltage is really still lower by a reasonable amount */
-        && ((_lpVoltage_ext - 0.2f) < _tickVoltage_ext)
-        /* warn only every 12 seconds */
-        && (QGC::groundTimeUsecs() - lastVoltageWarning) > 12000000)
-    {
-        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
-        lastVoltageWarning = QGC::groundTimeUsecs();
-        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
-    }
-
-    if (_startVoltage_ext == -1.0f && _lpVoltage_ext > 0.1f) _startVoltage_ext = _lpVoltage_ext;
-
     if (bConnected) {
             // Update current data text fields.
-            m_ui->e_cur_power->setText(QString("%1").arg(_lpVoltage_ext*currpb, 0, 'f', 2));
+            m_ui->e_cur_power->setText(QString("%1").arg(volt*currpb, 0, 'f', 2));
     }
 
     if (bStarted) {
             // Update avrg/accum values here.
-            avg_power = (avg_power*n_power + _lpVoltage_ext*currpb) / (n_power + 1);
+            avg_power = (avg_power*n_power + volt*currpb) / (n_power + 1);
             m_ui->e_avg_power->setText(QString("%1").arg(avg_power, 0, 'f', 2));
 
             // Increase counters

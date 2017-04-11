@@ -152,6 +152,16 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _windFactGroup(this)
     , _vibrationFactGroup(this)
     , _temperatureFactGroup(this)
+    , _lpVoltage_ext(0.0)
+    , _tickLowpassVoltage_ext(0.0)
+    , _lastTickVoltageValue_ext(0.0)
+    , _emptyVoltage_ext(9.0)
+    , _warnVoltage_ext(10.5)
+    , _fullVoltage_ext(12.5)
+    , _tickVoltage_ext(_warnVoltage_ext)
+    , _startVoltage_ext(-1.0f)
+    , _lastVoltageWarning(0)
+
 {
     _addLink(link);
 
@@ -329,6 +339,15 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _batteryFactGroup(this)
     , _windFactGroup(this)
     , _vibrationFactGroup(this)
+    , _lpVoltage_ext(0.0)
+    , _tickLowpassVoltage_ext(0.0)
+    , _lastTickVoltageValue_ext(0.0)
+    , _emptyVoltage_ext(9.0)
+    , _warnVoltage_ext(10.5)
+    , _fullVoltage_ext(12.5)
+    , _tickVoltage_ext(_warnVoltage_ext)
+    , _startVoltage_ext(-1.0f)
+    , _lastVoltageWarning(0)
 {
     _commonInit();
     _firmwarePlugin->initializeVehicle(this);
@@ -1095,16 +1114,69 @@ void Vehicle::_handleSensPower(mavlink_message_t& message)
 {
     mavlink_sens_power_t data;
     mavlink_msg_sens_power_decode(&message, &data);
-    emit SensPowerChanged(data.adc121_vspb_volt, data.adc121_cspb_amp, data.adc121_cs1_amp, data.adc121_cs2_amp);
+
+    // Battery charge/time remaining/voltage calculations
+    _currentVoltage_ext = data.adc121_vspb_volt;
+    _lpVoltage_ext = _currentVoltage_ext;
+    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_currentVoltage_ext;
+    // We don't want to tick above the threshold
+    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
+    {
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
+        /* warn if lower than treshold */
+        && (_lpVoltage_ext < _tickVoltage_ext)
+        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+        && (_currentVoltage_ext > 3.3f)
+        /* warn only if current voltage is really still lower by a reasonable amount */
+        && ((_currentVoltage_ext - 0.2f) < _tickVoltage_ext)
+        /* warn only every 12 seconds */
+        && (QGC::groundTimeUsecs() - _lastVoltageWarning) > 12000000)
+    {
+        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
+        _lastVoltageWarning = QGC::groundTimeUsecs();
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+
+    if (_startVoltage_ext == -1.0f && _currentVoltage_ext > 0.1f) _startVoltage_ext = _currentVoltage_ext;
+
+    emit SensPowerChanged(_lpVoltage_ext, data.adc121_cspb_amp, data.adc121_cs1_amp, data.adc121_cs2_amp);
 }
 
 void Vehicle::_handleSensPowerBoard(mavlink_message_t &message)
 {
     mavlink_sens_power_board_t data;
     mavlink_msg_sens_power_board_decode(&message, &data);
-    float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
 
-    emit SensPowerChanged(data.pwr_brd_system_volt/1000, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
+    // Battery charge/time remaining/voltage calculations
+    _currentVoltage_ext = data.pwr_brd_system_volt / 1000;
+    _lpVoltage_ext = _currentVoltage_ext;
+    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_currentVoltage_ext;
+    // We don't want to tick above the threshold
+    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
+    {
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
+        /* warn if lower than treshold */
+        && (_lpVoltage_ext < _tickVoltage_ext)
+        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+        && (_currentVoltage_ext > 3.3f)
+        /* warn only if current voltage is really still lower by a reasonable amount */
+        && ((_currentVoltage_ext - 0.2f) < _tickVoltage_ext)
+        /* warn only every 12 seconds */
+        && (QGC::groundTimeUsecs() - _lastVoltageWarning) > 12000000)
+    {
+        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
+        _lastVoltageWarning = QGC::groundTimeUsecs();
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+
+    if (_startVoltage_ext == -1.0f && _currentVoltage_ext > 0.1f) _startVoltage_ext = _currentVoltage_ext;
+
+    float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
+    emit SensPowerChanged(_currentVoltage_ext, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
     emit SensPowerBoardChanged(data.pwr_brd_status);
 }
 
