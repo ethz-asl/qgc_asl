@@ -47,7 +47,6 @@ LinkManager::LinkManager(QGCApplication* app)
     , _configUpdateSuspended(false)
     , _configurationsLoaded(false)
     , _connectionsSuspended(false)
-    , _satcomActive(false)
     , _multipleLinksConnected(false)
     , _connectedHighLatency(false)
     , _mavlinkChannelsUsedBitMask(1)    // We never use channel 0 to avoid sequence numbering problems
@@ -628,30 +627,6 @@ void LinkManager::shutdown(void)
 {
     setConnectionsSuspended("Shutdown");
     disconnectAll();
-}
-
-void LinkManager::setSatcomActive(bool active)
-{
-    _satcomActive = active;
-}
-
-bool LinkManager::switchSatcomClick()
-{
-    if (_toolbox->multiVehicleManager()->activeVehicle()) {
-        if (_satcomActive) {
-            emit satcomActiveChanged(false);
-            _satcomActive = false;
-            qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(3500);
-            qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(3000);
-        }
-        else {
-            emit satcomActiveChanged(true);
-            _satcomActive = true;
-            qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(60000);
-            qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(60000);
-        }
-    }
-    return _satcomActive;
 }
 
 bool LinkManager::multipleLinksConnected()

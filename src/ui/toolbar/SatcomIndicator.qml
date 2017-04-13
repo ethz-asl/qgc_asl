@@ -23,7 +23,6 @@ import QGroundControl.Palette               1.0
 
 Item {
     property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
-    property var _linkManager:      QGroundControl.linkManager
 
     width:          satcomRow.width * 1.1
     anchors.top:    parent.top
@@ -76,7 +75,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                     }
                     onClicked: {
-                        if (QGroundControl.linkManager.switchSatcomClick()) {
+                        if (_activeVehicle.switchSatcomClick()) {
                             mainWindow.satcomOpacity = 1.0
                             mainWindow.activeCommText = "Satcom Active"
                             mainWindow.switchCommText = "Switch to Telemetry"

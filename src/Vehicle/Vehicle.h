@@ -312,6 +312,8 @@ public:
     Q_PROPERTY(unsigned int         telemetryRNoise         READ telemetryRNoise                                        NOTIFY telemetryRNoiseChanged)
     Q_PROPERTY(QVariantList         toolBarIndicators       READ toolBarIndicators                                      CONSTANT)
     Q_PROPERTY(QVariantList         cameraList              READ cameraList                                             CONSTANT)
+    Q_PROPERTY(bool                 satcomActive            READ satcomActive               WRITE setSatcomActive       NOTIFY satcomActiveChanged)
+
 
     /// true: Vehicle is flying, false: Vehicle is on ground
     Q_PROPERTY(bool flying      READ flying     WRITE setFlying     NOTIFY flyingChanged)
@@ -419,6 +421,9 @@ public:
     Q_INVOKABLE void clearMessages();
 
     Q_INVOKABLE void triggerCamera(void);
+
+    /// enable satcom
+    Q_INVOKABLE bool switchSatcomClick();
 
 #if 0
     // Temporarily removed, waiting for new command implementation
@@ -531,6 +536,10 @@ public:
     //-- Mavlink Logging
     void startMavlinkLog();
     void stopMavlinkLog();
+
+    void setSatcomActive(bool active);
+    bool satcomActive(void) { return _satcomActive; }
+
 
     /// Requests the specified data stream from the vehicle
     ///     @param stream Stream which is being requested
@@ -760,6 +769,8 @@ signals:
     ///     @param noResponseFromVehicle true: vehicle did not respond to command, false: vehicle responsed, MAV_RESULT in result
     void mavCommandResult(int vehicleId, int component, int command, int result, bool noReponseFromVehicle);
 
+    void satcomActiveChanged(bool active);
+
 private slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
     void _telemetryChanged(LinkInterface* link, unsigned rxerrors, unsigned fixed, int rssi, int remrssi, unsigned txbuf, unsigned noise, unsigned remnoise);
@@ -890,6 +901,7 @@ private:
     uint32_t        _telemetryRNoise;
     bool            _vehicleCapabilitiesKnown;
     bool            _supportsMissionItemInt;
+    bool            _satcomActive;
 
     typedef struct {
         int     component;

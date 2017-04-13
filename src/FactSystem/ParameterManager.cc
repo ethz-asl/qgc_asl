@@ -711,7 +711,7 @@ void ParameterManager::_writeParameterRaw(int componentId, const QString& paramN
 
     strncpy(p.param_id, paramName.toStdString().c_str(), sizeof(p.param_id));
 
-    bool isSatcomActive = qgcApp()->toolbox()->linkManager()->satcomActive();
+    bool isSatcomActive = _vehicle->satcomActive();
     QList<LinkInterface*> activeLinks = _vehicle->getActiveLinks();
     for (int i=0; i<activeLinks.count(); i++) {
         LinkInterface* checkLink = activeLinks[i];

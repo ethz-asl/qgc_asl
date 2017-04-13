@@ -208,7 +208,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 link->setDecodedFirstMavlinkPacket(true);
             }
 
-            qDebug() << "<-- " << message.msgid;
+            qDebug() << "<-- " << message.msgid << link;
 
             if(message.msgid == MAVLINK_MSG_ID_RADIO_STATUS)
             {
@@ -290,14 +290,13 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 emit vehicleHeartbeatInfo(link, message.sysid, message.compid, heartbeat.mavlink_version, heartbeat.autopilot, heartbeat.type);
             }
 
-            if (message.msgid == MAVLINK_MSG_ID_HIGH_LATENCY) {
+            if (message.msgid == MAVLINK_MSG_ID_ASL_HIGH_LATENCY) {
 #ifndef __mobile__
                 // Start loggin on first heartbeat
                 _startLogging();
 #endif
 
                 emit highLatVehicleHeartbeatInfo(link, 1, 1, 3, 17, 1);
-
             }
 
             // Increase receive counter

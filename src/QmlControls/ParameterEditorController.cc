@@ -133,7 +133,7 @@ void ParameterEditorController::loadFromFile(const QString& filename)
 
 void ParameterEditorController::refresh(void)
 {
-    bool isSatcomActive = qgcApp()->toolbox()->linkManager()->satcomActive();
+    bool isSatcomActive = _vehicle->satcomActive();
     if (!isSatcomActive) {
         _vehicle->parameterManager()->refreshAllParameters();
     }

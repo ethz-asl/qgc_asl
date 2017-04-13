@@ -110,6 +110,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _telemetryRNoise(0)
     , _vehicleCapabilitiesKnown(false)
     , _supportsMissionItemInt(false)
+    , _satcomActive(false)
     , _mavCommandAckTimeoutMSecs(3000)
     , _connectionLost(false)
     , _connectionLostEnabled(true)
@@ -264,6 +265,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _defaultHoverSpeed(_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _vehicleCapabilitiesKnown(true)
     , _supportsMissionItemInt(false)
+    , _satcomActive(false)
     , _mavCommandAckTimeoutMSecs(3000)
     , _connectionLost(false)
     , _connectionLostEnabled(true)
@@ -577,7 +579,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     case MAVLINK_MSG_ID_VFR_HUD:
         _handleVfrHud(message);
         break;     
-    case MAVLINK_MSG_ID_HIGH_LATENCY:
+    case MAVLINK_MSG_ID_ASL_HIGH_LATENCY:
         _handleHighLatency();
         break;
     case MAVLINK_MSG_ID_SCALED_PRESSURE:
@@ -1033,13 +1035,10 @@ void Vehicle::_handleHighLatency(void)
 {
     _connectionActive();
 
-    bool isSatcomActive = qgcApp()->toolbox()->linkManager()->satcomActive();
-
-    if (!isSatcomActive) {
-        qgcApp()->toolbox()->linkManager()->setSatcomActive(true);
+    if (!_satcomActive) {
+        _satcomActive = true;
         qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(60000);
         qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(60000);
-
     }
 }
 
@@ -1110,7 +1109,7 @@ void Vehicle::_sendMessageOnLink(LinkInterface* link, mavlink_message_t message)
         return;
     }
 
-    qDebug() << "--> " << message.msgid;
+    qDebug() << "--> " << message.msgid << link;
 
 #if 0
     // Leaving in for ease in Mav 2.0 testing
@@ -1760,6 +1759,82 @@ void Vehicle::setMavCommandTimerVariable(int mavCommandTimerVariable)
 {
     _mavCommandAckTimeoutMSecs = mavCommandTimerVariable;
     _mavCommandAckTimer.setInterval(Vehicle::_mavCommandAckTimeoutMSecs);
+}
+
+void Vehicle::setSatcomActive(bool active)
+{
+    _satcomActive = active;
+}
+
+bool Vehicle::switchSatcomClick()
+{
+    QList<LinkInterface*> activeLinks = getActiveLinks();
+    for (int i=0; i<activeLinks.count(); i++) {
+        LinkInterface* checkLink = activeLinks[i];
+        if (checkLink->getLinkConfiguration()->type() == 0) {
+            setPriorityLink(checkLink);
+        }
+    }
+
+    if (satcomActive()) {
+        emit satcomActiveChanged(false);
+        setSatcomActive(false);
+        setConnectionLostVariable(3500);
+        setMavCommandTimerVariable(3000);
+
+        qDebug("enable satcom");
+        mavlink_message_t       msg;
+        mavlink_command_long_t  cmd;
+
+        cmd.command = MAV_CMD_SATCOM_CONTROL;
+        cmd.confirmation = 0;
+        cmd.param1 = 0.0f;
+        cmd.param2 = 0.0f;
+        cmd.param3 = 0.0f;
+        cmd.param4 = 0.0f;
+        cmd.param5 = 0.0f;
+        cmd.param6 = 0.0f;
+        cmd.param7 = 0.0f;
+        cmd.target_system = id();
+        cmd.target_component = defaultComponentId();
+        mavlink_msg_command_long_encode_chan(_mavlink->getSystemId(),
+                                             _mavlink->getComponentId(),
+                                             priorityLink()->mavlinkChannel(),
+                                             &msg,
+                                             &cmd);
+
+        sendMessageOnLink(priorityLink(), msg);
+    }
+    else {
+        emit satcomActiveChanged(true);
+        setSatcomActive(true);
+        setConnectionLostVariable(60000);
+        setMavCommandTimerVariable(60000);
+
+        qDebug("enable satcom");
+        mavlink_message_t       msg;
+        mavlink_command_long_t  cmd;
+
+        cmd.command = MAV_CMD_SATCOM_CONTROL;
+        cmd.confirmation = 0;
+        cmd.param1 = 1.0f;
+        cmd.param2 = 0.0f;
+        cmd.param3 = 0.0f;
+        cmd.param4 = 0.0f;
+        cmd.param5 = 0.0f;
+        cmd.param6 = 0.0f;
+        cmd.param7 = 0.0f;
+        cmd.target_system = id();
+        cmd.target_component = defaultComponentId();
+        mavlink_msg_command_long_encode_chan(_mavlink->getSystemId(),
+                                             _mavlink->getComponentId(),
+                                             priorityLink()->mavlinkChannel(),
+                                             &msg,
+                                             &cmd);
+
+        sendMessageOnLink(priorityLink(), msg);
+    }
+    return _satcomActive;
 }
 
 void Vehicle::_connectionActive(void)

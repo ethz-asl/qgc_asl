@@ -67,7 +67,6 @@ public:
     Q_PROPERTY(QStringList          serialBaudRates     READ serialBaudRates                                                    CONSTANT)
     Q_PROPERTY(QStringList          serialPortStrings   READ serialPortStrings                                                  NOTIFY commPortStringsChanged)
     Q_PROPERTY(QStringList          serialPorts         READ serialPorts                                                        NOTIFY commPortsChanged)
-    Q_PROPERTY(bool                 satcomActive        READ satcomActive                      WRITE setSatcomActive            NOTIFY satcomActiveChanged)
 
     // Create/Edit Link Configuration
     Q_INVOKABLE LinkConfiguration*  createConfiguration         (int type, const QString& name);
@@ -76,7 +75,6 @@ public:
     Q_INVOKABLE bool                endConfigurationEditing     (LinkConfiguration* config, LinkConfiguration* editedConfig);
     Q_INVOKABLE bool                endCreateConfiguration      (LinkConfiguration* config);
     Q_INVOKABLE void                removeConfiguration         (LinkConfiguration* config);
-    Q_INVOKABLE bool                switchSatcomClick           ();
     Q_INVOKABLE bool                multipleLinksConnected      ();
     Q_INVOKABLE bool                connectedLinkHighLatency    ();
 
@@ -89,8 +87,6 @@ public:
     QStringList         serialBaudRates         (void);
     QStringList         serialPortStrings       (void);
     QStringList         serialPorts             (void);
-
-    void setSatcomActive(bool active);
 
     /// Load list of link configurations from disk
     void loadLinkConfigurationList();
@@ -157,8 +153,6 @@ public:
 
     SharedLinkConfigurationPointer addConfiguration(LinkConfiguration* config);
 
-    bool satcomActive(void) { return _satcomActive; }
-
     void startAutoConnectedLinks(void);
 
     static const char*  settingsGroup;
@@ -184,7 +178,6 @@ signals:
     void commPortStringsChanged();
     void commPortsChanged();
     void linkConfigurationsChanged();
-    void satcomActiveChanged(bool active);
 
 private slots:
     void _linkConnected(void);
@@ -209,7 +202,6 @@ private:
     bool    _configUpdateSuspended;                     ///< true: stop updating configuration list
     bool    _configurationsLoaded;                      ///< true: Link configurations have been loaded
     bool    _connectionsSuspended;                      ///< true: all new connections should not be allowed
-    bool    _satcomActive;
     bool    _multipleLinksConnected;
     bool    _connectedHighLatency;
     QString _connectionsSuspendedReason;                ///< User visible reason for suspension
