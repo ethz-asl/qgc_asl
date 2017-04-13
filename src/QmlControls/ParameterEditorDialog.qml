@@ -59,7 +59,7 @@ QGCViewDialog {
                 forceSave.visible = true
             }
         }
-        controller.saveToFile("/home/michael/Desktop/autosave_params.params")
+        controller.autoSaveParams()
     }
 
     Component.onCompleted: {

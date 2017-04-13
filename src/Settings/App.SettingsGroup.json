@@ -125,7 +125,21 @@
 {
     "name":             "SavePath",
     "shortDescription": "Application save directory",
-    "longDescription":  "Directory to which all data files  are saved/loaded from",
+    "longDescription":  "Directory to which all data files are saved/loaded from",
+    "type":             "string",
+    "defaultValue":     ""
+},
+{
+    "name":             "ParamAutoSave",
+    "shortDescription": "Parameter autosave",
+    "longDescription":  "Automatically save parameters to local disk on change",
+    "type":             "string",
+    "defaultValue":     ""
+},
+{
+    "name":             "ParamAutoSavePath",
+    "shortDescription": "Parameter autosave directory",
+    "longDescription":  "Directory to which parameter files are saved/loaded from",
     "type":             "string",
     "defaultValue":     ""
 }
