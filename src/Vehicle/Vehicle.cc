@@ -580,7 +580,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         _handleVfrHud(message);
         break;     
     case MAVLINK_MSG_ID_ASL_HIGH_LATENCY:
-        _handleHighLatency();
+        _handleAslHighLatency(message);
         break;
     case MAVLINK_MSG_ID_SCALED_PRESSURE:
         _handleScaledPressure(message);
@@ -1031,7 +1031,7 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
     emit rcChannelsChanged(channelCount, pwmValues);
 }
 
-void Vehicle::_handleHighLatency(void)
+void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
 {
     _connectionActive();
 
@@ -1040,6 +1040,77 @@ void Vehicle::_handleHighLatency(void)
         qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(60000);
         qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(60000);
     }
+
+    mavlink_asl_high_latency_t data;
+    mavlink_msg_asl_high_latency_decode(&message, &data);
+
+    // base mode
+    if (data.base_mode != _base_mode) {
+        _base_mode = data.base_mode;
+        emit flightModeChanged(flightMode());
+    }
+
+    // roll
+    _rollFact.setRawValue(data.roll);
+
+    // heading
+    _headingFact.setRawValue(data.heading * 2);
+
+    // throttle --> energybudget
+
+    // gps_fix_type, gps_nsat, latitude, longitude, altitude_amsl
+    _gpsFactGroup.lock()->setRawValue(data.gps_fix_type);
+    _gpsFactGroup.count()->setRawValue(data.gps_nsat == 255 ? 0 : data.gps_nsat);
+
+    _coordinate.setLatitude(data.latitude  / (double)1E7);
+    _coordinate.setLongitude(data.longitude / (double)1E7);
+    _coordinate.setAltitude(data.altitude_amsl);
+    emit coordinateChanged(_coordinate);
+    _altitudeAMSLFact.setRawValue(data.altitude_amsl);
+
+    // altitude_sp
+
+    // airspeed
+    _airSpeedFact.setRawValue(data.airspeed);
+
+    // airspeed_sp
+
+    // windspeed
+    _windFactGroup.speed()->setRawValue(data.windspeed / 10);
+
+    // groundspeed
+    _groundSpeedFact.setRawValue(data.groundspeed);
+
+    // temperature_air
+
+    // failsafe
+
+    // wp_num
+
+    // v_avg_mppt0 --> energybudget
+
+    // v_avg_mppt1 --> energybudget
+
+    // v_avg_mppt2 --> energybudget
+
+    // state_batmon0 --> energybudget
+
+    // state_batmon1 --> energybudget
+
+    // state_batmon2 --> energybudget
+
+    // p_avg_bat --> energybudget
+
+    // v_avg_bat0 --> energybudget
+
+    // v_avg_bat1 --> energybudget
+
+    // v_avg_bat2 --> energybudget
+
+    // status_pwrbrd --> energybudget
+
+    // p_out --> energybudget
+
 }
 
 void Vehicle::_handleScaledPressure(mavlink_message_t& message) {
