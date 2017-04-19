@@ -52,6 +52,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, QObject* parent)
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
@@ -89,6 +91,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missio
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
@@ -120,6 +124,8 @@ SimpleMissionItem::SimpleMissionItem(const SimpleMissionItem& other, QObject* pa
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
+    , _circleColor("white")
+    , _circleWidth(1)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
     , _altitudeRelativeToHomeFact   (0, "Altitude is relative to home", FactMetaData::valueTypeUint32)
@@ -200,6 +206,11 @@ void SimpleMissionItem::_connectSignals(void)
 
     // Sequence number is kept in mission iteem, so we need to propagate signal up as well
     connect(&_missionItem, &MissionItem::sequenceNumberChanged, this, &SimpleMissionItem::sequenceNumberChanged);
+
+    // These signals require an update to the circle radius
+    connect(&_missionItem._param2Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
+    connect(&_missionItem._param3Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
+    connect(&_missionItem._commandFact, &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
 }
 
 void SimpleMissionItem::_setupMetaData(void)
@@ -446,6 +457,7 @@ QmlObjectListModel* SimpleMissionItem::checkboxFacts(void)
         model->append(&_missionItem._autoContinueFact);
     } else if ((specifiesCoordinate() || specifiesAltitudeOnly()) && !_homePositionSpecialCase) {
         model->append(&_altitudeRelativeToHomeFact);
+        model->append(&_missionItem._autoContinueFact);
     }
 
     return model;
@@ -589,7 +601,7 @@ void SimpleMissionItem::setDefaultsForCommand(void)
     case MAV_CMD_NAV_WAYPOINT:
         // We default all acceptance radius to 0. This allows flight controller to be in control of
         // accept radius.
-        _missionItem.setParam2(0);
+        //_missionItem.setParam2(0); XXX: no. we will set this on the ground station : ETHZ-ASL/ThomasStastny
         break;
 
     case MAV_CMD_NAV_LAND:
@@ -727,4 +739,34 @@ void SimpleMissionItem::appendMissionItems(QList<MissionItem*>& items, QObject* 
     seqNum++;
 
     _cameraSection->appendMissionItems(items, missionItemParent, seqNum);
+}
+
+double SimpleMissionItem::circleRadius(void) // ETHZ-ASL/ThomasStastny
+{
+    double _radius = 0.0;
+    int _command = _missionItem._commandFact.cookedValue().toInt();
+
+    if (_command == 16) {
+        _radius = _missionItem.param2();
+        _circleColor = "#CCFFFFFF";
+        _circleWidth = 2;
+    } else if (_command == 17) {
+        _radius = _missionItem.param3();
+        _circleColor = "#CCFFFF00";
+        _circleWidth = 2;
+    } else if (_command == 22) {
+        _radius = _missionItem.param3();
+        _circleColor = "#CCFFFF00";
+        _circleWidth = 2;
+    } else if (_command == 31) {
+        _radius = _missionItem.param3();
+        _circleColor = "#CCa99eff";
+        _circleWidth = 2;
+    }
+
+    emit circleRadiusChanged(_radius);
+    emit circleColorChanged(_circleColor);
+    emit circleWidthChanged(_circleWidth);
+
+    return _radius;
 }

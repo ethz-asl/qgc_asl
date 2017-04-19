@@ -24,10 +24,12 @@ const char* FixedWingLandingComplexItem::_loiterToLandDistanceName =    "Landing
 const char* FixedWingLandingComplexItem::_landingHeadingName =          "Landing heading";
 const char* FixedWingLandingComplexItem::_loiterAltitudeName =          "Loiter altitude";
 const char* FixedWingLandingComplexItem::_loiterRadiusName =            "Loiter radius";
+const char* FixedWingLandingComplexItem::_acceptanceRadiusName =        "Acceptance radius";
 const char* FixedWingLandingComplexItem::_landingAltitudeName =         "Landing altitude";
 
 const char* FixedWingLandingComplexItem::_jsonLoiterCoordinateKey =         "loiterCoordinate";
 const char* FixedWingLandingComplexItem::_jsonLoiterRadiusKey =             "loiterRadius";
+const char* FixedWingLandingComplexItem::_jsonAcceptanceRadiusKey =         "acceptanceRadius";
 const char* FixedWingLandingComplexItem::_jsonLoiterClockwiseKey =          "loiterClockwise";
 const char* FixedWingLandingComplexItem::_jsonLoiterAltitudeRelativeKey =   "loiterAltitudeRelative";
 const char* FixedWingLandingComplexItem::_jsonLandingCoordinateKey =        "landCoordinate";
@@ -44,6 +46,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, QObje
     , _landingDistanceFact  (0, _loiterToLandDistanceName,  FactMetaData::valueTypeDouble)
     , _loiterAltitudeFact   (0, _loiterAltitudeName,        FactMetaData::valueTypeDouble)
     , _loiterRadiusFact     (0, _loiterRadiusName,          FactMetaData::valueTypeDouble)
+    , _acceptanceRadiusFact (0, _acceptanceRadiusName,      FactMetaData::valueTypeDouble)
     , _landingHeadingFact   (0, _landingHeadingName,        FactMetaData::valueTypeDouble)
     , _landingAltitudeFact  (0, _landingAltitudeName,       FactMetaData::valueTypeDouble)
     , _loiterClockwise(true)
@@ -59,12 +62,14 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, QObje
     _landingDistanceFact.setMetaData    (_metaDataMap[_loiterToLandDistanceName]);
     _loiterAltitudeFact.setMetaData     (_metaDataMap[_loiterAltitudeName]);
     _loiterRadiusFact.setMetaData       (_metaDataMap[_loiterRadiusName]);
+    _acceptanceRadiusFact.setMetaData   (_metaDataMap[_acceptanceRadiusName]);
     _landingHeadingFact.setMetaData     (_metaDataMap[_landingHeadingName]);
     _landingAltitudeFact.setMetaData    (_metaDataMap[_landingAltitudeName]);
 
     _landingDistanceFact.setRawValue    (_landingDistanceFact.rawDefaultValue());
     _loiterAltitudeFact.setRawValue     (_loiterAltitudeFact.rawDefaultValue());
     _loiterRadiusFact.setRawValue       (_loiterRadiusFact.rawDefaultValue());
+    _acceptanceRadiusFact.setRawValue   (_acceptanceRadiusFact.rawDefaultValue());
     _landingHeadingFact.setRawValue     (_landingHeadingFact.rawDefaultValue());
     _landingAltitudeFact.setRawValue    (_landingAltitudeFact.rawDefaultValue());
 
@@ -85,6 +90,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, QObje
     connect(&_landingDistanceFact,      &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
     connect(&_landingHeadingFact,       &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
     connect(&_loiterRadiusFact,         &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
+    connect(&_acceptanceRadiusFact,     &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
     connect(this,                       &FixedWingLandingComplexItem::loiterCoordinateChanged,          this, &FixedWingLandingComplexItem::_setDirty);
     connect(this,                       &FixedWingLandingComplexItem::landingCoordinateChanged,         this, &FixedWingLandingComplexItem::_setDirty);
     connect(this,                       &FixedWingLandingComplexItem::loiterClockwiseChanged,           this, &FixedWingLandingComplexItem::_setDirty);
@@ -128,6 +134,7 @@ void FixedWingLandingComplexItem::save(QJsonArray&  missionItems)
     saveObject[_jsonLandingCoordinateKey] = jsonCoordinate;
 
     saveObject[_jsonLoiterRadiusKey] =              _loiterRadiusFact.rawValue().toDouble();
+    saveObject[_jsonAcceptanceRadiusKey] =          _acceptanceRadiusFact.rawValue().toDouble();
     saveObject[_jsonLoiterClockwiseKey] =           _loiterClockwise;
     saveObject[_jsonLoiterAltitudeRelativeKey] =    _loiterAltitudeRelative;
     saveObject[_jsonLandingAltitudeRelativeKey] =   _landingAltitudeRelative;
@@ -152,6 +159,7 @@ bool FixedWingLandingComplexItem::load(const QJsonObject& complexObject, int seq
         { ComplexMissionItem::jsonComplexItemTypeKey,   QJsonValue::String, true },
         { _jsonLoiterCoordinateKey,                     QJsonValue::Array,  true },
         { _jsonLoiterRadiusKey,                         QJsonValue::Double, true },
+        { _jsonAcceptanceRadiusKey,                     QJsonValue::Double, true },
         { _jsonLoiterClockwiseKey,                      QJsonValue::Bool,   true },
         { _jsonLoiterAltitudeRelativeKey,               QJsonValue::Bool,   true },
         { _jsonLandingCoordinateKey,                    QJsonValue::Array,  true },
@@ -186,6 +194,7 @@ bool FixedWingLandingComplexItem::load(const QJsonObject& complexObject, int seq
     _landingAltitudeFact.setRawValue(coordinate.altitude());
 
     _loiterRadiusFact.setRawValue(complexObject[_jsonLoiterRadiusKey].toDouble());
+    _acceptanceRadiusFact.setRawValue(complexObject[_jsonAcceptanceRadiusKey].toDouble());
     _loiterClockwise  = complexObject[_jsonLoiterClockwiseKey].toBool();
     _loiterAltitudeRelative = complexObject[_jsonLoiterAltitudeRelativeKey].toBool();
     _landingAltitudeRelative = complexObject[_jsonLandingAltitudeRelativeKey].toBool();
@@ -224,13 +233,15 @@ void FixedWingLandingComplexItem::appendMissionItems(QList<MissionItem*>& items,
     items.append(item);
 
     float loiterRadius = _loiterRadiusFact.rawValue().toDouble() * (_loiterClockwise ? 1.0 : -1.0);
+    float acceptanceRadius = _acceptanceRadiusFact.rawValue().toDouble();
+    float landingHeading = _landingHeadingFact.rawValue().toDouble();
     item = new MissionItem(seqNum++,
                            MAV_CMD_NAV_LOITER_TO_ALT,
                            _loiterAltitudeRelative ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
                            1.0,                             // Heading required = true
                            loiterRadius,                    // Loiter radius
-                           0.0,                             // param 3 - unused
-                           1.0,                             // Exit crosstrack - tangent of loiter to land point
+                           acceptanceRadius,                // param 3 - unused XXX: ETHZ-ASL uses this for exit point acceptance radius
+                           landingHeading,                  // Exit crosstrack - tangent of loiter to land point XXX: ETHZ-ASL uses this for exit heading (such that it goes on "yaw" in standard mission handling)
                            _loiterCoordinate.latitude(),
                            _loiterCoordinate.longitude(),
                            _loiterAltitudeFact.rawValue().toDouble(),
@@ -280,7 +291,7 @@ bool FixedWingLandingComplexItem::scanForItem(QmlObjectListModel* visualItems, V
     MissionItem& missionItemLoiter = item->missionItem();
     if (missionItemLoiter.command() != MAV_CMD_NAV_LOITER_TO_ALT ||
             !(missionItemLoiter.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT || missionItemLoiter.frame() == MAV_FRAME_GLOBAL) ||
-            missionItemLoiter.param1() != 1.0 || missionItemLoiter.param3() != 0 || missionItemLoiter.param4() != 1.0) {
+            missionItemLoiter.param1() != 1.0) {
         return false;
     }
 

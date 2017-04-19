@@ -33,28 +33,10 @@
             "friendlyEdit":         true,
             "category":             "Basic",
             "cameraSection":        true,
-            "param1": {
-                "label":            "Hold",
-                "units":            "secs",
-                "default":          0,
-                "decimalPlaces":    0
-            },
             "param2": {
                 "label":            "Acceptance",
                 "units":            "m",
-                "default":          3,
-                "decimalPlaces":    2
-            },
-            "param3": {
-                "label":            "PassThru",
-                "units":            "m",
-                "default":          0,
-                "decimalPlaces":    2
-            },
-            "param4": {
-                "label":            "Heading",
-                "units":            "radians",
-                "default":          0.0,
+                "default":          30.0,
                 "decimalPlaces":    2
             }
         },
@@ -69,7 +51,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          80.0,
                 "decimalPlaces":    2
             }
         },
@@ -165,16 +147,10 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",
-            "param1": {
-                "label":            "Pitch",
-                "units":            "deg",
-                "default":          15,
-                "decimalPlaces":    2
-            },
-            "param4": {
-                "label":            "Heading",
-                "units":            "radians",
-                "default":          0.0,
+            "param3": {
+                "label":            "Radius:",
+                "units":            "m",
+                "default":          100.0,
                 "decimalPlaces":    2
             }
         },

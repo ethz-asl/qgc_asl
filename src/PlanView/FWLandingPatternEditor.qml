@@ -46,7 +46,7 @@ Rectangle {
             anchors.right:  parent.right
             wrapMode:       Text.WordWrap
             font.pointSize: ScreenTools.smallFontPointSize
-            text:           qsTr("WIP (NOT FOR REAL FLIGHT!)")
+            text:           qsTr("FW Landing Pattern: ETHZ-ASL implementation with spatially defined loiter-down.")
         }
 
         SectionHeader {
@@ -58,8 +58,20 @@ Rectangle {
         FactTextFieldGrid {
             anchors.left:   parent.left
             anchors.right:  parent.right
-            factList:       [ missionItem.loiterAltitude, missionItem.loiterRadius ]
+            factList:       [ missionItem.loiterAltitude, missionItem.loiterRadius, missionItem.acceptanceRadius ]
         }
+
+        Item { width: 1; height: _margin }
+
+        QGCLabel {
+            anchors.left:   parent.left
+            anchors.right:  parent.right
+            wrapMode:       Text.WordWrap
+            font.pointSize: ScreenTools.smallFontPointSize
+            text:           qsTr("NOTE: Acceptance radius is for the tangent exit point.")
+        } //ETHZ-ASL/ThomasStastny
+
+        Item { width: 1; height: _margin }
 
         Item { width: 1; height: _spacer }
 

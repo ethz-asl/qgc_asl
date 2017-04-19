@@ -35,6 +35,9 @@ public:
     Q_PROPERTY(bool             friendlyEditAllowed     READ friendlyEditAllowed                                NOTIFY friendlyEditAllowedChanged)
     Q_PROPERTY(bool             rawEdit                 READ rawEdit                WRITE setRawEdit            NOTIFY rawEditChanged)              ///< true: raw item editing with all params
     Q_PROPERTY(bool             relativeAltitude        READ relativeAltitude                                   NOTIFY frameChanged)
+    Q_PROPERTY(double           circleRadius            READ circleRadius                                       NOTIFY circleRadiusChanged)
+    Q_PROPERTY(QColor           circleColor             READ circleColor                                        NOTIFY circleColorChanged)
+    Q_PROPERTY(int              circleWidth             READ circleWidth                                        NOTIFY circleWidthChanged)
 
     /// Optional sections
     Q_PROPERTY(QObject*         cameraSection           READ cameraSection                                      NOTIFY cameraSectionChanged)
@@ -58,6 +61,9 @@ public:
     bool            friendlyEditAllowed (void) const;
     bool            rawEdit             (void) const;
     CameraSection*  cameraSection       (void) { return _cameraSection; }
+    double          circleRadius        (void);
+    QColor          circleColor         (void) const    { return _circleColor; }
+    int             circleWidth         (void) const    { return _circleWidth; }
 
     QmlObjectListModel* textFieldFacts  (void);
     QmlObjectListModel* checkboxFacts   (void);
@@ -121,6 +127,9 @@ signals:
     void rawEditChanged             (bool rawEdit);
     void uiModelChanged             (void);
     void cameraSectionChanged       (QObject* cameraSection);
+    void circleRadiusChanged        (double circleRadius);
+    void circleColorChanged         (QColor circleColor);
+    void circleWidthChanged         (QColor circleWidth);
 
 private slots:
     void _setDirtyFromSignal(void);
@@ -145,6 +154,8 @@ private:
     bool        _rawEdit;
     bool        _dirty;
     bool        _ignoreDirtyChangeSignals;
+    QColor      _circleColor;
+    int         _circleWidth;
 
     CameraSection* _cameraSection;
 

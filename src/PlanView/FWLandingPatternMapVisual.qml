@@ -36,6 +36,7 @@ Item {
     readonly property int _loiterPointIndex:    1
     readonly property int _loiterRadiusIndex:   2
     readonly property int _landPointIndex:      3
+    readonly property int _acceptanceRadiusIndex: 4
 
     function hideItemVisuals() {
         for (var i=0; i<_itemVisuals.length; i++) {
@@ -58,6 +59,9 @@ Item {
             itemVisual = landPointComponent.createObject(map)
             map.addMapItem(itemVisual)
             _itemVisuals[_landPointIndex] = itemVisual
+            itemVisual = acceptanceRadiusComponent.createObject(map)
+            map.addMapItem(itemVisual)
+            _itemVisuals[_acceptanceRadiusIndex] = itemVisual
         }
     }
 
@@ -226,7 +230,21 @@ Item {
             center:         _missionItem.loiterCoordinate
             radius:         _missionItem.loiterRadius.rawValue
             border.width:   2
-            border.color:   "green"
+            border.color:   "#CCa99eff"
+            color:          "transparent"
+        }
+    }
+
+    // Acceptance radius visual
+    Component {
+        id: acceptanceRadiusComponent
+
+        MapCircle {
+            z:              QGroundControl.zOrderMapItems
+            center:         _missionItem.loiterTangentCoordinate
+            radius:         _missionItem.acceptanceRadius.rawValue
+            border.width:   2
+            border.color:   "#80FFFFFF"
             color:          "transparent"
         }
     }

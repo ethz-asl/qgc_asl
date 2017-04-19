@@ -40,4 +40,18 @@ MapQuickItem {
 
             property bool _isCurrentItem:   missionItem ? missionItem.isCurrentItem : false
         }
+
+    // circle visual
+    Component {
+        id: circleComponent
+
+        MapCircle {
+            z:              QGroundControl.zOrderMapItems
+            center:         _missionItem.coordinate
+            radius:         _missionItem.circleRadius
+            border.width:   _missionItem.circleWidth
+            border.color:   _missionItem.circleColor
+            color:          "transparent"
+        }
+    }
 }
