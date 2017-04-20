@@ -481,7 +481,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     _messagesReceived++;
     emit messagesReceivedChanged();
     if(!_heardFrom) {
-        if(message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
+        if(message.msgid == MAVLINK_MSG_ID_HEARTBEAT || message.msgid == MAVLINK_MSG_ID_ASL_HIGH_LATENCY) {
             _heardFrom = true;
             _compID = message.compid;
             _messageSeq = message.seq + 1;
@@ -1033,12 +1033,10 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
 
 void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
 {
-    _connectionActive();
-
     if (!_satcomActive) {
         _satcomActive = true;
-        qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setConnectionLostVariable(60000);
-        qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->setMavCommandTimerVariable(60000);
+        setConnectionLostVariable(60000);
+        setMavCommandTimerVariable(60000);
     }
 
     mavlink_asl_high_latency_t data;
@@ -1580,7 +1578,9 @@ void Vehicle::setFlightMode(const QString& flightMode)
                                        id(),
                                        newBaseMode,
                                        custom_mode);
-        sendMessageOnLink(priorityLink(), msg);
+        if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+            sendMessageOnLink(priorityLink(), msg);
+        }
     } else {
         qWarning() << "FirmwarePlugin::setFlightMode failed, flightMode:" << flightMode;
     }
@@ -1607,7 +1607,9 @@ void Vehicle::setHilMode(bool hilMode)
                                    id(),
                                    newBaseMode,
                                    _custom_mode);
-    sendMessageOnLink(priorityLink(), msg);
+    if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+        sendMessageOnLink(priorityLink(), msg);
+    }
 }
 
 void Vehicle::requestDataStream(MAV_DATA_STREAM stream, uint16_t rate, bool sendMultiple)
@@ -1629,9 +1631,13 @@ void Vehicle::requestDataStream(MAV_DATA_STREAM stream, uint16_t rate, bool send
 
     if (sendMultiple) {
         // We use sendMessageMultiple since we really want these to make it to the vehicle
-        sendMessageMultiple(msg);
+        if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+            sendMessageMultiple(msg);
+        }
     } else {
-        sendMessageOnLink(priorityLink(), msg);
+        if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+            sendMessageOnLink(priorityLink(), msg);
+        }
     }
 }
 
@@ -1640,7 +1646,9 @@ void Vehicle::_sendMessageMultipleNext(void)
     if (_nextSendMessageMultipleIndex < _sendMessageMultipleList.count()) {
         qCDebug(VehicleLog) << "_sendMessageMultipleNext:" << _sendMessageMultipleList[_nextSendMessageMultipleIndex].message.msgid;
 
-        sendMessageOnLink(priorityLink(), _sendMessageMultipleList[_nextSendMessageMultipleIndex].message);
+        if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+            sendMessageOnLink(priorityLink(), _sendMessageMultipleList[_nextSendMessageMultipleIndex].message);
+        }
 
         if (--_sendMessageMultipleList[_nextSendMessageMultipleIndex].retryCount <= 0) {
             _sendMessageMultipleList.removeAt(_nextSendMessageMultipleIndex);
@@ -1823,13 +1831,13 @@ void Vehicle::_connectionLostTimeout(void)
 void Vehicle::setConnectionLostVariable(int connectionLostVariable)
 {
     _connectionLostTimeoutMSecs = connectionLostVariable;
-    _connectionLostTimer.setInterval(Vehicle::_connectionLostTimeoutMSecs);
+    _connectionLostTimer.setInterval(_connectionLostTimeoutMSecs);
 }
 
 void Vehicle::setMavCommandTimerVariable(int mavCommandTimerVariable)
 {
     _mavCommandAckTimeoutMSecs = mavCommandTimerVariable;
-    _mavCommandAckTimer.setInterval(Vehicle::_mavCommandAckTimeoutMSecs);
+    _mavCommandAckTimer.setInterval(_mavCommandAckTimeoutMSecs);
 }
 
 void Vehicle::setSatcomActive(bool active)
@@ -1844,6 +1852,7 @@ bool Vehicle::switchSatcomClick()
         LinkInterface* checkLink = activeLinks[i];
         if (checkLink->getLinkConfiguration()->type() == 0) {
             setPriorityLink(checkLink);
+            break;
         }
     }
 
@@ -1853,7 +1862,7 @@ bool Vehicle::switchSatcomClick()
         setConnectionLostVariable(3500);
         setMavCommandTimerVariable(3000);
 
-        qDebug("enable satcom");
+        qDebug("disable satcom");
         mavlink_message_t       msg;
         mavlink_command_long_t  cmd;
 
@@ -1905,6 +1914,7 @@ bool Vehicle::switchSatcomClick()
 
         sendMessageOnLink(priorityLink(), msg);
     }
+
     return _satcomActive;
 }
 
@@ -2173,6 +2183,23 @@ void Vehicle::setCurrentMissionSequence(int seq)
     if (!_firmwarePlugin->sendHomePositionToVehicle()) {
         seq--;
     }
+
+    QList<LinkInterface*> activeLinks = getActiveLinks();
+    for (int i=0; i<activeLinks.count(); i++) {
+        LinkInterface* checkLink = activeLinks[i];
+        if (satcomActive()) {
+            if (checkLink->getLinkConfiguration()->type() == 1) {
+                setPriorityLink(checkLink);
+                break;
+            }
+        } else {
+            if (checkLink->getLinkConfiguration()->type() == 0) {
+                setPriorityLink(checkLink);
+                break;
+            }
+        }
+    }
+
     mavlink_message_t msg;
     mavlink_msg_mission_set_current_pack_chan(_mavlink->getSystemId(),
                                               _mavlink->getComponentId(),
@@ -2277,8 +2304,9 @@ void Vehicle::_sendMavCommandAgain(void)
                                          priorityLink()->mavlinkChannel(),
                                          &msg,
                                          &cmd);
-
-    sendMessageOnLink(priorityLink(), msg);
+    if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+        sendMessageOnLink(priorityLink(), msg);
+    }
 }
 
 void Vehicle::_sendNextQueuedMavCommand(void)
@@ -2495,7 +2523,9 @@ void Vehicle::_ackMavlinkLogData(uint16_t sequence)
         priorityLink()->mavlinkChannel(),
         &msg,
         &ack);
-    sendMessageOnLink(priorityLink(), msg);
+    if (priorityLink()->getLinkConfiguration()->type() == 0 && !(satcomActive())) {
+        sendMessageOnLink(priorityLink(), msg);
+    }
 }
 
 void Vehicle::_handleMavlinkLoggingData(mavlink_message_t& message)

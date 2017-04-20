@@ -455,7 +455,7 @@ LogDownloadController::_findMissingData()
 void
 LogDownloadController::_requestLogData(uint8_t id, uint32_t offset, uint32_t count)
 {
-    if(_vehicle) {
+    if(_vehicle && !(_vehicle->satcomActive())) {
         //-- APM "Fix"
         id += _apmOneBased;
         qCDebug(LogDownloadLog) << "Request log data (id:" << id << "offset:" << offset << "size:" << count << ")";
@@ -484,7 +484,7 @@ LogDownloadController::refresh(void)
 void
 LogDownloadController::_requestLogList(uint32_t start, uint32_t end)
 {
-    if(_vehicle && _uas) {
+    if(_vehicle && _uas && !(_vehicle->satcomActive())) {
         qCDebug(LogDownloadLog) << "Request log entry list (" << start << "through" << end << ")";
         _setListing(true);
         mavlink_message_t msg;
@@ -667,7 +667,7 @@ LogDownloadController::_setListing(bool active)
 void
 LogDownloadController::eraseAll(void)
 {
-    if(_vehicle && _uas) {
+    if(_vehicle && _uas && !(_vehicle->satcomActive())) {
         mavlink_message_t msg;
         mavlink_msg_log_erase_pack_chan(
                     qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),

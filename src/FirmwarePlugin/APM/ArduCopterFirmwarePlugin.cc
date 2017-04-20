@@ -197,8 +197,9 @@ void ArduCopterFirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double
                                                           vehicle->priorityLink()->mavlinkChannel(),
                                                           &msg,
                                                           &cmd);
-
-    vehicle->sendMessageOnLink(vehicle->priorityLink(), msg);
+    if (!(vehicle->satcomActive())) {
+        vehicle->sendMessageOnLink(vehicle->priorityLink(), msg);
+    }
 }
 
 void ArduCopterFirmwarePlugin::pauseVehicle(Vehicle* vehicle)

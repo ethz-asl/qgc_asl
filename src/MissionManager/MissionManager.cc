@@ -114,14 +114,15 @@ void MissionManager::_writeMissionCount(void)
     missionCount.target_component = MAV_COMP_ID_MISSIONPLANNER;
     missionCount.count = _missionItems.count();
 
-    _dedicatedLink = _vehicle->priorityLink();
+    //_dedicatedLink = _vehicle->priorityLink();
     mavlink_msg_mission_count_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                           qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                          _dedicatedLink->mavlinkChannel(),
+                                          _vehicle->priorityLink()->mavlinkChannel(),
                                           &message,
                                           &missionCount);
-
-    _vehicle->sendMessageOnLink(_dedicatedLink, message);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    }
     _startAckTimeout(AckMissionRequest);
 }
 
@@ -152,14 +153,15 @@ void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoC
     missionItem.current =           altChangeOnly ? 3 : 2;
     missionItem.autocontinue =      true;
 
-    _dedicatedLink = _vehicle->priorityLink();
+    //_dedicatedLink = _vehicle->priorityLink();
     mavlink_msg_mission_item_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                          qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                         _dedicatedLink->mavlinkChannel(),
+                                         _vehicle->priorityLink()->mavlinkChannel(),
                                          &messageOut,
                                          &missionItem);
-
-    _vehicle->sendMessageOnLink(_dedicatedLink, messageOut);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), messageOut);
+    }
     _startAckTimeout(AckGuidedItem);
     emit inProgressChanged(true);
 }
@@ -197,14 +199,15 @@ void MissionManager::_requestList(void)
     request.target_system = _vehicle->id();
     request.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
-    _dedicatedLink = _vehicle->priorityLink();
+    //_dedicatedLink = _vehicle->priorityLink();
     mavlink_msg_mission_request_list_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                                  qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                                 _dedicatedLink->mavlinkChannel(),
+                                                 _vehicle->priorityLink()->mavlinkChannel(),
                                                  &message,
                                                  &request);
-
-    _vehicle->sendMessageOnLink(_dedicatedLink, message);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    }
     _startAckTimeout(AckMissionCount);
 }
 
@@ -313,11 +316,12 @@ void MissionManager::_readTransactionComplete(void)
     
     mavlink_msg_mission_ack_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                         qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                        _dedicatedLink->mavlinkChannel(),
+                                        _vehicle->priorityLink()->mavlinkChannel(),
                                         &message,
                                         &missionAck);
-    
-    _vehicle->sendMessageOnLink(_dedicatedLink, message);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    }
 
     _finishTransaction(true);
     emit newMissionItemsAvailable(false);
@@ -366,7 +370,7 @@ void MissionManager::_requestNextMissionItem(void)
 
         mavlink_msg_mission_request_int_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                                     qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                                    _dedicatedLink->mavlinkChannel(),
+                                                    _vehicle->priorityLink()->mavlinkChannel(),
                                                     &message,
                                                     &missionRequest);
     } else {
@@ -378,12 +382,13 @@ void MissionManager::_requestNextMissionItem(void)
 
         mavlink_msg_mission_request_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                                 qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                                _dedicatedLink->mavlinkChannel(),
+                                                _vehicle->priorityLink()->mavlinkChannel(),
                                                 &message,
                                                 &missionRequest);
     }
-    
-    _vehicle->sendMessageOnLink(_dedicatedLink, message);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    }
     _startAckTimeout(AckMissionItem);
 }
 
@@ -541,7 +546,7 @@ void MissionManager::_handleMissionRequest(const mavlink_message_t& message, boo
 
         mavlink_msg_mission_item_int_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                                  qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                                 _dedicatedLink->mavlinkChannel(),
+                                                 _vehicle->priorityLink()->mavlinkChannel(),
                                                  &messageOut,
                                                  &missionItem);
     } else {
@@ -564,12 +569,13 @@ void MissionManager::_handleMissionRequest(const mavlink_message_t& message, boo
 
         mavlink_msg_mission_item_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                              qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                             _dedicatedLink->mavlinkChannel(),
+                                             _vehicle->priorityLink()->mavlinkChannel(),
                                              &messageOut,
                                              &missionItem);
     }
-    
-    _vehicle->sendMessageOnLink(_dedicatedLink, messageOut);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), messageOut);
+    }
     _startAckTimeout(AckMissionRequest);
 }
 

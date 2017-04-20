@@ -133,8 +133,8 @@ void ParameterEditorController::loadFromFile(const QString& filename)
 
 void ParameterEditorController::refresh(void)
 {
-    bool isSatcomActive = _vehicle->satcomActive();
-    if (!isSatcomActive) {
+
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->parameterManager()->refreshAllParameters();
     }
 }

@@ -183,7 +183,9 @@ void APMGeoFenceManager::_requestFencePoint(uint8_t pointIndex)
                                             _vehicle->id(),
                                             _vehicle->defaultComponentId(),
                                             pointIndex);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 void APMGeoFenceManager::_sendFencePoint(uint8_t pointIndex)
@@ -215,7 +217,9 @@ void APMGeoFenceManager::_sendFencePoint(uint8_t pointIndex)
                                       totalPointCount,
                                       fenceCoord.latitude(),
                                       fenceCoord.longitude());
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 bool APMGeoFenceManager::inProgress(void) const

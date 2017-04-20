@@ -585,7 +585,9 @@ void UAS::startCalibration(UASInterface::StartCalibrationType calType)
                                        accelCal,                         // accel cal
                                        airspeedCal,                      // PX4: airspeed cal, ArduPilot: compass mot
                                        escCal);                          // esc cal
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 void UAS::stopCalibration(void)
@@ -893,7 +895,9 @@ void UAS::requestImage()
                                                           &msg,
                                                           MAVLINK_DATA_STREAM_IMG_JPEG,
                                                           0, 0, 0, 0, 0, 50);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
     }
 }
 
@@ -1160,8 +1164,9 @@ void UAS::setExternalControlSetpoint(float roll, float pitch, float yaw, float t
                                                  this->uasId,
                                                  newPitchCommand, newRollCommand, newThrustCommand, newYawCommand, buttons);
         }
-
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        }
     }
 }
 
@@ -1191,14 +1196,18 @@ void UAS::setManual6DOFControlCommands(double x, double y, double z, double roll
                                                   &message,
                                                   QGC::groundTimeMilliseconds(), this->uasId, _vehicle->defaultComponentId(),
                                                   mask, q, 0, 0, 0, 0);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        }
         quint16 position_mask = (1 << 3) | (1 << 4) | (1 << 5) |
             (1 << 6) | (1 << 7) | (1 << 8);
         mavlink_msg_set_position_target_local_ned_pack_chan(mavlink->getSystemId(), mavlink->getComponentId(),
                                                             _vehicle->priorityLink()->mavlinkChannel(),
                                                             &message, QGC::groundTimeMilliseconds(), this->uasId, _vehicle->defaultComponentId(),
                                                             MAV_FRAME_LOCAL_NED, position_mask, x, y, z, 0, 0, 0, 0, 0, 0, yaw, yawrate);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        }
         qDebug() << __FILE__ << __LINE__ << ": SENT 6DOF CONTROL MESSAGES: x" << x << " y: " << y << " z: " << z << " roll: " << roll << " pitch: " << pitch << " yaw: " << yaw;
     }
     else
@@ -1445,7 +1454,9 @@ void UAS::sendHilState(quint64 time_us, float roll, float pitch, float yaw, floa
                                                    &msg,
                                                    time_us, q, rollspeed, pitchspeed, yawspeed,
                                                    lat*1e7f, lon*1e7f, alt*1000, vx*100, vy*100, vz*100, ind_airspeed*100, true_airspeed*100, xacc*1000/9.81, yacc*1000/9.81, zacc*1000/9.81);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
     }
     else
     {
@@ -1526,7 +1537,9 @@ void UAS::sendHilSensors(quint64 time_us, float xacc, float yacc, float zacc, fl
                                          time_us, xacc_corrupt, yacc_corrupt, zacc_corrupt, rollspeed_corrupt, pitchspeed_corrupt,
                                          yawspeed_corrupt, xmag_corrupt, ymag_corrupt, zmag_corrupt, abs_pressure_corrupt,
                                          diff_pressure_corrupt, pressure_alt_corrupt, temperature_corrupt, fields_changed);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
         lastSendTimeSensors = QGC::groundTimeMilliseconds();
     }
     else
@@ -1565,8 +1578,9 @@ void UAS::sendHilOpticalFlow(quint64 time_us, qint16 flow_x, qint16 flow_y, floa
                                                _vehicle->priorityLink()->mavlinkChannel(),
                                                &msg,
                                                time_us, 0, 0 /* hack */, flow_x, flow_y, 0.0f /* hack */, 0.0f /* hack */, 0.0f /* hack */, 0 /* hack */, quality, ground_distance);
-
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
         lastSendTimeOpticalFlow = QGC::groundTimeMilliseconds();
 #endif
     }
@@ -1607,7 +1621,9 @@ void UAS::sendHilGps(quint64 time_us, double lat, double lon, double alt, int fi
                                       &msg,
                                       time_us, fix_type, lat*1e7, lon*1e7, alt*1e3, eph*1e2, epv*1e2, vel*1e2, vn*1e2, ve*1e2, vd*1e2, course*1e2, satellites);
         lastSendTimeGPS = QGC::groundTimeMilliseconds();
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
     }
     else
     {
@@ -1689,7 +1705,9 @@ void UAS::sendMapRCToParam(QString param_id, float scale, float value0, quint8 p
                                        scale,
                                        valueMin,
                                        valueMax);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+    }
     //qDebug() << "Mavlink message sent";
 }
 
@@ -1716,7 +1734,9 @@ void UAS::unsetRCToParameterMap()
                                            0.0f,
                                            0.0f,
                                            0.0f);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        if (!(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        }
     }
 }
 

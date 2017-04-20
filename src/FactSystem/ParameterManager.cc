@@ -406,7 +406,7 @@ void ParameterManager::refreshAllParameters(uint8_t componentId)
                                              &msg,
                                              _vehicle->id(),
                                              componentId);
-    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0) {
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
     }
 
@@ -660,7 +660,9 @@ void ParameterManager::_readParameterRaw(int componentId, const QString& paramNa
                                              componentId,                    // Target component id
                                              fixedParamName,                 // Named parameter being requested
                                              paramIndex);                    // Parameter index being requested, -1 for named
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 void ParameterManager::_writeParameterRaw(int componentId, const QString& paramName, const QVariant& value)
@@ -715,11 +717,16 @@ void ParameterManager::_writeParameterRaw(int componentId, const QString& paramN
     QList<LinkInterface*> activeLinks = _vehicle->getActiveLinks();
     for (int i=0; i<activeLinks.count(); i++) {
         LinkInterface* checkLink = activeLinks[i];
-        if (checkLink->getLinkConfiguration()->type() == 0 && isSatcomActive == false) {
-            _vehicle->setPriorityLink(checkLink);
-        }
-        else if (checkLink->getLinkConfiguration()->type() == 1 && isSatcomActive == true) {
-            _vehicle->setPriorityLink(checkLink);
+        if (isSatcomActive) {
+            if (checkLink->getLinkConfiguration()->type() == 1) {
+                _vehicle->setPriorityLink(checkLink);
+                break;
+            }
+        } else {
+            if (checkLink->getLinkConfiguration()->type() == 0) {
+                _vehicle->setPriorityLink(checkLink);
+                break;
+            }
         }
     }
 
@@ -812,7 +819,9 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, QVarian
                                           _vehicle->priorityLink()->mavlinkChannel(),
                                           &msg,
                                           &p);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
 
         // Give the user some feedback things loaded properly
         QVariantAnimation *ani = new QVariantAnimation(this);

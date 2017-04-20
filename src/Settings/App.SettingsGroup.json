@@ -134,7 +134,7 @@
     "shortDescription": "Parameter autosave",
     "longDescription":  "Automatically save parameters to local disk on change",
     "type":             "string",
-    "defaultValue":     ""
+    "defaultValue":     true
 },
 {
     "name":             "ParamAutoSavePath",
