@@ -75,6 +75,8 @@ public:
     ///     @param name Parameter name
     bool parameterExists(int componentId, const QString& name);
 
+    void setWaitingParamTimeoutTimer(int waitingParamTimeout);
+
 	/// Returns all parameter names
 	QStringList parameterNames(int componentId);
     

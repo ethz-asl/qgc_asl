@@ -346,6 +346,12 @@ void ParameterManager::_parameterUpdate(int vehicleId, int componentId, QString 
     qCDebug(ParameterManagerVerbose1Log) << _logVehiclePrefix(componentId) << "_parameterUpdate complete";
 }
 
+
+void ParameterManager::setWaitingParamTimeoutTimer(int waitingParamTimeout)
+{
+    _waitingParamTimeoutTimer.setInterval(waitingParamTimeout);
+}
+
 /// Connected to Fact::valueUpdated
 ///
 /// Writes the parameter to mavlink, sets up for write wait

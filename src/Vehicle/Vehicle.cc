@@ -915,6 +915,13 @@ void Vehicle::_handleHomePosition(mavlink_message_t& message)
 
 void Vehicle::_handleHeartbeat(mavlink_message_t& message)
 {
+    if (satcomActive()) {
+        setSatcomActive(false);
+        setConnectionLostVariable(3500);
+        setMavCommandTimerVariable(3000);
+        _parameterManager->setWaitingParamTimeoutTimer(3000);
+    }
+
     if (message.compid != _defaultComponentId) {
         return;
     }
@@ -1033,10 +1040,11 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
 
 void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
 {
-    if (!_satcomActive) {
-        _satcomActive = true;
+    if (!satcomActive()) {
+        setSatcomActive(true);
         setConnectionLostVariable(60000);
         setMavCommandTimerVariable(60000);
+        _parameterManager->setWaitingParamTimeoutTimer(60000);
     }
 
     mavlink_asl_high_latency_t data;
@@ -1843,6 +1851,7 @@ void Vehicle::setMavCommandTimerVariable(int mavCommandTimerVariable)
 void Vehicle::setSatcomActive(bool active)
 {
     _satcomActive = active;
+    emit satcomActiveChanged(active);
 }
 
 bool Vehicle::switchSatcomClick()
@@ -1861,6 +1870,7 @@ bool Vehicle::switchSatcomClick()
         setSatcomActive(false);
         setConnectionLostVariable(3500);
         setMavCommandTimerVariable(3000);
+        _parameterManager->setWaitingParamTimeoutTimer(3000);
 
         qDebug("disable satcom");
         mavlink_message_t       msg;
@@ -1890,6 +1900,7 @@ bool Vehicle::switchSatcomClick()
         setSatcomActive(true);
         setConnectionLostVariable(60000);
         setMavCommandTimerVariable(60000);
+        _parameterManager->setWaitingParamTimeoutTimer(60000);
 
         qDebug("enable satcom");
         mavlink_message_t       msg;
@@ -1915,7 +1926,7 @@ bool Vehicle::switchSatcomClick()
         sendMessageOnLink(priorityLink(), msg);
     }
 
-    return _satcomActive;
+    return satcomActive();
 }
 
 void Vehicle::_connectionActive(void)
