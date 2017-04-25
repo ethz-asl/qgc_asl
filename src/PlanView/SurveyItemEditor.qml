@@ -229,17 +229,25 @@ Rectangle {
                 spacing:        _margin
                 visible:        missionItem.manualGrid.value == true
 
-                FactCheckBox {
+                QGCCheckBox {
+                    id:                 cameraTriggerDistanceCheckBox
                     anchors.baseline:   cameraTriggerDistanceField.baseline
                     text:               qsTr("Trigger Distance")
-                    fact:               missionItem.cameraTrigger
+                    checked:            missionItem.cameraTriggerDistance.rawValue > 0
+                    onClicked: {
+                        if (checked) {
+                            missionItem.cameraTriggerDistance.value = missionItem.cameraTriggerDistance.defaultValue
+                        } else {
+                            missionItem.cameraTriggerDistance.value = 0
+                        }
+                    }
                 }
 
                 FactTextField {
                     id:                 cameraTriggerDistanceField
                     Layout.fillWidth:   true
                     fact:               missionItem.cameraTriggerDistance
-                    enabled:            missionItem.cameraTrigger.value
+                    enabled:            cameraTriggerDistanceCheckBox.checked
                 }
             }
 
@@ -402,6 +410,13 @@ Rectangle {
                     Layout.fillWidth:       true
                 }
 
+                QGCCheckBox {
+                    text:       qsTr("Refly at 90 degree offset")
+                    checked:    missionItem.refly90Degrees
+                    onClicked:  missionItem.refly90Degrees = checked
+                    Layout.columnSpan: 2
+                }
+
                 QGCLabel {
                     wrapMode:       Text.WordWrap
                     font.pointSize: ScreenTools.smallFontPointSize
@@ -460,6 +475,12 @@ Rectangle {
                 rowSpacing:     _margin
                 factList:       [ missionItem.gridAngle, missionItem.gridSpacing, missionItem.gridAltitude, missionItem.turnaroundDist ]
                 factLabels:     [ qsTr("Angle"), qsTr("Spacing"), qsTr("Altitude"), qsTr("Turnaround dist")]
+            }
+
+            QGCCheckBox {
+                text:       qsTr("Refly at 90 degree offset")
+                checked:    missionItem.refly90Degrees
+                onClicked:  missionItem.refly90Degrees = checked
             }
 
             FactCheckBox {

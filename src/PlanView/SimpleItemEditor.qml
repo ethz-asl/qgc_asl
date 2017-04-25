@@ -82,16 +82,32 @@ Rectangle {
                     GridLayout {
                         anchors.left:   parent.left
                         anchors.right:  parent.right
+                        flow:           GridLayout.TopToBottom
+                        rows:           missionItem.textFieldFacts.count + missionItem.nanFacts.count + (missionItem.speedSection.available ? 1 : 0)
                         columns:        2
 
                         Repeater {
                             model: missionItem.textFieldFacts
 
-                            QGCLabel {
+                            QGCLabel { text: object.name }
+                        }
+
+                        Repeater {
+                            model: missionItem.nanFacts
+
+                            QGCCheckBox {
                                 text:           object.name
-                                Layout.column:  0
-                                Layout.row:     index
+                                checked:        !isNaN(object.rawValue)
+                                onClicked:      object.rawValue = checked ? 0 : NaN
                             }
+                        }
+
+                        QGCCheckBox {
+                            id:         flightSpeedCheckbox
+                            text:       qsTr("Flight Speed")
+                            checked:    missionItem.speedSection.specifyFlightSpeed
+                            onClicked:  missionItem.speedSection.specifyFlightSpeed = checked
+                            visible:    missionItem.speedSection.available
                         }
 
                         Repeater {
@@ -100,10 +116,26 @@ Rectangle {
                             FactTextField {
                                 showUnits:          true
                                 fact:               object
-                                Layout.column:      1
-                                Layout.row:         index
                                 Layout.fillWidth:   true
                             }
+                        }
+
+                        Repeater {
+                            model: missionItem.nanFacts
+
+                            FactTextField {
+                                showUnits:          true
+                                fact:               object
+                                Layout.fillWidth:   true
+                                enabled:            !isNaN(object.rawValue)
+                            }
+                        }
+
+                        FactTextField {
+                            fact:               missionItem.speedSection.flightSpeed
+                            Layout.fillWidth:   true
+                            enabled:            flightSpeedCheckbox.checked
+                            visible:            missionItem.speedSection.available
                         }
                     }
 

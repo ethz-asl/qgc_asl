@@ -36,7 +36,9 @@ const char* AppSettings::autoLoadMissionsName =                         "AutoLoa
 const char* AppSettings::automaticMissionUploadName =                   "AutomaticMissionUpload";
 
 const char* AppSettings::parameterFileExtension =   "params";
+const char* AppSettings::planFileExtension =        "plan";
 const char* AppSettings::missionFileExtension =     "mission";
+const char* AppSettings::waypointsFileExtension =   "waypoints";
 const char* AppSettings::fenceFileExtension =       "fence";
 const char* AppSettings::rallyPointFileExtension =  "rally";
 const char* AppSettings::telemetryFileExtension =   "tlog";
@@ -335,5 +337,28 @@ Fact* AppSettings::automaticMissionUpload(void)
     }
 
     return _automaticMissionUpload;
+}
+
+MAV_AUTOPILOT AppSettings::offlineEditingFirmwareTypeFromFirmwareType(MAV_AUTOPILOT firmwareType)
+{
+    if (firmwareType != MAV_AUTOPILOT_PX4 && firmwareType != MAV_AUTOPILOT_ARDUPILOTMEGA) {
+        firmwareType = MAV_AUTOPILOT_GENERIC;
+    }
+    return firmwareType;
+}
+
+MAV_TYPE AppSettings::offlineEditingVehicleTypeFromVehicleType(MAV_TYPE vehicleType)
+{
+    if (QGCMAVLink::isRover(vehicleType)) {
+        return MAV_TYPE_GROUND_ROVER;
+    } else if (QGCMAVLink::isSub(vehicleType)) {
+        return MAV_TYPE_SUBMARINE;
+    } else if (QGCMAVLink::isVTOL(vehicleType)) {
+        return MAV_TYPE_VTOL_QUADROTOR;
+    } else if (QGCMAVLink::isFixedWing(vehicleType)) {
+        return MAV_TYPE_FIXED_WING;
+    } else {
+        return MAV_TYPE_QUADROTOR;
+    }
 }
 

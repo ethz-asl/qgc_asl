@@ -38,15 +38,18 @@ public:
     const QList<MissionItem*>& missionItems(void) { return _missionItems; }
 
     /// Current mission item as reported by MISSION_CURRENT
-    int currentItem(void) const { return _currentMissionItem; }
+    int currentIndex(void) const { return _currentMissionIndex; }
 
     /// Last current mission item reported while in Mission flight mode
-    int lastCurrentItem(void) const { return _lastCurrentItem; }
+    int lastCurrentIndex(void) const { return _lastCurrentIndex; }
     
-    void requestMissionItems(void);
+    /// Load the mission items from the vehicle
+    ///     Signals newMissionItemsAvailable when done
+    void loadFromVehicle(void);
     
     /// Writes the specified set of mission items to the vehicle
     ///     @param missionItems Items to send to vehicle
+    ///     Signals sendComplete when done
     void writeMissionItems(const QList<MissionItem*>& missionItems);
     
     /// Writes the specified set mission items to the vehicle as an ArduPilot guided mode mission item.
@@ -55,6 +58,7 @@ public:
     void writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoCoord, bool altChangeOnly);
 
     /// Removes all mission items from vehicle
+    ///     Signals removeAllComplete when done
     void removeAll(void);
 
     /// Generates a new mission which starts from the specified index. It will include all the CMD_DO items
@@ -81,9 +85,13 @@ signals:
     void newMissionItemsAvailable(bool removeAllRequested);
     void inProgressChanged(bool inProgress);
     void error(int errorCode, const QString& errorMsg);
-    void currentItemChanged(int currentItem);
-    void lastCurrentItemChanged(int lastCurrentMissionItem);
+    void currentIndexChanged(int currentIndex);
+    void lastCurrentIndexChanged(int lastCurrentIndex);
     void resumeMissionReady(void);
+    void cameraFeedback(QGeoCoordinate imageCoordinate, int index);
+    void progressPct(double progressPercentPct);
+    void removeAllComplete              (void);
+    void sendComplete                   (void);
 
 private slots:
     void _mavlinkMessageReceived(const mavlink_message_t& message);
@@ -95,9 +103,17 @@ private:
         AckMissionCount,    ///< MISSION_COUNT message expected
         AckMissionItem,     ///< MISSION_ITEM expected
         AckMissionRequest,  ///< MISSION_REQUEST is expected, or MISSION_ACK to end sequence
+        AckMissionClearAll, ///< MISSION_CLEAR_ALL sent, MISSION_ACK is expected
         AckGuidedItem,      ///< MISSION_ACK expected in response to ArduPilot guided mode single item send
     } AckType_t;
-    
+
+    typedef enum {
+        TransactionNone,
+        TransactionRead,
+        TransactionWrite,
+        TransactionRemoveAll
+    } TransactionType_t;
+
     void _startAckTimeout(AckType_t ack);
     bool _checkForExpectedAck(AckType_t receivedAck);
     void _readTransactionComplete(void);
@@ -106,6 +122,8 @@ private:
     void _handleMissionRequest(const mavlink_message_t& message, bool missionItemInt);
     void _handleMissionAck(const mavlink_message_t& message);
     void _handleMissionCurrent(const mavlink_message_t& message);
+    void _handleCameraFeedback(const mavlink_message_t& message);
+    void _handleCameraImageCaptured(const mavlink_message_t& message);
     void _requestNextMissionItem(void);
     void _clearMissionItems(void);
     void _sendError(ErrorCode_t errorCode, const QString& errorMsg);
@@ -116,6 +134,8 @@ private:
     void _writeMissionCount(void);
     void _writeMissionItemsWorker(void);
     void _clearAndDeleteMissionItems(void);
+    QString _lastMissionReqestString(MAV_MISSION_RESULT result);
+    void _removeAllWorker(void);
 
 private:
     Vehicle*            _vehicle;
@@ -125,17 +145,17 @@ private:
     AckType_t           _expectedAck;
     int                 _retryCount;
     
-    bool        _readTransactionInProgress;
-    bool        _writeTransactionInProgress;
-    bool        _resumeMission;
-    QList<int>  _itemIndicesToWrite;    ///< List of mission items which still need to be written to vehicle
-    QList<int>  _itemIndicesToRead;     ///< List of mission items which still need to be requested from vehicle
+    TransactionType_t   _transactionInProgress;
+    bool                _resumeMission;
+    QList<int>          _itemIndicesToWrite;    ///< List of mission items which still need to be written to vehicle
+    QList<int>          _itemIndicesToRead;     ///< List of mission items which still need to be requested from vehicle
+    int                 _lastMissionRequest;    ///< Index of item last requested by MISSION_REQUEST
     
     QMutex _dataMutex;
     
     QList<MissionItem*> _missionItems;
-    int                 _currentMissionItem;
-    int                 _lastCurrentItem;
+    int                 _currentMissionIndex;
+    int                 _lastCurrentIndex;
 };
 
 #endif

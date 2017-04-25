@@ -110,7 +110,7 @@ void ParameterManager::_parameterUpdate(int vehicleId, int componentId, QString 
 
     // ArduPilot has this strange behavior of streaming parameters that we didn't ask for. This even happens before it responds to the
     // PARAM_REQUEST_LIST. We disregard any of this until the initial request is responded to.
-    if (parameterId == 65535 && _initialRequestTimeoutTimer.isActive()) {
+    if (parameterId == 65535 && parameterName != "_HASH_CHECK" && _initialRequestTimeoutTimer.isActive()) {
         qCDebug(ParameterManagerVerbose1Log) << "Disregarding unrequested param prior to intial list response" << parameterName;
         return;
     }
@@ -677,6 +677,8 @@ void ParameterManager::_writeParameterRaw(int componentId, const QString& paramN
     mavlink_param_set_t     p;
     mavlink_param_union_t   union_value;
 
+    memset(&p, 0, sizeof(p));
+
     FactMetaData::ValueType_t factType = getParameter(componentId, paramName)->type();
     p.param_type = _factTypeToMavType(factType);
 
@@ -814,6 +816,7 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, QVarian
         // Return the hash value to notify we don't want any more updates
         mavlink_param_set_t     p;
         mavlink_param_union_t   union_value;
+        memset(&p, 0, sizeof(p));
         p.param_type = MAV_PARAM_TYPE_UINT32;
         strncpy(p.param_id, "_HASH_CHECK", sizeof(p.param_id));
         union_value.param_uint32 = crc32_value;

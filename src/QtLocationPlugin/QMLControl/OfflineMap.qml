@@ -345,17 +345,6 @@ QGCView {
                 anchors.fill: parent
             }
 
-            CenterMapDropButton {
-                anchors.margins:    _margins
-                anchors.left:       parent.left
-                anchors.top:        parent.top
-                map:                _map
-                z:                  QGroundControl.zOrderTopMost
-                showMission:        false
-                showAllItems:       false
-                visible:            addNewSetView.visible
-            }
-
             MapScale {
                 anchors.leftMargin:     ScreenTools.defaultFontPixelWidth / 2
                 anchors.bottomMargin:   anchors.leftMargin
@@ -602,6 +591,17 @@ QGCView {
                     } // Map
                 }
             } // Item - Add new set view
+
+            CenterMapDropButton {
+                topMargin:          0
+                anchors.margins:    _margins
+                anchors.left:       map.left
+                anchors.top:        map.top
+                map:                _map
+                showMission:        false
+                showAllItems:       false
+                visible:            addNewSetView.visible
+            }
         } // Map
 
         //-- Add new set dialog
@@ -609,7 +609,7 @@ QGCView {
             anchors.margins:    ScreenTools.defaultFontPixelWidth
             anchors.verticalCenter: parent.verticalCenter
             anchors.right:      parent.right
-            visible:            _map.visible
+            visible:            addNewSetView.visible
             width:              ScreenTools.defaultFontPixelWidth * (ScreenTools.isTinyScreen ? 24 : 28)
             height:             Math.min(parent.height - (anchors.margins * 2), addNewSetFlickable.y + addNewSetColumn.height + addNewSetLabel.anchors.margins)
             color:              Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.85)
@@ -1043,8 +1043,8 @@ QGCView {
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     BusyIndicator {
-                        visible:        QGroundControl.mapEngineManager.exporting
-                        running:        QGroundControl.mapEngineManager.exporting
+                        visible:        QGroundControl.mapEngineManager ? QGroundControl.mapEngineManager.exporting : false
+                        running:        QGroundControl.mapEngineManager ? QGroundControl.mapEngineManager.exporting : false
                         width:          exportCloseButton.height
                         height:         exportCloseButton.height
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -1072,7 +1072,7 @@ QGCView {
             color:      "black"
             anchors.centerIn: parent
             Rectangle {
-                width:  parent.width  * 0.45
+                width:  parent.width  * 0.5
                 height: importCol.height * 1.5
                 radius: ScreenTools.defaultFontPixelWidth
                 color:  qgcPal.windowShadeDark

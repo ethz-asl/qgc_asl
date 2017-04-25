@@ -252,6 +252,7 @@ public:
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition            READ homePosition                                           NOTIFY homePositionChanged)
     Q_PROPERTY(bool                 armed                   READ armed                  WRITE setArmed                  NOTIFY armedChanged)
+    Q_PROPERTY(bool                 autoDisarm              READ autoDisarm                                             NOTIFY autoDisarmChanged)
     Q_PROPERTY(bool                 flightModeSetAvailable  READ flightModeSetAvailable                                 CONSTANT)
     Q_PROPERTY(QStringList          flightModes             READ flightModes                                            CONSTANT)
     Q_PROPERTY(QString              flightMode              READ flightMode             WRITE setFlightMode             NOTIFY flightModeChanged)
@@ -613,6 +614,7 @@ public:
     unsigned int    telemetryTXBuffer       () { return _telemetryTXBuffer; }
     unsigned int    telemetryLNoise         () { return _telemetryLNoise; }
     unsigned int    telemetryRNoise         () { return _telemetryRNoise; }
+    bool            autoDisarm              ();
 
     Fact* roll              (void) { return &_rollFact; }
     Fact* heading           (void) { return &_headingFact; }
@@ -697,6 +699,10 @@ public:
     /// @true: When flying a mission the vehicle is always facing towards the next waypoint
     bool vehicleYawsToNextWaypointInMission(void) const;
 
+    /// The vehicle is responsible for making the initial request for the Plan.
+    /// @return: true: initial request is complete, false: initial request is still in progress;
+    bool initialPlanRequestComplete(void) const { return _initialPlanRequestComplete; }
+
 signals:
     void allLinksInactive(Vehicle* vehicle);
     void coordinateChanged(QGeoCoordinate coordinate);
@@ -761,6 +767,7 @@ signals:
     void telemetryTXBufferChanged   (unsigned int value);
     void telemetryLNoiseChanged     (unsigned int value);
     void telemetryRNoiseChanged     (unsigned int value);
+    void autoDisarmChanged          (void);
 
     void firmwareMajorVersionChanged(int major);
     void firmwareMinorVersionChanged(int minor);
@@ -795,6 +802,9 @@ signals:
 
     void satcomActiveChanged(bool active);
 
+    // Mavlink Serial Data
+    void mavlinkSerialControl(uint8_t device, uint8_t flags, uint16_t timeout, uint32_t baudrate, QByteArray data);
+
 private slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
     void _telemetryChanged(LinkInterface* link, unsigned rxerrors, unsigned fixed, int rssi, int remrssi, unsigned txbuf, unsigned noise, unsigned remnoise);
@@ -821,8 +831,9 @@ private slots:
     void _imageReady                        (UASInterface* uas);
     void _connectionLostTimeout(void);
     void _prearmErrorTimeout(void);
-    void _newMissionItemsAvailable(void);
-    void _newGeoFenceAvailable(void);
+    void _missionLoadComplete(void);
+    void _geoFenceLoadComplete(void);
+    void _rallyPointLoadComplete(void);
     void _sendMavCommandAgain(void);
 
     void _activeJoystickChanged(void);
@@ -867,7 +878,8 @@ private:
     void _sendNextQueuedMavCommand(void);
     void _updatePriorityLink(void);
     void _commonInit(void);
-    void _startMissionRequest(void);
+    void _startPlanRequest(void);
+    void _setupAutoDisarmSignalling(void);
 
     //asluav
     void _handleAslHighLatency(mavlink_message_t& message);
@@ -958,6 +970,8 @@ private:
     bool                _connectionLostEnabled;
     int                 _connectionLostTimeoutMSecs;  // Signal connection lost after x seconds of missed heartbeat
     QTimer              _connectionLostTimer;
+
+    bool                _initialPlanRequestComplete;
 
     MissionManager*     _missionManager;
     bool                _missionManagerInitialRequestSent;

@@ -31,6 +31,8 @@ Rectangle {
     signal showPlanView
     signal showFlyView
     signal showAnalyzeView
+    signal armVehicle
+    signal disarmVehicle
 
     function checkSettingsButton() {
         settingsButton.checked = true
@@ -209,5 +211,4 @@ Rectangle {
         width:          _activeVehicle ? _activeVehicle.parameterManager.loadProgress * parent.width : 0
         color:          qgcPal.colorGreen
     }
-
 }

@@ -12,13 +12,14 @@
 #include <QQmlEngine>
 #include <QtQml>
 
-SettingsManager::SettingsManager(QGCApplication* app)
-    : QGCTool(app)
+SettingsManager::SettingsManager(QGCApplication* app, QGCToolbox* toolbox)
+    : QGCTool(app, toolbox)
     , _appSettings(NULL)
     , _unitsSettings(NULL)
     , _autoConnectSettings(NULL)
     , _videoSettings(NULL)
     , _flightMapSettings(NULL)
+    , _rtkSettings(NULL)
 {
 
 }
@@ -34,4 +35,5 @@ void SettingsManager::setToolbox(QGCToolbox *toolbox)
     _autoConnectSettings =  new AutoConnectSettings(this);
     _videoSettings =        new VideoSettings(this);
     _flightMapSettings =    new FlightMapSettings(this);
+    _rtkSettings =          new RTKSettings(this);
 }

@@ -34,18 +34,11 @@ QGCViewDialog {
     QGCPalette { id: qgcPal; colorGroupEnabled: true }
 
     function accept() {
-        if (bitmaskColumn.visible) {
-            var value = 0;
-            for (var i = 0; i < fact.bitmaskValues.length; ++i) {
-                var checkbox = bitmaskRepeater.itemAt(i)
-                if (checkbox.checked) {
-                    value |= fact.bitmaskValues[i];
-                }
-            }
-            fact.value = value;
+        if (bitmaskColumn.visible && !manualEntry.checked) {
+            fact.value = bitmaskValue();
             fact.valueChanged(fact.value)
             hideDialog();
-        } else if (factCombo.visible) {
+        } else if (factCombo.visible && !manualEntry.checked) {
             fact.enumIndex = factCombo.currentIndex
             hideDialog()
         } else {
@@ -60,6 +53,17 @@ QGCViewDialog {
             }
         }
         controller.autoSaveParams()
+    }
+
+    function bitmaskValue() {
+        var value = 0;
+        for (var i = 0; i < fact.bitmaskValues.length; ++i) {
+            var checkbox = bitmaskRepeater.itemAt(i)
+            if (checkbox.checked) {
+                value |= fact.bitmaskValues[i];
+            }
+        }
+        return value
     }
 
     Component.onCompleted: {
@@ -95,7 +99,7 @@ QGCViewDialog {
                 QGCTextField {
                     id:                 valueField
                     text:               validate ? validateValue : fact.valueString
-                    visible:            fact.enumStrings.length == 0 || validate
+                    visible:            fact.enumStrings.length == 0 || validate || manualEntry.checked
                     unitsLabel:         fact.units
                     showUnits:          fact.units != ""
                     Layout.fillWidth:   true
@@ -133,6 +137,10 @@ QGCViewDialog {
                         currentIndex = fact.enumIndex
                     }
                 }
+
+                onCurrentIndexChanged: {
+                    valueField.text = fact.enumValues[currentIndex]
+                }
             }
 
             Column {
@@ -147,6 +155,10 @@ QGCViewDialog {
                     delegate : QGCCheckBox {
                         text : modelData
                         checked : fact.value & fact.bitmaskValues[index]
+
+                        onClicked: {
+                            valueField.text = bitmaskValue()
+                        }
                     }
                 }
             }
@@ -213,7 +225,7 @@ QGCViewDialog {
             Row {
                 width:      parent.width
                 spacing:    ScreenTools.defaultFontPixelWidth / 2
-                visible:    showRCToParam
+                visible:    showRCToParam || factCombo.visible || bitmaskColumn.visible
 
                 Rectangle {
                     height: 1
@@ -232,6 +244,17 @@ QGCViewDialog {
                     width:  ScreenTools.defaultFontPixelWidth * 5
                     color:  qgcPal.text
                     anchors.verticalCenter: _advanced.verticalCenter
+                }
+            }
+
+            // Checkbox to allow manual entry of enumerated or bitmask parameters
+            QGCCheckBox {
+                id:         manualEntry
+                visible:    _advanced.checked && (factCombo.visible || bitmaskColumn.visible)
+                text:       qsTr("Manual Entry")
+
+                onClicked: {
+                    valueField.text = fact.valueString
                 }
             }
 
