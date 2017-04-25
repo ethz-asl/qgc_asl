@@ -347,9 +347,10 @@ void ParameterManager::_parameterUpdate(int vehicleId, int componentId, QString 
 }
 
 
-void ParameterManager::setWaitingParamTimeoutTimer(int waitingParamTimeout)
+void ParameterManager::setWaitingParamTimeoutVariable(int waitingParamTimeoutVariable)
 {
-    _waitingParamTimeoutTimer.setInterval(waitingParamTimeout);
+    _waitingParamTimeoutMSecs = waitingParamTimeoutVariable;
+    _waitingParamTimeoutTimer.setInterval(_waitingParamTimeoutMSecs);
 }
 
 /// Connected to Fact::valueUpdated

@@ -850,7 +850,6 @@ private:
     void _handleGlobalPositionInt(mavlink_message_t& message);
     void _handleAltitude(mavlink_message_t& message);
     void _handleVfrHud(mavlink_message_t& message);
-    void _handleAslHighLatency(mavlink_message_t& message);
     void _handleScaledPressure(mavlink_message_t& message);
     void _handleScaledPressure2(mavlink_message_t& message);
     void _handleScaledPressure3(mavlink_message_t& message);
@@ -871,6 +870,7 @@ private:
     void _startMissionRequest(void);
 
     //asluav
+    void _handleAslHighLatency(mavlink_message_t& message);
     void _handleSensPower(mavlink_message_t& message);
     void _handleSensPowerBoard(mavlink_message_t& message);
     void _handleSensMppt(mavlink_message_t& message);

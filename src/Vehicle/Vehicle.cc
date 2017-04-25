@@ -28,6 +28,7 @@
 #include "MissionCommandTree.h"
 #include "QGroundControlQmlGlobal.h"
 #include "SettingsManager.h"
+#include "EnergyBudget.h"
 #include <QDebug>
 
 QGC_LOGGING_CATEGORY(VehicleLog, "VehicleLog")
@@ -989,7 +990,7 @@ void Vehicle::_handleHeartbeat(mavlink_message_t& message)
         setSatcomActive(false);
         setConnectionLostVariable(3500);
         setMavCommandTimerVariable(3000);
-        _parameterManager->setWaitingParamTimeoutTimer(3000);
+        _parameterManager->setWaitingParamTimeoutVariable(3000);
     }
 
     if (message.compid != _defaultComponentId) {
@@ -1106,6 +1107,179 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
 
     emit remoteControlRSSIChanged(channels.rssi);
     emit rcChannelsChanged(channelCount, pwmValues);
+}
+
+void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
+{
+    if (!satcomActive()) {
+        setSatcomActive(true);
+        setConnectionLostVariable(60000);
+        setMavCommandTimerVariable(60000);
+        _parameterManager->setWaitingParamTimeoutVariable(60000);
+    }
+
+    mavlink_asl_high_latency_t data;
+    mavlink_msg_asl_high_latency_decode(&message, &data);
+
+    // base mode
+    if (data.base_mode != _base_mode) {
+        _base_mode = data.base_mode;
+        emit flightModeChanged(flightMode());
+    }
+
+    // roll
+    _rollFact.setRawValue(data.roll);
+
+    // heading
+    _headingFact.setRawValue(data.heading * 2);
+
+    // throttle --> energybudget
+
+    // gps_fix_type, gps_nsat, latitude, longitude, altitude_amsl
+    _gpsFactGroup.lock()->setRawValue(data.gps_fix_type);
+    _gpsFactGroup.count()->setRawValue(data.gps_nsat == 255 ? 0 : data.gps_nsat);
+
+    _coordinate.setLatitude(data.latitude  / (double)1E7);
+    _coordinate.setLongitude(data.longitude / (double)1E7);
+    _coordinate.setAltitude(data.altitude_amsl);
+    emit coordinateChanged(_coordinate);
+    _altitudeAMSLFact.setRawValue(data.altitude_amsl);
+
+    // altitude_sp
+
+    // airspeed
+    _airSpeedFact.setRawValue(data.airspeed);
+
+    // airspeed_sp
+
+    // windspeed
+    _windFactGroup.speed()->setRawValue(data.windspeed / 10.0f);
+
+    // groundspeed
+    _groundSpeedFact.setRawValue(data.groundspeed);
+
+    // temperature_air
+
+    // failsafe
+
+    // wp_num
+
+    // mppts
+    emit MPPTDataChanged(data.v_avg_mppt0 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt0), 0, 0, data.v_avg_mppt1 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt1), 0, 0, data.v_avg_mppt2 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt2), 0, 0);
+
+    // batmon states
+    // todo: adapt data.state_batmon (16 -> 8 bit)
+    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
+
+    // powerboard status
+    emit SensPowerBoardChanged(data.status_pwrbrd);
+
+    // p_out
+    emit SensPowerChanged(data.p_out * 2, 1, 0, 0);
+
+}
+
+void Vehicle::_handleSensPower(mavlink_message_t& message)
+{
+    mavlink_sens_power_t data;
+    mavlink_msg_sens_power_decode(&message, &data);
+
+    // Battery charge/time remaining/voltage calculations
+    _currentVoltage_ext = data.adc121_vspb_volt;
+    _lpVoltage_ext = _currentVoltage_ext;
+    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_currentVoltage_ext;
+    // We don't want to tick above the threshold
+    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
+    {
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
+        /* warn if lower than treshold */
+        && (_lpVoltage_ext < _tickVoltage_ext)
+        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+        && (_currentVoltage_ext > 3.3f)
+        /* warn only if current voltage is really still lower by a reasonable amount */
+        && ((_currentVoltage_ext - 0.2f) < _tickVoltage_ext)
+        /* warn only every 12 seconds */
+        && (QGC::groundTimeUsecs() - _lastVoltageWarning) > 12000000)
+    {
+        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
+        _lastVoltageWarning = QGC::groundTimeUsecs();
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+
+    if (_startVoltage_ext == -1.0f && _currentVoltage_ext > 0.1f) _startVoltage_ext = _currentVoltage_ext;
+
+    emit SensPowerChanged(_lpVoltage_ext, data.adc121_cspb_amp, data.adc121_cs1_amp, data.adc121_cs2_amp);
+}
+
+void Vehicle::_handleSensPowerBoard(mavlink_message_t &message)
+{
+    mavlink_sens_power_board_t data;
+    mavlink_msg_sens_power_board_decode(&message, &data);
+
+    // Battery charge/time remaining/voltage calculations
+    _currentVoltage_ext = data.pwr_brd_system_volt / 1000;
+    _lpVoltage_ext = _currentVoltage_ext;
+    _tickLowpassVoltage_ext = _tickLowpassVoltage_ext*0.8f + 0.2f*_currentVoltage_ext;
+    // We don't want to tick above the threshold
+    if (_tickLowpassVoltage_ext > _tickVoltage_ext)
+    {
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+    if ((_startVoltage_ext > 0.0f) && (_tickLowpassVoltage_ext < _tickVoltage_ext) && (fabs(_lastTickVoltageValue_ext - _tickLowpassVoltage_ext) > 0.1f)
+        /* warn if lower than treshold */
+        && (_lpVoltage_ext < _tickVoltage_ext)
+        /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+        && (_currentVoltage_ext > 3.3f)
+        /* warn only if current voltage is really still lower by a reasonable amount */
+        && ((_currentVoltage_ext - 0.2f) < _tickVoltage_ext)
+        /* warn only every 12 seconds */
+        && (QGC::groundTimeUsecs() - _lastVoltageWarning) > 12000000)
+    {
+        qgcApp()->toolbox()->audioOutput()->say(QString("ADC121 Voltage warning for system %1: %2 volts").arg(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->id()).arg(_lpVoltage_ext, 0, 'f', 1, QChar(' ')));
+        _lastVoltageWarning = QGC::groundTimeUsecs();
+        _lastTickVoltageValue_ext = _tickLowpassVoltage_ext;
+    }
+
+    if (_startVoltage_ext == -1.0f && _currentVoltage_ext > 0.1f) _startVoltage_ext = _currentVoltage_ext;
+
+    float totalAmp = data.pwr_brd_mot_l_amp + data.pwr_brd_mot_r_amp + data.pwr_brd_servo_volt/(data.pwr_brd_system_volt)*(data.pwr_brd_aux_amp + data.pwr_brd_servo_1_amp + data.pwr_brd_servo_2_amp + data.pwr_brd_servo_3_amp + data.pwr_brd_servo_4_amp); //Scale Servo and Aux current to equivalent of powerbus current
+    emit SensPowerChanged(_currentVoltage_ext, totalAmp, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp);
+    emit SensPowerBoardChanged(data.pwr_brd_status);
+}
+
+void Vehicle::_handleSensMppt(mavlink_message_t& message)
+{
+    mavlink_sens_mppt_t data;
+    mavlink_msg_sens_mppt_decode(&message, &data);
+    emit MPPTDataChanged(data.mppt1_volt, data.mppt1_amp, data.mppt1_pwm, data.mppt1_status, data.mppt2_volt, data.mppt2_amp, data.mppt2_pwm, data.mppt2_status, data.mppt3_volt, data.mppt3_amp, data.mppt3_pwm, data.mppt3_status);
+}
+
+void Vehicle::_handleSensBatmon(mavlink_message_t& message)
+{
+    mavlink_sens_batmon_t data;
+    mavlink_msg_sens_batmon_decode(&message, &data);
+    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.hostfetcontrol, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+}
+
+void Vehicle::_handleAslctrlData(mavlink_message_t& message)
+{
+    mavlink_aslctrl_data_t data;
+    mavlink_msg_aslctrl_data_decode(&message, &data);
+
+    emit AslctrlDataChanged(data.uElev, data.uAil, data.uRud, data.uThrot, data.RollAngle,
+        data.PitchAngle, data.YawAngle, data.RollAngleRef, data.PitchAngleRef, data.h);
+}
+
+void Vehicle::_handleSensorpodStatus(mavlink_message_t& message)
+{
+    mavlink_sensorpod_status_t data;
+    mavlink_msg_sensorpod_status_decode(&message, &data);
+    emit SensorpodStatusChanged(data.visensor_rate_1, data.visensor_rate_2, data.visensor_rate_3, data.visensor_rate_4,
+                                data.recording_nodes_count,data.cpu_temp, data.free_space);
 }
 
 void Vehicle::_handleScaledPressure(mavlink_message_t& message) {
@@ -1859,7 +2033,7 @@ bool Vehicle::switchSatcomClick()
         setSatcomActive(false);
         setConnectionLostVariable(3500);
         setMavCommandTimerVariable(3000);
-        _parameterManager->setWaitingParamTimeoutTimer(3000);
+        _parameterManager->setWaitingParamTimeoutVariable(3000);
 
         qDebug("disable satcom");
         mavlink_message_t       msg;
@@ -1889,7 +2063,7 @@ bool Vehicle::switchSatcomClick()
         setSatcomActive(true);
         setConnectionLostVariable(60000);
         setMavCommandTimerVariable(60000);
-        _parameterManager->setWaitingParamTimeoutTimer(60000);
+        _parameterManager->setWaitingParamTimeoutVariable(60000);
 
         qDebug("enable satcom");
         mavlink_message_t       msg;

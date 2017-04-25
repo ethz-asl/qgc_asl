@@ -52,6 +52,9 @@ public:
     Q_PROPERTY(double loadProgress READ loadProgress NOTIFY loadProgressChanged)
     double loadProgress(void) const { return _loadProgress; }
 
+    Q_PROPERTY(int waitingParamTimeoutVariable READ waitingParamTimeoutVariable WRITE setWaitingParamTimeoutVariable NOTIFY waitingParamTimeoutVariableChanged)
+    int waitingParamTimeoutVariable(void) { return _waitingParamTimeoutMSecs; }
+
     /// @return Directory of parameter caches
     static QDir parameterCacheDir();
 
@@ -75,7 +78,7 @@ public:
     ///     @param name Parameter name
     bool parameterExists(int componentId, const QString& name);
 
-    void setWaitingParamTimeoutTimer(int waitingParamTimeout);
+    void setWaitingParamTimeoutVariable(int waitingParamTimeoutVariable);
 
 	/// Returns all parameter names
 	QStringList parameterNames(int componentId);
@@ -125,6 +128,7 @@ signals:
     void parametersReadyChanged(bool parametersReady);
     void missingParametersChanged(bool missingParameters);
     void loadProgressChanged(float value);
+    void waitingParamTimeoutVariableChanged(int value);
     
 protected:
     Vehicle*            _vehicle;
@@ -175,6 +179,7 @@ private:
     QString     _versionParam;                  ///< Parameter which contains parameter set version
     int         _parameterSetMajorVersion;      ///< Version for parameter set, -1 if not known
     QObject*    _parameterMetaData;             ///< Opaque data from FirmwarePlugin::loadParameterMetaDataCall
+    int         _waitingParamTimeoutMSecs;   ///< wait x ms before resending param_set
 
     // Wait counts from previous parameter update cycle
     int         _prevWaitingReadParamIndexCount;

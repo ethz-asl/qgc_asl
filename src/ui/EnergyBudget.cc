@@ -16,9 +16,6 @@
 #define OVERVIEWTOIMAGEHEIGHTSCALE (3.0)
 #define OVERVIEWTOIMAGEWIDTHSCALE (3.0)
 
-#define LEFTCOMPID 150
-#define CENTERCOMPID 151
-#define RIGHTCOMPID 152
 #define CELLPOWERHYSTMIN 1
 #define CELLPOWERHYSTMAX 3
 #define BATPOWERHIGHMIN 1
@@ -201,7 +198,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 	Q_UNUSED(cellvolt6);
 	switch (compid)
 	{
-	case LEFTCOMPID:
+    case LEFTBATMONCOMPID:
 			ui->bat1VLabel->setText(QString("%1").arg(volt/1000.0));
 			ui->bat1VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat1ALabel->setText(QString("%1").arg(current / 1000.0));
@@ -218,7 +215,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat1Cell5Label->setText(QString("%1").arg(cellvolt5));
 			ui->bat1Cell6Label->setText(QString("%1").arg(cellvolt6));
 			break;
-	case CENTERCOMPID:
+    case CENTERBATMONCOMPID:
 			ui->bat2VLabel->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat2VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat2ALabel->setText(QString("%1").arg(current / 1000.0));
@@ -235,7 +232,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat2Cell5Label->setText(QString("%1").arg(cellvolt5));
 			ui->bat2Cell6Label->setText(QString("%1").arg(cellvolt6));
 			break;
-	case RIGHTCOMPID:
+    case RIGHTBATMONCOMPID:
 			ui->bat3VLabel->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat3VLabel_2->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat3ALabel->setText(QString("%1").arg(current / 1000.0));
