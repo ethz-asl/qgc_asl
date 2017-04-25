@@ -393,6 +393,7 @@ QGCView {
                         FactCheckBox {
                             id:         paramAutoSaveCheckBox
                             text:       qsTr("Parameter autosave")
+                            checked:    false
                             fact:       _paramAutoSave
                             visible:    !ScreenTools.isMobile && _paramAutoSave.visible
                             property Fact _paramAutoSave: QGroundControl.settingsManager.appSettings.paramAutoSave
