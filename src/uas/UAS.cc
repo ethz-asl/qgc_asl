@@ -117,7 +117,6 @@ UAS::UAS(MAVLinkProtocol* protocol, Vehicle* vehicle, FirmwarePluginManager * fi
 
     // The protected members.
     connectionLost(false),
-    lastVoltageWarning(0),
     lastNonNullTime(0),
     onboardTimeOffsetInvalidCount(0),
     hilEnabled(false),

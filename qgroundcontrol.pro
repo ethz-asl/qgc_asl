@@ -352,6 +352,9 @@ FORMS += \
     src/ui/uas/UASMessageView.ui \
     src/ui/uas/UASQuickView.ui \
     src/ui/uas/UASQuickViewItemSelect.ui \
+    src/ui/AutoTrim.ui \
+    src/ui/EnergyBudget.ui \
+    src/ui/SensorpodStatus.ui \
 }
 
 #
@@ -605,6 +608,9 @@ HEADERS += \
     src/ui/uas/UASQuickViewItem.h \
     src/ui/uas/UASQuickViewItemSelect.h \
     src/ui/uas/UASQuickViewTextItem.h \
+    src/ui/AutoTrim.h \
+    src/ui/EnergyBudget.h \
+    src/ui/SensorpodStatus.h \
 }
 
 iOSBuild {
@@ -762,6 +768,9 @@ SOURCES += \
     src/ui/uas/UASQuickViewItem.cc \
     src/ui/uas/UASQuickViewItemSelect.cc \
     src/ui/uas/UASQuickViewTextItem.cc \
+    src/ui/AutoTrim.cc \
+    src/ui/EnergyBudget.cc \
+    src/ui/SensorpodStatus.cc \
 }
 
 # Palette test widget in debug builds

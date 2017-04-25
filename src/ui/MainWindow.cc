@@ -71,7 +71,10 @@ enum DockWidgetTypes {
     ONBOARD_FILES,
     INFO_VIEW,
     HIL_CONFIG,
-    ANALYZE
+    ANALYZE,
+    AUTO_TRIM,
+    ENERGY_BUDGET,
+    SENSORPOD_STATUS
 };
 
 static const char *rgDockWidgetNames[] = {
@@ -80,7 +83,10 @@ static const char *rgDockWidgetNames[] = {
     "Onboard Files",
     "Info View",
     "HIL Config",
-    "Analyze"
+    "Analyze",
+    "Auto Trim",
+    "Energy Budget",
+    "Sensorpod Status"
 };
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -372,7 +378,16 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
                 widget = new Linecharts(widgetName, action, mavlinkDecoder, this);
                 break;
             case INFO_VIEW:
-                widget= new QGCTabbedInfoView(widgetName, action, this);
+                widget = new QGCTabbedInfoView(widgetName, action, this);
+                break;
+            case AUTO_TRIM:
+                widget = new AutoTrim(widgetName, action, this);
+                break;
+            case ENERGY_BUDGET:
+                widget = new EnergyBudget(widgetName, action, this);
+                break;
+            case SENSORPOD_STATUS:
+                widget = new SensorpodStatus(widgetName, action, this);
                 break;
         }
         if(action->data().toInt() == INFO_VIEW) {
