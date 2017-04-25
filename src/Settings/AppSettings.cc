@@ -30,6 +30,8 @@ const char* AppSettings::appFontPointSizeName =                         "BaseDev
 const char* AppSettings::indoorPaletteName =                            "StyleIsDark";
 const char* AppSettings::showLargeCompassName =                         "ShowLargeCompass";
 const char* AppSettings::savePathName =                                 "SavePath";
+const char* AppSettings::paramAutoSaveName =                            "ParamAutoSave";
+const char* AppSettings::paramAutoSavePathName =                        "ParamAutoSavePath";
 const char* AppSettings::autoLoadMissionsName =                         "AutoLoadMissions";
 const char* AppSettings::automaticMissionUploadName =                   "AutomaticMissionUpload";
 
@@ -59,6 +61,8 @@ AppSettings::AppSettings(QObject* parent)
     , _indoorPaletteFact(NULL)
     , _showLargeCompassFact(NULL)
     , _savePathFact(NULL)
+    , _paramAutoSaveFact(NULL)
+    , _paramAutoSavePathFact(NULL)
     , _autoLoadMissionsFact(NULL)
     , _automaticMissionUpload(NULL)
 {
@@ -69,6 +73,7 @@ AppSettings::AppSettings(QObject* parent)
     // Instantiate savePath so we can check for override and setup default path if needed
 
     SettingsFact* savePathFact = qobject_cast<SettingsFact*>(savePath());
+    SettingsFact* paramAutoSavePathFact = qobject_cast<SettingsFact*>(paramAutoSavePath());
     QString appName = qgcApp()->applicationName();
     if (savePathFact->rawValue().toString().isEmpty() && _nameToMetaDataMap[savePathName]->rawDefaultValue().toString().isEmpty()) {
 #ifdef __mobile__
@@ -84,6 +89,22 @@ AppSettings::AppSettings(QObject* parent)
     connect(savePathFact, &Fact::rawValueChanged, this, &AppSettings::_checkSavePathDirectories);
 
     _checkSavePathDirectories();
+
+    // param auto save
+    if (paramAutoSavePathFact->rawValue().toString().isEmpty() && _nameToMetaDataMap[paramAutoSavePathName]->rawDefaultValue().toString().isEmpty()) {
+#ifdef __mobile__
+        QDir rootDir = QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
+        paramAutoSavePathFact->setVisible(false);
+#else
+        QDir rootDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+#endif
+        paramAutoSavePathFact->setRawValue(rootDir.filePath(appName));
+    }
+
+    connect(paramAutoSavePathFact, &Fact::rawValueChanged, this, &AppSettings::paramAutoSavePathChanged);
+    connect(paramAutoSavePathFact, &Fact::rawValueChanged, this, &AppSettings::_checkParamAutoSavePathDirectories);
+
+    _checkParamAutoSavePathDirectories();
 }
 
 void AppSettings::_checkSavePathDirectories(void)
@@ -93,9 +114,19 @@ void AppSettings::_checkSavePathDirectories(void)
         QDir().mkpath(savePathDir.absolutePath());
     }
     if (savePathDir.exists()) {
-        savePathDir.mkdir(parameterDirectory);
         savePathDir.mkdir(telemetryDirectory);
         savePathDir.mkdir(missionDirectory);
+    }
+}
+
+void AppSettings::_checkParamAutoSavePathDirectories(void)
+{
+    QDir paramAutoSavePathDir(paramAutoSavePath()->rawValue().toString());
+    if (!paramAutoSavePathDir.exists()) {
+        QDir().mkpath(paramAutoSavePathDir.absolutePath());
+    }
+    if (paramAutoSavePathDir.exists()) {
+        paramAutoSavePathDir.mkdir(parameterDirectory);
     }
 }
 
@@ -230,6 +261,24 @@ Fact* AppSettings::savePath(void)
     return _savePathFact;
 }
 
+Fact* AppSettings::paramAutoSave(void)
+{
+    if (!_paramAutoSaveFact) {
+        _paramAutoSaveFact = _createSettingsFact(paramAutoSaveName);
+    }
+
+    return _paramAutoSaveFact;
+}
+
+Fact* AppSettings::paramAutoSavePath(void)
+{
+    if (!_paramAutoSavePathFact) {
+        _paramAutoSavePathFact = _createSettingsFact(paramAutoSavePathName);
+    }
+
+    return _paramAutoSavePathFact;
+}
+
 QString AppSettings::missionSavePath(void)
 {
     QString fullPath;
@@ -247,7 +296,7 @@ QString AppSettings::parameterSavePath(void)
 {
     QString fullPath;
 
-    QString path = savePath()->rawValue().toString();
+    QString path = paramAutoSavePath()->rawValue().toString();
     if (!path.isEmpty() && QDir(path).exists()) {
         QDir dir(path);
         return dir.filePath(parameterDirectory);
@@ -268,6 +317,7 @@ QString AppSettings::telemetrySavePath(void)
 
     return fullPath;
 }
+
 
 Fact* AppSettings::autoLoadMissions(void)
 {

@@ -59,6 +59,7 @@ QGCViewDialog {
                 forceSave.visible = true
             }
         }
+        controller.autoSaveParams()
     }
 
     Component.onCompleted: {

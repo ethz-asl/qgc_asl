@@ -33,6 +33,12 @@ Item {
     property var    activeVehicle:      QGroundControl.multiVehicleManager.activeVehicle
     property string formatedMessage:    activeVehicle ? activeVehicle.formatedMessage : ""
 
+    property real   satcomOpacity:      activeVehicle ? (activeVehicle.satcomActive ? 1.0 : 0.5) : 0.5
+    property string activeCommText:     activeVehicle ? (activeVehicle.satcomActive ? "Satcom Active" : "Telemetry Active") : "Telemetry Active"
+    property string switchCommText:     activeVehicle ? (activeVehicle.satcomActive ? "Switch to Telemetry" : "Switch to Satcom") : "Switch to Satcom"
+    property var    multipleLinks:      QGroundControl.linkManager.multipleLinksConnected()
+    property bool   highLatencyCheck:   false
+
     property var _viewList: [ settingsViewLoader, setupViewLoader, planViewLoader, flightView, analyzeViewLoader ]
 
     readonly property string _settingsViewSource:   "AppSettings.qml"

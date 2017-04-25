@@ -126,6 +126,8 @@ Rectangle {
             enabled:    _currentSelection && !_currentSelection.link
             onClicked: {
                 QGroundControl.linkManager.createConnectedLink(_currentSelection)
+                mainWindow.highLatencyCheck = QGroundControl.linkManager.connectedLinkHighLatency()
+                mainWindow.multipleLinks = QGroundControl.linkManager.multipleLinksConnected()
             }
         }
         QGCButton {
@@ -133,6 +135,8 @@ Rectangle {
             enabled:    _currentSelection && _currentSelection.link
             onClicked: {
                 QGroundControl.linkManager.disconnectLink(_currentSelection.link, false)
+                mainWindow.highLatencyCheck = QGroundControl.linkManager.connectedLinkHighLatency()
+                mainWindow.multipleLinks = QGroundControl.linkManager.multipleLinksConnected()
             }
         }
     }

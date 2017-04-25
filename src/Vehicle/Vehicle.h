@@ -64,6 +64,8 @@ public:
     Fact* clipCount2    (void) { return &_clipCount2Fact; }
     Fact* clipCount3    (void) { return &_clipCount3Fact; }
 
+    void setVehicle(Vehicle* vehicle);
+
     static const char* _xAxisFactName;
     static const char* _yAxisFactName;
     static const char* _zAxisFactName;
@@ -72,6 +74,7 @@ public:
     static const char* _clipCount3FactName;
 
 private:
+    Vehicle*    _vehicle;
     Fact        _xAxisFact;
     Fact        _yAxisFact;
     Fact        _zAxisFact;
@@ -95,11 +98,14 @@ public:
     Fact* speed         (void) { return &_speedFact; }
     Fact* verticalSpeed (void) { return &_verticalSpeedFact; }
 
+    void setVehicle(Vehicle* vehicle);
+
     static const char* _directionFactName;
     static const char* _speedFactName;
     static const char* _verticalSpeedFactName;
 
 private:
+    Vehicle*    _vehicle;
     Fact        _directionFact;
     Fact        _speedFact;
     Fact        _verticalSpeedFact;
@@ -124,6 +130,8 @@ public:
     Fact* count             (void) { return &_countFact; }
     Fact* lock              (void) { return &_lockFact; }
 
+    void setVehicle(Vehicle* vehicle);
+
     static const char* _hdopFactName;
     static const char* _vdopFactName;
     static const char* _courseOverGroundFactName;
@@ -131,6 +139,7 @@ public:
     static const char* _lockFactName;
 
 private:
+    Vehicle*    _vehicle;
     Fact        _hdopFact;
     Fact        _vdopFact;
     Fact        _courseOverGroundFact;
@@ -160,6 +169,8 @@ public:
     Fact* cellCount                 (void) { return &_cellCountFact; }
 
 
+    void setVehicle(Vehicle* vehicle);
+
     static const char* _voltageFactName;
     static const char* _percentRemainingFactName;
     static const char* _mahConsumedFactName;
@@ -177,6 +188,7 @@ public:
     static const int    _cellCountUnavailable;
 
 private:
+    Vehicle*        _vehicle;
     Fact            _voltageFact;
     Fact            _percentRemainingFact;
     Fact            _mahConsumedFact;
@@ -268,6 +280,8 @@ public:
     Q_PROPERTY(bool                 genericFirmware         READ genericFirmware                                        CONSTANT)
     Q_PROPERTY(bool                 connectionLost          READ connectionLost                                         NOTIFY connectionLostChanged)
     Q_PROPERTY(bool                 connectionLostEnabled   READ connectionLostEnabled  WRITE setConnectionLostEnabled  NOTIFY connectionLostEnabledChanged)
+    Q_PROPERTY(int                  connectionLostVariable  READ connectionLostVariable WRITE setConnectionLostVariable NOTIFY connectionLostVariableChanged)
+    Q_PROPERTY(int                  mavCommandTimerVariable READ mavCommandTimerVariable    WRITE setMavCommandTimerVariable    NOTIFY mavCommandTimerVariableChanged)
     Q_PROPERTY(uint                 messagesReceived        READ messagesReceived                                       NOTIFY messagesReceivedChanged)
     Q_PROPERTY(uint                 messagesSent            READ messagesSent                                           NOTIFY messagesSentChanged)
     Q_PROPERTY(uint                 messagesLost            READ messagesLost                                           NOTIFY messagesLostChanged)
@@ -310,6 +324,8 @@ public:
     Q_PROPERTY(unsigned int         telemetryRNoise         READ telemetryRNoise                                        NOTIFY telemetryRNoiseChanged)
     Q_PROPERTY(QVariantList         toolBarIndicators       READ toolBarIndicators                                      CONSTANT)
     Q_PROPERTY(QVariantList         cameraList              READ cameraList                                             CONSTANT)
+    Q_PROPERTY(bool                 satcomActive            READ satcomActive               WRITE setSatcomActive       NOTIFY satcomActiveChanged)
+
 
     /// true: Vehicle is flying, false: Vehicle is on ground
     Q_PROPERTY(bool flying      READ flying     WRITE setFlying     NOTIFY flyingChanged)
@@ -417,6 +433,9 @@ public:
     Q_INVOKABLE void clearMessages();
 
     Q_INVOKABLE void triggerCamera(void);
+
+    /// enable satcom
+    Q_INVOKABLE bool switchSatcomClick();
 
 #if 0
     // Temporarily removed, waiting for new command implementation
@@ -530,6 +549,10 @@ public:
     void startMavlinkLog();
     void stopMavlinkLog();
 
+    void setSatcomActive(bool active);
+    bool satcomActive(void) { return _satcomActive; }
+
+
     /// Requests the specified data stream from the vehicle
     ///     @param stream Stream which is being requested
     ///     @param rate Rate at which to send stream in Hz
@@ -561,6 +584,8 @@ public:
     bool            genericFirmware         () const { return !px4Firmware() && !apmFirmware(); }
     bool            connectionLost          () const { return _connectionLost; }
     bool            connectionLostEnabled   () const { return _connectionLostEnabled; }
+    int             connectionLostVariable  () { return _connectionLostTimeoutMSecs; }
+    int             mavCommandTimerVariable () { return _mavCommandAckTimeoutMSecs; }
     uint            messagesReceived        () { return _messagesReceived; }
     uint            messagesSent            () { return _messagesSent; }
     uint            messagesLost            () { return _messagesLost; }
@@ -606,6 +631,8 @@ public:
     FactGroup* temperatureFactGroup (void) { return &_temperatureFactGroup; }
 
     void setConnectionLostEnabled(bool connectionLostEnabled);
+    void setConnectionLostVariable(int connectionLostVariable);
+    void setMavCommandTimerVariable(int mavCommandTimerVariable);
 
     ParameterManager* parameterManager(void) { return _parameterManager; }
     ParameterManager* parameterManager(void) const { return _parameterManager; }
@@ -655,6 +682,9 @@ public:
     /// and destroyed when the vehicle goes away.
     void setFirmwarePluginInstanceData(QObject* firmwarePluginInstanceData);
 
+    QList<LinkInterface*> getActiveLinks(void) { return _links; }
+    void setPriorityLink(LinkInterface* link);
+
     QString vehicleImageOpaque  () const;
     QString vehicleImageOutline () const;
     QString vehicleImageCompass () const;
@@ -682,6 +712,8 @@ signals:
     void hilActuatorControlsChanged(quint64 time, quint64 flags, float ctl_0, float ctl_1, float ctl_2, float ctl_3, float ctl_4, float ctl_5, float ctl_6, float ctl_7, float ctl_8, float ctl_9, float ctl_10, float ctl_11, float ctl_12, float ctl_13, float ctl_14, float ctl_15, quint8 mode);
     void connectionLostChanged(bool connectionLost);
     void connectionLostEnabledChanged(bool connectionLostEnabled);
+    void connectionLostVariableChanged(int connectionLostVariable);
+    void mavCommandTimerVariableChanged(int mavCommandTimerVariable);
     void autoDisconnectChanged(bool autoDisconnectChanged);
     void flyingChanged(bool flying);
     void guidedModeChanged(bool guidedMode);
@@ -696,6 +728,18 @@ signals:
     void messagesReceivedChanged    ();
     void messagesSentChanged        ();
     void messagesLostChanged        ();
+
+    //asluav
+    void AirspeedChanged(float airspeed);
+    void AslctrlDataChanged(float uElev, float uAil, float uRud, float uThrot, float roll, float pitch, float yaw, float roll_ref, float pitch_ref, float h);
+    void MPPTDataChanged(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3);
+    void BatMonDataChanged(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
+    void SensorpodStatusChanged(uint8_t rate1, uint8_t rate2, uint8_t rate3, uint8_t rate4, uint8_t numRecordTopics, uint8_t cpuTemp, uint16_t freeSpace);
+    void SensPowerChanged(float vspb_volt, float cspb_amp, float cs1_amp, float cs2_amp);
+    void SensPowerBoardChanged(uint8_t pwr_brd_status);
+    void speedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
+    void thrustChanged(Vehicle* vehicle, double thrust);
+
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);
@@ -748,6 +792,8 @@ signals:
     ///     @param result MAV_RESULT returned in ack
     ///     @param noResponseFromVehicle true: vehicle did not respond to command, false: vehicle responsed, MAV_RESULT in result
     void mavCommandResult(int vehicleId, int component, int command, int result, bool noReponseFromVehicle);
+
+    void satcomActiveChanged(bool active);
 
 private slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
@@ -823,6 +869,16 @@ private:
     void _commonInit(void);
     void _startMissionRequest(void);
 
+    //asluav
+    void _handleAslHighLatency(mavlink_message_t& message);
+    void _handleSensPower(mavlink_message_t& message);
+    void _handleSensPowerBoard(mavlink_message_t& message);
+    void _handleSensMppt(mavlink_message_t& message);
+    void _handleSensBatmon(mavlink_message_t& message);
+    void _handleAslctrlData(mavlink_message_t& message);
+    void _handleSensorpodStatus(mavlink_message_t& message);
+
+private:
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
     bool    _active;
@@ -878,6 +934,7 @@ private:
     uint32_t        _telemetryRNoise;
     bool            _vehicleCapabilitiesKnown;
     bool            _supportsMissionItemInt;
+    bool            _satcomActive;
 
     typedef struct {
         int     component;
@@ -890,7 +947,7 @@ private:
     QTimer                          _mavCommandAckTimer;
     int                             _mavCommandRetryCount;
     static const int                _mavCommandMaxRetryCount = 3;
-    static const int                _mavCommandAckTimeoutMSecs = 3000;
+    int                             _mavCommandAckTimeoutMSecs;
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;
@@ -899,7 +956,7 @@ private:
     // Lost connection handling
     bool                _connectionLost;
     bool                _connectionLostEnabled;
-    static const int    _connectionLostTimeoutMSecs = 3500;  // Signal connection lost after 3.5 seconds of missed heartbeat
+    int                 _connectionLostTimeoutMSecs;  // Signal connection lost after x seconds of missed heartbeat
     QTimer              _connectionLostTimer;
 
     MissionManager*     _missionManager;
@@ -1003,6 +1060,19 @@ private:
     static const char* _settingsGroup;
     static const char* _joystickModeSettingsKey;
     static const char* _joystickEnabledSettingsKey;
+
+    // Add an external voltage sensor in addition to PX4-onboard sensor
+    double _currentVoltage_ext;
+    float _lpVoltage_ext;
+    float _tickLowpassVoltage_ext;
+    float _lastTickVoltageValue_ext;
+    float _emptyVoltage_ext;
+    float _warnVoltage_ext;
+    float _fullVoltage_ext;
+    float _tickVoltage_ext;
+    float _startVoltage_ext;
+    quint64 _lastVoltageWarning; ///< Time at which the last voltage warning occurred
+
 
 };
 #endif

@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void refresh(void);
     Q_INVOKABLE void resetAllToDefaults(void);
     Q_INVOKABLE void setRCToParam(const QString& paramName);
+    Q_INVOKABLE void autoSaveParams(void);
 	
     QList<QObject*> model(void);
     

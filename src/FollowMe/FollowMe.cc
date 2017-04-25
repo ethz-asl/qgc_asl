@@ -145,7 +145,9 @@ void FollowMe::_sendGCSMotionReport(void)
                                                   vehicle->priorityLink()->mavlinkChannel(),
                                                   &message,
                                                   &follow_target);
-            vehicle->sendMessageOnLink(vehicle->priorityLink(), message);
+            if (!(vehicle->satcomActive())) {
+                vehicle->sendMessageOnLink(vehicle->priorityLink(), message);
+            }
         }
     }
 }

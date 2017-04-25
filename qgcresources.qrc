@@ -161,6 +161,10 @@
         <file alias="APM/BrandImage">src/FirmwarePlugin/APM/APMBrandImage.png</file>
         <file alias="APM/BrandImageSub">src/FirmwarePlugin/APM/APMBrandImageSub.png</file>
         <file alias="PX4/BrandImage">src/FirmwarePlugin/PX4/PX4BrandImage.png</file>
+        <file alias="SatPlane.svg">src/ui/toolbar/Images/SatPlane.svg</file>
+        <file alias="EnergyBudget/Battery">src/ui/Images/energyWidget/Battery.png</file>
+        <file alias="EnergyBudget/Prop">src/ui/Images/energyWidget/prop.JPG</file>
+        <file alias="EnergyBudget/Solarcell">src/ui/Images/energyWidget/solarcell.png</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="AntennaRC">resources/Antenna_RC.svg</file>

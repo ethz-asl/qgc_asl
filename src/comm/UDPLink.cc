@@ -333,6 +333,7 @@ UDPConfiguration::UDPConfiguration(const QString& name) : LinkConfiguration(name
 UDPConfiguration::UDPConfiguration(UDPConfiguration* source) : LinkConfiguration(source)
 {
     _localPort = source->localPort();
+    _highLatency = source->highLatency();
     QString host;
     int port;
     _hostList.clear();
@@ -349,6 +350,7 @@ void UDPConfiguration::copyFrom(LinkConfiguration *source)
     UDPConfiguration* usource = dynamic_cast<UDPConfiguration*>(source);
     Q_ASSERT(usource != NULL);
     _localPort = usource->localPort();
+    _highLatency = usource->highLatency();
     _hosts.clear();
     QString host;
     int port;
@@ -478,6 +480,7 @@ void UDPConfiguration::saveSettings(QSettings& settings, const QString& root)
     settings.beginGroup(root);
     settings.setValue("port", (int)_localPort);
     settings.setValue("hostCount", _hosts.count());
+    settings.setValue("highLatency", (int)_highLatency);
     int index = 0;
     QMap<QString, int>::const_iterator it = _hosts.begin();
     while(it != _hosts.end()) {

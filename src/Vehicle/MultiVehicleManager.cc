@@ -62,6 +62,7 @@ void MultiVehicleManager::setToolbox(QGCToolbox *toolbox)
    qmlRegisterUncreatableType<MultiVehicleManager>("QGroundControl.MultiVehicleManager", 1, 0, "MultiVehicleManager", "Reference only");
 
    connect(_mavlinkProtocol, &MAVLinkProtocol::vehicleHeartbeatInfo, this, &MultiVehicleManager::_vehicleHeartbeatInfo);
+   connect(_mavlinkProtocol, &MAVLinkProtocol::highLatVehicleHeartbeatInfo, this, &MultiVehicleManager::_highLatVehicleHeartbeatInfo);
 
    SettingsManager* settingsManager = toolbox->settingsManager();
    _offlineEditingVehicle = new Vehicle(static_cast<MAV_AUTOPILOT>(settingsManager->appSettings()->offlineEditingFirmwareType()->rawValue().toInt()),
@@ -137,7 +138,74 @@ void MultiVehicleManager::_vehicleHeartbeatInfo(LinkInterface* link, int vehicle
         MobileScreenMgr::setKeepScreenOn(true);
     }
 #endif
+}
 
+void MultiVehicleManager::_highLatVehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleMavlinkVersion, int vehicleFirmwareType, int vehicleType)
+{
+    if (_ignoreVehicleIds.contains(vehicleId) || getVehicleById(vehicleId)
+            || vehicleId == 0) {
+        return;
+    }
+
+    switch (vehicleType) {
+    case MAV_TYPE_GCS:
+    case MAV_TYPE_ONBOARD_CONTROLLER:
+    case MAV_TYPE_GIMBAL:
+    case MAV_TYPE_ADSB:
+        // These are not vehicles, so don't create a vehicle for them
+        return;
+    default:
+        // All other MAV_TYPEs create vehicles
+        break;
+    }
+
+    qCDebug(MultiVehicleManagerLog()) << "Adding new vehicle link:vehicleId:componentId:vehicleMavlinkVersion:vehicleFirmwareType:vehicleType "
+                                      << link->getName()
+                                      << vehicleId
+                                      << componentId
+                                      << vehicleMavlinkVersion
+                                      << vehicleFirmwareType
+                                      << vehicleType;
+
+    if (vehicleId == _mavlinkProtocol->getSystemId()) {
+        _app->showMessage(QString("Warning: A vehicle is using the same system id as QGroundControl: %1").arg(vehicleId));
+    }
+
+    Vehicle* vehicle = new Vehicle(link, vehicleId, componentId, (MAV_AUTOPILOT)vehicleFirmwareType, (MAV_TYPE)vehicleType, _firmwarePluginManager, _joystickManager);
+    connect(vehicle, &Vehicle::allLinksInactive, this, &MultiVehicleManager::_deleteVehiclePhase1);
+    connect(vehicle->parameterManager(), &ParameterManager::parametersReadyChanged, this, &MultiVehicleManager::_vehicleParametersReadyChanged);
+
+    _vehicles.append(vehicle);
+
+    // Send QGC heartbeat ASAP, this allows PX4 to start accepting commands
+    _sendGCSHeartbeat();
+
+    emit vehicleAdded(vehicle);
+
+    if (_vehicles.count() > 1) {
+        qgcApp()->showMessage(tr("Connected to Vehicle %1").arg(vehicleId));
+    } else {
+        setActiveVehicle(vehicle);
+    }
+
+    // Mark link as active
+    link->setActive(true);
+
+    QList<LinkInterface*> activeLinks = vehicle->getActiveLinks();
+    for (int i=0; i<activeLinks.count(); i++) {
+        LinkInterface* checkLink = activeLinks[i];
+        if (checkLink->getLinkConfiguration()->type() == 1) {
+            vehicle->setPriorityLink(checkLink);
+        }
+    }
+
+#if defined (__ios__) || defined(__android__)
+    if(_vehicles.count() == 1) {
+        //-- Once a vehicle is connected, keep screen from going off
+        qCDebug(MultiVehicleManagerLog) << "QAndroidJniObject::keepScreenOn";
+        MobileScreenMgr::setKeepScreenOn(true);
+    }
+#endif
 }
 
 /// This slot is connected to the Vehicle::allLinksDestroyed signal such that the Vehicle is deleted
@@ -323,7 +391,7 @@ void MultiVehicleManager::_sendGCSHeartbeat(void)
     LinkManager* linkMgr = _toolbox->linkManager();
     for (int i=0; i<linkMgr->links().count(); i++) {
         LinkInterface* link = linkMgr->links()[i];
-        if (link->isConnected()) {
+        if (link->isConnected() && link->getLinkConfiguration()->type() == 0) {
             mavlink_message_t message;
             mavlink_msg_heartbeat_pack_chan(_mavlinkProtocol->getSystemId(),
                                             _mavlinkProtocol->getComponentId(),

@@ -34,6 +34,7 @@ QGCView {
 
     property Fact _percentRemainingAnnounce:    QGroundControl.settingsManager.appSettings.batteryPercentRemainingAnnounce
     property Fact _savePath:                    QGroundControl.settingsManager.appSettings.savePath
+    property Fact _paramAutoSavePath:           QGroundControl.settingsManager.appSettings.paramAutoSavePath
     property Fact _appFontPointSize:            QGroundControl.settingsManager.appSettings.appFontPointSize
     property real _labelWidth:                  ScreenTools.defaultFontPixelWidth * 15
     property real _editFieldWidth:              ScreenTools.defaultFontPixelWidth * 30
@@ -383,6 +384,49 @@ QGCView {
                                     selectFolder:   true
 
                                     onAcceptedForLoad: _savePath.rawValue = file
+                                }
+                            }
+                        }
+
+                        //-----------------------------------------------------------------
+                        //-- Autosave params checkbox
+                        FactCheckBox {
+                            id:         paramAutoSaveCheckBox
+                            text:       qsTr("Parameter autosave")
+                            checked:    false
+                            fact:       _paramAutoSave
+                            visible:    !ScreenTools.isMobile && _paramAutoSave.visible
+                            property Fact _paramAutoSave: QGroundControl.settingsManager.appSettings.paramAutoSave
+                        } 
+
+                        //-----------------------------------------------------------------
+                        //-- Param autosave path
+                        Row {
+                            spacing:    ScreenTools.defaultFontPixelWidth
+                            visible:    _paramAutoSavePath.visible
+
+                            QGCLabel {
+                                anchors.baseline:   paramAutoSavePathBrowse.baseline
+                                text:               qsTr("Parameter autosave path:")
+                            }
+                            QGCLabel {
+                                anchors.baseline:   paramAutoSavePathBrowse.baseline
+                                text:               _paramAutoSavePath.rawValue === "" ? qsTr("<not set>") : _paramAutoSavePath.value
+                            }
+                            QGCButton {
+                                id:         paramAutoSavePathBrowse
+                                text:       "Browse"
+                                onClicked:  paramAutoSavePathBrowseDialog.openForLoad()
+
+                                QGCFileDialog {
+                                    id:             paramAutoSavePathBrowseDialog
+                                    qgcView:        _qgcView
+                                    title:          qsTr("Choose the location to save parameters:")
+                                    folder:         _paramAutoSavePath.rawValue
+                                    selectExisting: true
+                                    selectFolder:   true
+
+                                    onAcceptedForLoad: _paramAutoSavePath.rawValue = file
                                 }
                             }
                         }

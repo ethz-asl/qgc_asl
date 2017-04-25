@@ -33,11 +33,13 @@ public:
     Q_PROPERTY(Fact* indoorPalette                      READ indoorPalette                      CONSTANT)
     Q_PROPERTY(Fact* showLargeCompass                   READ showLargeCompass                   CONSTANT)
     Q_PROPERTY(Fact* savePath                           READ savePath                           CONSTANT)
+    Q_PROPERTY(Fact* paramAutoSave                      READ paramAutoSave                      CONSTANT)
+    Q_PROPERTY(Fact* paramAutoSavePath                  READ paramAutoSavePath                  CONSTANT)
     Q_PROPERTY(Fact* autoLoadMissions                   READ autoLoadMissions                   CONSTANT)
     Q_PROPERTY(Fact* automaticMissionUpload             READ automaticMissionUpload             CONSTANT)
 
     Q_PROPERTY(QString missionSavePath      READ missionSavePath    NOTIFY savePathsChanged)
-    Q_PROPERTY(QString parameterSavePath    READ parameterSavePath  NOTIFY savePathsChanged)
+    Q_PROPERTY(QString parameterSavePath    READ parameterSavePath  NOTIFY paramAutoSavePathChanged)
     Q_PROPERTY(QString telemetrySavePath    READ telemetrySavePath  NOTIFY savePathsChanged)
 
     Q_PROPERTY(QString missionFileExtension     MEMBER missionFileExtension     CONSTANT)
@@ -58,6 +60,8 @@ public:
     Fact* indoorPalette                     (void);
     Fact* showLargeCompass                  (void);
     Fact* savePath                          (void);
+    Fact* paramAutoSave                     (void);
+    Fact* paramAutoSavePath                 (void);
     Fact* autoLoadMissions                  (void);
     Fact* automaticMissionUpload            (void);
 
@@ -81,6 +85,8 @@ public:
     static const char* indoorPaletteName;
     static const char* showLargeCompassName;
     static const char* savePathName;
+    static const char* paramAutoSaveName;
+    static const char* paramAutoSavePathName;
     static const char* autoLoadMissionsName;
     static const char* automaticMissionUploadName;
 
@@ -98,10 +104,12 @@ public:
 
 signals:
     void savePathsChanged(void);
+    void paramAutoSavePathChanged(void);
 
 private slots:
     void _indoorPaletteChanged(void);
     void _checkSavePathDirectories(void);
+    void _checkParamAutoSavePathDirectories(void);
 
 private:
     SettingsFact* _offlineEditingFirmwareTypeFact;
@@ -118,6 +126,8 @@ private:
     SettingsFact* _indoorPaletteFact;
     SettingsFact* _showLargeCompassFact;
     SettingsFact* _savePathFact;
+    SettingsFact* _paramAutoSaveFact;
+    SettingsFact* _paramAutoSavePathFact;
     SettingsFact* _autoLoadMissionsFact;
     SettingsFact* _automaticMissionUpload;
 };

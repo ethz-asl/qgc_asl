@@ -47,6 +47,8 @@ LinkManager::LinkManager(QGCApplication* app)
     , _configUpdateSuspended(false)
     , _configurationsLoaded(false)
     , _connectionsSuspended(false)
+    , _multipleLinksConnected(false)
+    , _connectedHighLatency(false)
     , _mavlinkChannelsUsedBitMask(1)    // We never use channel 0 to avoid sequence numbering problems
     , _autoConnectSettings(NULL)
     , _mavlinkProtocol(NULL)
@@ -625,6 +627,43 @@ void LinkManager::shutdown(void)
 {
     setConnectionsSuspended("Shutdown");
     disconnectAll();
+}
+
+bool LinkManager::multipleLinksConnected()
+{
+    int connectedLinks = 0;
+    for (int i=0; i<_sharedLinks.count(); i++) {
+        if (_sharedLinks[i]->isConnected()) {
+            connectedLinks++;
+        }
+        usleep(10000);
+    }
+    if (connectedLinks < 2) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool LinkManager::connectedLinkHighLatency()
+{
+    bool connectedHighLatency = false;
+    usleep(10000);      //sleep because of timing problems
+    for (int i=0; i<_sharedLinks.count(); i++) {
+        LinkConfiguration* linkConfig = _sharedLinks[i]->getLinkConfiguration();
+        if (_sharedLinks[i]->isConnected()) {
+            if (linkConfig->type() == LinkConfiguration::TypeUdp) {
+                connectedHighLatency = linkConfig->highLatency();
+                _connectedHighLatency = connectedHighLatency;
+                return _connectedHighLatency;
+            } else {
+                connectedHighLatency = false;
+            }
+        }
+        usleep(10000);
+    }
+    _connectedHighLatency = connectedHighLatency;
+    return _connectedHighLatency;
 }
 
 QStringList LinkManager::linkTypeStrings(void) const

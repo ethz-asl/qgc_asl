@@ -748,6 +748,7 @@ void FileManager::_sendRequest(Request* request)
                                                  _systemIdServer,    // Target system
                                                  0,                  // Target component
                                                  (uint8_t*)request); // Payload
-    
-    _vehicle->sendMessageOnLink(link, message);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(link, message);
+    }
 }

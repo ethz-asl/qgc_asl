@@ -19,49 +19,73 @@ import QGroundControl.ScreenTools           1.0
 import QGroundControl.Palette               1.0
 
 //-------------------------------------------------------------------------
-//-- RC RSSI Indicator
+//-- Satcom Indicator
+
 Item {
-    width:          rssiRow.width * 1.1
+    property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
+
+    width:          satcomRow.width * 1.1
     anchors.top:    parent.top
     anchors.bottom: parent.bottom
-    visible:        _activeVehicle ? _activeVehicle.supportsRadio : true
-
-    property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+    visible:        mainWindow.highLatencyCheck
 
     Component {
-        id: rcRSSIInfo
+        id: satcomInfo
 
         Rectangle {
-            width:  rcrssiCol.width   + ScreenTools.defaultFontPixelWidth  * 3
-            height: rcrssiCol.height  + ScreenTools.defaultFontPixelHeight * 2
+            width:  satcomCol.width   + ScreenTools.defaultFontPixelWidth  * 3
+            height: satcomCol.height  + ScreenTools.defaultFontPixelHeight * 2
             radius: ScreenTools.defaultFontPixelHeight * 0.5
             color:  qgcPal.window
             border.color:   qgcPal.text
 
             Column {
-                id:                 rcrssiCol
+                id:                 satcomCol
                 spacing:            ScreenTools.defaultFontPixelHeight * 0.5
-                width:              Math.max(rcrssiGrid.width, rssiLabel.width)
+                width:              Math.max(satcomGrid.width, satcomLabel.width)
                 anchors.margins:    ScreenTools.defaultFontPixelHeight
                 anchors.centerIn:   parent
 
                 QGCLabel {
-                    id:             rssiLabel
-                    text:           _activeVehicle ? (_activeVehicle.rcRSSI != 255 ? qsTr("RC RSSI Status") : qsTr("RC RSSI Data Unavailable")) : qsTr("N/A", "No data available")
+                    id:             satcomLabel
+                    text:           qsTr("Communication Info")
                     font.family:    ScreenTools.demiboldFontFamily
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 GridLayout {
-                    id:                 rcrssiGrid
-                    visible:            _activeVehicle && _activeVehicle.rcRSSI != 255
+                    id:                 satcomGrid
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
-                    columns:            2
                     anchors.horizontalCenter: parent.horizontalCenter
+                    QGCLabel { text: mainWindow.activeCommText }
+                }
 
-                    QGCLabel { text: qsTr("RSSI:") }
-                    QGCLabel { text: _activeVehicle ? (_activeVehicle.rcRSSI + "%") : 0 }
+                Button {
+                    id: commSwitchButton
+                    width: switchButtonText.width + 10
+                    height: switchButtonText.height + 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: mainWindow.multipleLinks
+                    Text {
+                        id: switchButtonText
+                        text: mainWindow.switchCommText
+                        font.pointSize: 8
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    onClicked: {
+                        if (_activeVehicle.switchSatcomClick()) {
+                            mainWindow.satcomOpacity = 1.0
+                            mainWindow.activeCommText = "Satcom Active"
+                            mainWindow.switchCommText = "Switch to Telemetry"
+                        }
+                        else {
+                            mainWindow.satcomOpacity = 0.5
+                            mainWindow.activeCommText = "Telemetry Active"
+                            mainWindow.switchCommText = "Switch to Satcom"
+                        }
+                    }
                 }
             }
 
@@ -74,7 +98,7 @@ Item {
     }
 
     Row {
-        id:             rssiRow
+        id:             satcomRow
         anchors.top:    parent.top
         anchors.bottom: parent.bottom
         spacing:        ScreenTools.defaultFontPixelWidth
@@ -84,16 +108,10 @@ Item {
             anchors.top:        parent.top
             anchors.bottom:     parent.bottom
             sourceSize.height:  height
-            source:             "/qmlimages/RC.svg"
+            source:             "/qmlimages/SatPlane.svg"
             fillMode:           Image.PreserveAspectFit
-            opacity:            _activeVehicle ? (((_activeVehicle.rcRSSI < 0) || (_activeVehicle.rcRSSI > 100)) ? 0.5 : 1) : 0.5
+            opacity:            mainWindow.satcomOpacity
             color:              qgcPal.buttonText
-        }
-
-        SignalStrength {
-            anchors.verticalCenter: parent.verticalCenter
-            size:                   parent.height * 0.5
-            percent:                _activeVehicle ? ((_activeVehicle.rcRSSI > 100) ? 0 : _activeVehicle.rcRSSI) : 0
         }
     }
 
@@ -101,7 +119,7 @@ Item {
         anchors.fill:   parent
         onClicked: {
             var centerX = mapToItem(toolBar, x, y).x + (width / 2)
-            mainWindow.showPopUp(rcRSSIInfo, centerX)
+            mainWindow.showPopUp(satcomInfo, centerX)
         }
     }
 }

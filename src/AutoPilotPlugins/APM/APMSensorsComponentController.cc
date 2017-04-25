@@ -611,8 +611,9 @@ void APMSensorsComponentController::nextClicked(void)
                                         _vehicle->priorityLink()->mavlinkChannel(),
                                         &msg,
                                         &ack);
-
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 
     if (_calTypeInProgress == CalTypeCompassMot) {
         _stopCalibration(StopCalibrationSuccess);
