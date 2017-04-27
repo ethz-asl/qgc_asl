@@ -33,6 +33,12 @@ Item {
     property var    activeVehicle:      QGroundControl.multiVehicleManager.activeVehicle
     property string formatedMessage:    activeVehicle ? activeVehicle.formatedMessage : ""
 
+    property real   satcomOpacity:      activeVehicle ? (activeVehicle.satcomActive ? 1.0 : 0.5) : 0.5
+    property string activeCommText:     activeVehicle ? (activeVehicle.satcomActive ? "Satcom Active" : "Telemetry Active") : "Telemetry Active"
+    property string switchCommText:     activeVehicle ? (activeVehicle.satcomActive ? "Switch to Telemetry" : "Switch to Satcom") : "Switch to Satcom"
+    property var    multipleLinks:      QGroundControl.linkManager.multipleLinksConnected()
+    property bool   highLatencyCheck:   false
+
     property var _viewList: [ settingsViewLoader, setupViewLoader, planViewLoader, flightView, analyzeViewLoader ]
 
     readonly property string _settingsViewSource:   "AppSettings.qml"
@@ -47,6 +53,14 @@ Item {
         }
     }
 
+    function disableToolbar() {
+        toolbarBlocker.enabled = true
+    }
+
+    function enableToolbar() {
+        toolbarBlocker.enabled = false
+    }
+
     function hideAllViews() {
         for (var i=0; i<_viewList.length; i++) {
             _viewList[i].visible = false
@@ -55,6 +69,7 @@ Item {
     }
 
     function showSettingsView() {
+        rootLoader.sourceComponent = null
         if(currentPopUp) {
             currentPopUp.close()
         }
@@ -69,6 +84,7 @@ Item {
     }
 
     function showSetupView() {
+        rootLoader.sourceComponent = null
         if(currentPopUp) {
             currentPopUp.close()
         }
@@ -83,6 +99,7 @@ Item {
     }
 
     function showPlanView() {
+        rootLoader.sourceComponent = null
         if(currentPopUp) {
             currentPopUp.close()
         }
@@ -96,6 +113,7 @@ Item {
     }
 
     function showFlyView() {
+        rootLoader.sourceComponent = null
         if(currentPopUp) {
             currentPopUp.close()
         }
@@ -106,6 +124,7 @@ Item {
     }
 
     function showAnalyzeView() {
+        rootLoader.sourceComponent = null
         if(currentPopUp) {
             currentPopUp.close()
         }
@@ -206,30 +225,40 @@ Item {
     }
 
     function showMessageArea() {
+        rootLoader.sourceComponent = null
+        var currentlyVisible = messageArea.visible
         if(currentPopUp) {
             currentPopUp.close()
         }
-        if(QGroundControl.multiVehicleManager.activeVehicleAvailable) {
-            messageText.text = formatMessage(activeVehicle.formatedMessages)
-            //-- Hack to scroll to last message
-            for (var i = 0; i < activeVehicle.messageCount; i++)
-                messageFlick.flick(0,-5000)
-            activeVehicle.resetMessages()
-        } else {
-            messageText.text = qsTr("No Messages")
+        if(!currentlyVisible) {
+            if(QGroundControl.multiVehicleManager.activeVehicleAvailable) {
+                messageText.text = formatMessage(activeVehicle.formatedMessages)
+                //-- Hack to scroll to last message
+                for (var i = 0; i < activeVehicle.messageCount; i++)
+                    messageFlick.flick(0,-5000)
+                activeVehicle.resetMessages()
+            } else {
+                messageText.text = qsTr("No Messages")
+            }
+            currentPopUp = messageArea
+            messageArea.visible = true
         }
-        currentPopUp = messageArea
-        messageArea.visible = true
     }
 
     function showPopUp(dropItem, centerX) {
+        rootLoader.sourceComponent = null
+        var oldIndicator = indicatorDropdown.sourceComponent
         if(currentPopUp) {
             currentPopUp.close()
         }
-        indicatorDropdown.centerX = centerX
-        indicatorDropdown.sourceComponent = dropItem
-        indicatorDropdown.visible = true
-        currentPopUp = indicatorDropdown
+        if(oldIndicator !== dropItem) {
+            console.log(oldIndicator)
+            console.log(dropItem)
+            indicatorDropdown.centerX = centerX
+            indicatorDropdown.sourceComponent = dropItem
+            indicatorDropdown.visible = true
+            currentPopUp = indicatorDropdown
+        }
     }
 
     //-- Main UI
@@ -249,6 +278,18 @@ Item {
         onShowPlanView:         mainWindow.showPlanView()
         onShowFlyView:          mainWindow.showFlyView()
         onShowAnalyzeView:      mainWindow.showAnalyzeView()
+        onArmVehicle:           flightView.guidedController.confirmAction(flightView.guidedController.actionArm)
+        onDisarmVehicle:        flightView.guidedController.confirmAction(flightView.guidedController.actionDisarm)
+
+        //-- Entire tool bar area disable on cammand
+        MouseArea {
+            id:             toolbarBlocker
+            anchors.fill:   parent
+            enabled:        false
+            onWheel:        { wheel.accepted = true; }
+            onPressed:      { mouse.accepted = true; }
+            onReleased:     { mouse.accepted = true; }
+        }
     }
 
     PlanToolBar {

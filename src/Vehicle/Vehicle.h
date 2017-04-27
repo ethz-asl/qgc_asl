@@ -252,6 +252,7 @@ public:
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition            READ homePosition                                           NOTIFY homePositionChanged)
     Q_PROPERTY(bool                 armed                   READ armed                  WRITE setArmed                  NOTIFY armedChanged)
+    Q_PROPERTY(bool                 autoDisarm              READ autoDisarm                                             NOTIFY autoDisarmChanged)
     Q_PROPERTY(bool                 flightModeSetAvailable  READ flightModeSetAvailable                                 CONSTANT)
     Q_PROPERTY(QStringList          flightModes             READ flightModes                                            CONSTANT)
     Q_PROPERTY(QString              flightMode              READ flightMode             WRITE setFlightMode             NOTIFY flightModeChanged)
@@ -280,6 +281,8 @@ public:
     Q_PROPERTY(bool                 genericFirmware         READ genericFirmware                                        CONSTANT)
     Q_PROPERTY(bool                 connectionLost          READ connectionLost                                         NOTIFY connectionLostChanged)
     Q_PROPERTY(bool                 connectionLostEnabled   READ connectionLostEnabled  WRITE setConnectionLostEnabled  NOTIFY connectionLostEnabledChanged)
+    Q_PROPERTY(int                  connectionLostVariable  READ connectionLostVariable WRITE setConnectionLostVariable NOTIFY connectionLostVariableChanged)
+    Q_PROPERTY(int                  mavCommandTimerVariable READ mavCommandTimerVariable    WRITE setMavCommandTimerVariable    NOTIFY mavCommandTimerVariableChanged)
     Q_PROPERTY(uint                 messagesReceived        READ messagesReceived                                       NOTIFY messagesReceivedChanged)
     Q_PROPERTY(uint                 messagesSent            READ messagesSent                                           NOTIFY messagesSentChanged)
     Q_PROPERTY(uint                 messagesLost            READ messagesLost                                           NOTIFY messagesLostChanged)
@@ -322,6 +325,8 @@ public:
     Q_PROPERTY(unsigned int         telemetryRNoise         READ telemetryRNoise                                        NOTIFY telemetryRNoiseChanged)
     Q_PROPERTY(QVariantList         toolBarIndicators       READ toolBarIndicators                                      CONSTANT)
     Q_PROPERTY(QVariantList         cameraList              READ cameraList                                             CONSTANT)
+    Q_PROPERTY(bool                 satcomActive            READ satcomActive               WRITE setSatcomActive       NOTIFY satcomActiveChanged)
+
 
     /// true: Vehicle is flying, false: Vehicle is on ground
     Q_PROPERTY(bool flying      READ flying     WRITE setFlying     NOTIFY flyingChanged)
@@ -429,6 +434,9 @@ public:
     Q_INVOKABLE void clearMessages();
 
     Q_INVOKABLE void triggerCamera(void);
+
+    /// enable satcom
+    Q_INVOKABLE bool switchSatcomClick();
 
 #if 0
     // Temporarily removed, waiting for new command implementation
@@ -542,6 +550,10 @@ public:
     void startMavlinkLog();
     void stopMavlinkLog();
 
+    void setSatcomActive(bool active);
+    bool satcomActive(void) { return _satcomActive; }
+
+
     /// Requests the specified data stream from the vehicle
     ///     @param stream Stream which is being requested
     ///     @param rate Rate at which to send stream in Hz
@@ -573,6 +585,8 @@ public:
     bool            genericFirmware         () const { return !px4Firmware() && !apmFirmware(); }
     bool            connectionLost          () const { return _connectionLost; }
     bool            connectionLostEnabled   () const { return _connectionLostEnabled; }
+    int             connectionLostVariable  () { return _connectionLostTimeoutMSecs; }
+    int             mavCommandTimerVariable () { return _mavCommandAckTimeoutMSecs; }
     uint            messagesReceived        () { return _messagesReceived; }
     uint            messagesSent            () { return _messagesSent; }
     uint            messagesLost            () { return _messagesLost; }
@@ -600,6 +614,7 @@ public:
     unsigned int    telemetryTXBuffer       () { return _telemetryTXBuffer; }
     unsigned int    telemetryLNoise         () { return _telemetryLNoise; }
     unsigned int    telemetryRNoise         () { return _telemetryRNoise; }
+    bool            autoDisarm              ();
 
     Fact* roll              (void) { return &_rollFact; }
     Fact* heading           (void) { return &_headingFact; }
@@ -618,6 +633,8 @@ public:
     FactGroup* temperatureFactGroup (void) { return &_temperatureFactGroup; }
 
     void setConnectionLostEnabled(bool connectionLostEnabled);
+    void setConnectionLostVariable(int connectionLostVariable);
+    void setMavCommandTimerVariable(int mavCommandTimerVariable);
 
     ParameterManager* parameterManager(void) { return _parameterManager; }
     ParameterManager* parameterManager(void) const { return _parameterManager; }
@@ -667,6 +684,9 @@ public:
     /// and destroyed when the vehicle goes away.
     void setFirmwarePluginInstanceData(QObject* firmwarePluginInstanceData);
 
+    QList<LinkInterface*> getActiveLinks(void) { return _links; }
+    void setPriorityLink(LinkInterface* link);
+
     QString vehicleImageOpaque  () const;
     QString vehicleImageOutline () const;
     QString vehicleImageCompass () const;
@@ -678,6 +698,12 @@ public:
 
     /// @true: When flying a mission the vehicle is always facing towards the next waypoint
     bool vehicleYawsToNextWaypointInMission(void) const;
+
+    /// The vehicle is responsible for making the initial request for the Plan.
+    /// @return: true: initial request is complete, false: initial request is still in progress;
+    bool initialPlanRequestComplete(void) const { return _initialPlanRequestComplete; }
+
+    void _setHomePosition(QGeoCoordinate& homeCoord);
 
 signals:
     void allLinksInactive(Vehicle* vehicle);
@@ -694,6 +720,8 @@ signals:
     void hilActuatorControlsChanged(quint64 time, quint64 flags, float ctl_0, float ctl_1, float ctl_2, float ctl_3, float ctl_4, float ctl_5, float ctl_6, float ctl_7, float ctl_8, float ctl_9, float ctl_10, float ctl_11, float ctl_12, float ctl_13, float ctl_14, float ctl_15, quint8 mode);
     void connectionLostChanged(bool connectionLost);
     void connectionLostEnabledChanged(bool connectionLostEnabled);
+    void connectionLostVariableChanged(int connectionLostVariable);
+    void mavCommandTimerVariableChanged(int mavCommandTimerVariable);
     void autoDisconnectChanged(bool autoDisconnectChanged);
     void flyingChanged(bool flying);
     void guidedModeChanged(bool guidedMode);
@@ -741,6 +769,7 @@ signals:
     void telemetryTXBufferChanged   (unsigned int value);
     void telemetryLNoiseChanged     (unsigned int value);
     void telemetryRNoiseChanged     (unsigned int value);
+    void autoDisarmChanged          (void);
 
     void firmwareMajorVersionChanged(int major);
     void firmwareMinorVersionChanged(int minor);
@@ -773,6 +802,11 @@ signals:
     ///     @param noResponseFromVehicle true: vehicle did not respond to command, false: vehicle responsed, MAV_RESULT in result
     void mavCommandResult(int vehicleId, int component, int command, int result, bool noReponseFromVehicle);
 
+    void satcomActiveChanged(bool active);
+
+    // Mavlink Serial Data
+    void mavlinkSerialControl(uint8_t device, uint8_t flags, uint16_t timeout, uint32_t baudrate, QByteArray data);
+
 private slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
     void _telemetryChanged(LinkInterface* link, unsigned rxerrors, unsigned fixed, int rssi, int remrssi, unsigned txbuf, unsigned noise, unsigned remnoise);
@@ -799,8 +833,9 @@ private slots:
     void _imageReady                        (UASInterface* uas);
     void _connectionLostTimeout(void);
     void _prearmErrorTimeout(void);
-    void _newMissionItemsAvailable(void);
-    void _newGeoFenceAvailable(void);
+    void _missionLoadComplete(void);
+    void _geoFenceLoadComplete(void);
+    void _rallyPointLoadComplete(void);
     void _sendMavCommandAgain(void);
 
     void _activeJoystickChanged(void);
@@ -845,9 +880,12 @@ private:
     void _sendNextQueuedMavCommand(void);
     void _updatePriorityLink(void);
     void _commonInit(void);
-    void _startMissionRequest(void);
+    void _startPlanRequest(void);
+    void _setupAutoDisarmSignalling(void);
+    void _setCapabilities(uint64_t capabilityBits);
 
     //asluav
+    void _handleAslHighLatency(mavlink_message_t& message);
     void _handleSensPower(mavlink_message_t& message);
     void _handleSensPowerBoard(mavlink_message_t& message);
     void _handleSensMppt(mavlink_message_t& message);
@@ -911,6 +949,7 @@ private:
     uint32_t        _telemetryRNoise;
     bool            _vehicleCapabilitiesKnown;
     bool            _supportsMissionItemInt;
+    bool            _satcomActive;
 
     typedef struct {
         int     component;
@@ -923,7 +962,7 @@ private:
     QTimer                          _mavCommandAckTimer;
     int                             _mavCommandRetryCount;
     static const int                _mavCommandMaxRetryCount = 3;
-    static const int                _mavCommandAckTimeoutMSecs = 3000;
+    int                             _mavCommandAckTimeoutMSecs;
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;
@@ -932,8 +971,10 @@ private:
     // Lost connection handling
     bool                _connectionLost;
     bool                _connectionLostEnabled;
-    static const int    _connectionLostTimeoutMSecs = 3500;  // Signal connection lost after 3.5 seconds of missed heartbeat
+    int                 _connectionLostTimeoutMSecs;  // Signal connection lost after x seconds of missed heartbeat
     QTimer              _connectionLostTimer;
+
+    bool                _initialPlanRequestComplete;
 
     MissionManager*     _missionManager;
     bool                _missionManagerInitialRequestSent;

@@ -33,6 +33,7 @@ public:
     Q_PROPERTY(bool             autoConnect         READ isAutoConnect  WRITE setAutoConnect    NOTIFY autoConnectChanged)
     Q_PROPERTY(bool             autoConnectAllowed  READ isAutoConnectAllowed                   CONSTANT)
     Q_PROPERTY(QString          settingsURL         READ settingsURL                            CONSTANT)
+    Q_PROPERTY(bool             highLatency         READ highLatency                            CONSTANT)
 
     // Property accessors
 
@@ -82,7 +83,7 @@ public:
     void setDynamic(bool dynamic = true) { _dynamic = dynamic; emit dynamicChanged(); }
 
     /*!
-     * Set if this is this an Auto Connect configuration.
+     * Set if this is an Auto Connect configuration.
     */
     void setAutoConnect(bool autoc = true) { _autoConnect = autoc; emit autoConnectChanged(); }
 
@@ -94,6 +95,13 @@ public:
      * @return True if this type can be set as an Auto Connect configuration
      */
     virtual bool isAutoConnectAllowed() { return false; }
+
+    /*!
+     *
+     * Is this a high latency link?
+     * @return True if this is a high latency link (only available in UDP link settings)
+     */
+    virtual bool highLatency() { return false; }
 
     /*!
      * @brief Connection type

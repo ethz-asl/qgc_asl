@@ -110,7 +110,7 @@ void ParameterManager::_parameterUpdate(int vehicleId, int componentId, QString 
 
     // ArduPilot has this strange behavior of streaming parameters that we didn't ask for. This even happens before it responds to the
     // PARAM_REQUEST_LIST. We disregard any of this until the initial request is responded to.
-    if (parameterId == 65535 && _initialRequestTimeoutTimer.isActive()) {
+    if (parameterId == 65535 && parameterName != "_HASH_CHECK" && _initialRequestTimeoutTimer.isActive()) {
         qCDebug(ParameterManagerVerbose1Log) << "Disregarding unrequested param prior to intial list response" << parameterName;
         return;
     }
@@ -346,6 +346,13 @@ void ParameterManager::_parameterUpdate(int vehicleId, int componentId, QString 
     qCDebug(ParameterManagerVerbose1Log) << _logVehiclePrefix(componentId) << "_parameterUpdate complete";
 }
 
+
+void ParameterManager::setWaitingParamTimeoutVariable(int waitingParamTimeoutVariable)
+{
+    _waitingParamTimeoutMSecs = waitingParamTimeoutVariable;
+    _waitingParamTimeoutTimer.setInterval(_waitingParamTimeoutMSecs);
+}
+
 /// Connected to Fact::valueUpdated
 ///
 /// Writes the parameter to mavlink, sets up for write wait
@@ -406,7 +413,9 @@ void ParameterManager::refreshAllParameters(uint8_t componentId)
                                              &msg,
                                              _vehicle->id(),
                                              componentId);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 
     QString what = (componentId == MAV_COMP_ID_ALL) ? "MAV_COMP_ID_ALL" : QString::number(componentId);
     qCDebug(ParameterManagerLog) << _logVehiclePrefix() << "Request to refresh all parameters for component ID:" << what;
@@ -658,13 +667,17 @@ void ParameterManager::_readParameterRaw(int componentId, const QString& paramNa
                                              componentId,                    // Target component id
                                              fixedParamName,                 // Named parameter being requested
                                              paramIndex);                    // Parameter index being requested, -1 for named
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 void ParameterManager::_writeParameterRaw(int componentId, const QString& paramName, const QVariant& value)
 {
     mavlink_param_set_t     p;
     mavlink_param_union_t   union_value;
+
+    memset(&p, 0, sizeof(p));
 
     FactMetaData::ValueType_t factType = getParameter(componentId, paramName)->type();
     p.param_type = _factTypeToMavType(factType);
@@ -708,6 +721,23 @@ void ParameterManager::_writeParameterRaw(int componentId, const QString& paramN
     p.target_component = (uint8_t)componentId;
 
     strncpy(p.param_id, paramName.toStdString().c_str(), sizeof(p.param_id));
+
+    bool isSatcomActive = _vehicle->satcomActive();
+    QList<LinkInterface*> activeLinks = _vehicle->getActiveLinks();
+    for (int i=0; i<activeLinks.count(); i++) {
+        LinkInterface* checkLink = activeLinks[i];
+        if (isSatcomActive) {
+            if (checkLink->getLinkConfiguration()->type() == 1) {
+                _vehicle->setPriorityLink(checkLink);
+                break;
+            }
+        } else {
+            if (checkLink->getLinkConfiguration()->type() == 0) {
+                _vehicle->setPriorityLink(checkLink);
+                break;
+            }
+        }
+    }
 
     mavlink_message_t msg;
     mavlink_msg_param_set_encode_chan(_mavlink->getSystemId(),
@@ -786,6 +816,7 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, QVarian
         // Return the hash value to notify we don't want any more updates
         mavlink_param_set_t     p;
         mavlink_param_union_t   union_value;
+        memset(&p, 0, sizeof(p));
         p.param_type = MAV_PARAM_TYPE_UINT32;
         strncpy(p.param_id, "_HASH_CHECK", sizeof(p.param_id));
         union_value.param_uint32 = crc32_value;
@@ -798,7 +829,9 @@ void ParameterManager::_tryCacheHashLoad(int vehicleId, int componentId, QVarian
                                           _vehicle->priorityLink()->mavlinkChannel(),
                                           &msg,
                                           &p);
-        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+            _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+        }
 
         // Give the user some feedback things loaded properly
         QVariantAnimation *ani = new QVariantAnimation(this);

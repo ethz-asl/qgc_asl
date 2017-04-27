@@ -58,7 +58,7 @@ class LinkManager : public QGCTool
     friend class LinkManagerTest;
 
 public:
-    LinkManager(QGCApplication* app);
+    LinkManager(QGCApplication* app, QGCToolbox* toolbox);
     ~LinkManager();
 
     Q_PROPERTY(bool isBluetoothAvailable                READ isBluetoothAvailable                                               CONSTANT)
@@ -75,6 +75,8 @@ public:
     Q_INVOKABLE bool                endConfigurationEditing     (LinkConfiguration* config, LinkConfiguration* editedConfig);
     Q_INVOKABLE bool                endCreateConfiguration      (LinkConfiguration* config);
     Q_INVOKABLE void                removeConfiguration         (LinkConfiguration* config);
+    Q_INVOKABLE bool                multipleLinksConnected      ();
+    Q_INVOKABLE bool                connectedLinkHighLatency    ();
 
     // Property accessors
 
@@ -200,6 +202,8 @@ private:
     bool    _configUpdateSuspended;                     ///< true: stop updating configuration list
     bool    _configurationsLoaded;                      ///< true: Link configurations have been loaded
     bool    _connectionsSuspended;                      ///< true: all new connections should not be allowed
+    bool    _multipleLinksConnected;
+    bool    _connectedHighLatency;
     QString _connectionsSuspendedReason;                ///< User visible reason for suspension
     QTimer  _portListTimer;
     uint32_t _mavlinkChannelsUsedBitMask;

@@ -48,7 +48,7 @@ void APMRallyPointManager::sendToVehicle(const QList<QGeoCoordinate>& rgPoints)
         _sendRallyPoint(index);
     }
 
-    emit loadComplete(_rgPoints);
+    emit sendComplete();
 }
 
 void APMRallyPointManager::loadFromVehicle(void)
@@ -60,7 +60,7 @@ void APMRallyPointManager::loadFromVehicle(void)
     _rgPoints.clear();
 
     _cReadRallyPoints = _vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, _rallyTotalParam)->rawValue().toInt();
-    qCDebug(GeoFenceManagerLog) << "APMGeoFenceManager::loadFromVehicle" << _cReadRallyPoints;
+    qCDebug(RallyPointManagerLog) << "APMRallyPointManager::loadFromVehicle - point count" << _cReadRallyPoints;
     if (_cReadRallyPoints == 0) {
         emit loadComplete(_rgPoints);
         return;
@@ -116,7 +116,9 @@ void APMRallyPointManager::_requestRallyPoint(uint8_t pointIndex)
                                             _vehicle->id(),
                                             _vehicle->defaultComponentId(),
                                             pointIndex);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 void APMRallyPointManager::_sendRallyPoint(uint8_t pointIndex)
@@ -137,7 +139,9 @@ void APMRallyPointManager::_sendRallyPoint(uint8_t pointIndex)
                                       point.longitude() * 1e7,
                                       point.altitude(),
                                       0, 0, 0);          //  break_alt, land_dir, flags
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 }
 
 bool APMRallyPointManager::inProgress(void) const
@@ -152,7 +156,10 @@ bool APMRallyPointManager::rallyPointsSupported(void) const
 
 void APMRallyPointManager::removeAll(void)
 {
+    qCDebug(RallyPointManagerLog) << "APMRallyPointManager::removeAll";
+
     QList<QGeoCoordinate> noRallyPoints;
 
     sendToVehicle(noRallyPoints);
+    emit removeAllComplete();
 }

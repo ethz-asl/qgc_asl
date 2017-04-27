@@ -43,8 +43,9 @@ class UDPConfiguration : public LinkConfiguration
 
 public:
 
-    Q_PROPERTY(quint16      localPort   READ localPort  WRITE setLocalPort  NOTIFY localPortChanged)
-    Q_PROPERTY(QStringList  hostList    READ hostList                       NOTIFY  hostListChanged)
+    Q_PROPERTY(quint16      localPort   READ localPort      WRITE setLocalPort      NOTIFY localPortChanged)
+    Q_PROPERTY(QStringList  hostList    READ hostList                               NOTIFY hostListChanged)
+    Q_PROPERTY(bool         highLatency READ highLatency    WRITE setHighLatency    NOTIFY highLatencyChanged)
 
     /*!
      * @brief Regular constructor
@@ -97,6 +98,13 @@ public:
     quint16 localPort   () { return _localPort; }
 
     /*!
+     * @brief Is this a high latency link?
+     *
+     * @return Returns true if it is a high latency link
+     */
+    bool highLatency    () { return _highLatency; }
+
+    /*!
      * @brief Add a target host
      *
      * @param[in] host Host name in standard formatt, e.g. localhost:14551 or 192.168.1.1:14551
@@ -126,6 +134,13 @@ public:
     void setLocalPort   (quint16 port);
 
     /*!
+     * @brief Set high latency link
+     *
+     * @param[in] Is this a high latency link?
+     */
+    void setHighLatency (bool highLat) { _highLatency = highLat; emit highLatencyChanged(); }
+
+    /*!
      * @brief QML Interface
      */
     QStringList hostList    () { return _hostList; }
@@ -142,6 +157,7 @@ public:
 signals:
     void localPortChanged   ();
     void hostListChanged    ();
+    void highLatencyChanged ();
 
 private:
     void _updateHostList    ();
@@ -152,6 +168,7 @@ private:
     QMap<QString, int> _hosts;  ///< ("host", port)
     QStringList _hostList;      ///< Exposed to QML
     quint16 _localPort;
+    bool _highLatency;          ///< Is the high latency option in communication link settings checked?
 };
 
 class UDPLink : public LinkInterface

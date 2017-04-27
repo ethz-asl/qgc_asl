@@ -133,7 +133,10 @@ void ParameterEditorController::loadFromFile(const QString& filename)
 
 void ParameterEditorController::refresh(void)
 {
-    _vehicle->parameterManager()->refreshAllParameters();
+
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->parameterManager()->refreshAllParameters();
+    }
 }
 
 void ParameterEditorController::resetAllToDefaults(void)
@@ -151,6 +154,21 @@ void ParameterEditorController::setRCToParam(const QString& paramName)
     QGCMapRCToParamDialog * d = new QGCMapRCToParamDialog(paramName, _uas, qgcApp()->toolbox()->multiVehicleManager(), MainWindow::instance());
     d->exec();
 #endif
+}
+
+void ParameterEditorController::autoSaveParams(void)
+{
+    SettingsManager* settingsManager = qgcApp()->toolbox()->settingsManager();
+    if (settingsManager->appSettings()->paramAutoSave()->rawValue().toBool()) {
+        QString saveDirPath = settingsManager->appSettings()->parameterSavePath();
+        QDir saveDir(saveDirPath);
+        QString nameFormat("%1%2.params");
+        QString dtFormat("yyyy-MM-dd_hh-mm-ss");
+
+        QString saveFileName = nameFormat.arg(QDateTime::currentDateTime().toString(dtFormat)).arg("");
+        QString saveFilePath = saveDir.absoluteFilePath(saveFileName);
+        saveToFile(saveFilePath);
+    }
 }
 
 void ParameterEditorController::_updateParameters(void)

@@ -602,17 +602,16 @@ void APMSensorsComponentController::cancelCalibration(void)
 void APMSensorsComponentController::nextClicked(void)
 {
     mavlink_message_t       msg;
-    mavlink_command_ack_t   ack;
+    mavlink_msg_command_ack_pack_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
+                                      qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
+                                      _vehicle->priorityLink()->mavlinkChannel(),
+                                      &msg,
+                                      0,    // command
+                                      1);   // result
 
-    ack.command = 0;
-    ack.result = 1;
-    mavlink_msg_command_ack_encode_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
-                                        qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                        _vehicle->priorityLink()->mavlinkChannel(),
-                                        &msg,
-                                        &ack);
-
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    if (!(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+    }
 
     if (_calTypeInProgress == CalTypeCompassMot) {
         _stopCalibration(StopCalibrationSuccess);

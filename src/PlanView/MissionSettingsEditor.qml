@@ -20,7 +20,9 @@ Rectangle {
     visible:            missionItem.isCurrentItem
     radius:             _radius
 
-    property var    _missionVehicle:            missionController.vehicle
+    property var    _masterControler:           masterController
+    property var    _missionController:         _masterControler.missionController
+    property var    _missionVehicle:            _masterControler.controllerVehicle
     property bool   _vehicleHasHomePosition:    _missionVehicle.homePosition.isValid
     property bool   _offlineEditing:            _missionVehicle.isOfflineEditingVehicle
     property bool   _showOfflineVehicleCombos:  _offlineEditing && _multipleFirmware && _noMissionItemsAdded
@@ -31,7 +33,8 @@ Rectangle {
     property bool   _mobile:                    ScreenTools.isMobile
     property var    _savePath:                  QGroundControl.settingsManager.appSettings.missionSavePath
     property var    _fileExtension:             QGroundControl.settingsManager.appSettings.missionFileExtension
-    property var    _appSettings:               QGroundControl.settingsManager.appSettings
+    property var    _appSettings:               QGroundControl.settingsManager.appSettings    
+    property bool   _waypointsOnlyMode:         QGroundControl.corePlugin.options.missionWaypointsOnly
 
     readonly property string _firmwareLabel:    qsTr("Firmware")
     readonly property string _vehicleLabel:     qsTr("Vehicle")
@@ -75,9 +78,9 @@ Rectangle {
 
         Column {
             id:             valuesColumn
-            anchors.left:   parent.left
-            anchors.right:  parent.right
-            anchors.top:    parent.top
+            anchors.left:   parent ? parent.left  : undefined
+            anchors.right:  parent ? parent.right : undefined
+            anchors.top:    parent ? parent.top   : undefined
             spacing:        _margin
 
             SectionHeader {
@@ -112,22 +115,21 @@ Rectangle {
                         id:         flightSpeedCheckBox
                         text:       qsTr("Flight speed")
                         visible:    !_missionVehicle.vtol
-                        checked:    missionItem.specifyMissionFlightSpeed
-                        onClicked:  missionItem.specifyMissionFlightSpeed = checked
+                        checked:    missionItem.speedSection.specifyFlightSpeed
+                        onClicked:   missionItem.speedSection.specifyFlightSpeed = checked
                     }
                     FactTextField {
                         Layout.fillWidth:   true
-                        fact:               missionItem.missionFlightSpeed
+                        fact:               missionItem.speedSection.flightSpeed
                         visible:            flightSpeedCheckBox.visible
                         enabled:            flightSpeedCheckBox.checked
                     }
                 } // GridLayout
 
-                FactComboBox {
-                    anchors.left:   parent.left
-                    anchors.right:  parent.right
-                    fact:           missionItem.missionEndAction
-                    indexModel:     false
+                QGCCheckBox {
+                    text:       qsTr("RTL after mission end")
+                    checked:    missionItem.missionEndRTL
+                    onClicked:  missionItem.missionEndRTL = checked
                 }
             }
 
@@ -138,7 +140,7 @@ Rectangle {
             SectionHeader {
                 id:         vehicleInfoSectionHeader
                 text:       qsTr("Vehicle Info")
-                visible:    _offlineEditing
+                visible:    _offlineEditing && !_waypointsOnlyMode
                 checked:    false
             }
 

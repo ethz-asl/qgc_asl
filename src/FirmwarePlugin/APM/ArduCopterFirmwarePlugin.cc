@@ -25,21 +25,22 @@ APMCopterMode::APMCopterMode(uint32_t mode, bool settable) :
     QMap<uint32_t,QString> enumToString;
     enumToString.insert(STABILIZE, "Stabilize");
     enumToString.insert(ACRO,      "Acro");
-    enumToString.insert(ALT_HOLD,  "Alt Hold");
+    enumToString.insert(ALT_HOLD,  "Altitude Hold");
     enumToString.insert(AUTO,      "Auto");
     enumToString.insert(GUIDED,    "Guided");
     enumToString.insert(LOITER,    "Loiter");
     enumToString.insert(RTL,       "RTL");
     enumToString.insert(CIRCLE,    "Circle");
-    enumToString.insert(POSITION,  "Position");
     enumToString.insert(LAND,      "Land");
-    enumToString.insert(OF_LOITER, "OF Loiter");
     enumToString.insert(DRIFT,     "Drift");
     enumToString.insert(SPORT,     "Sport");
     enumToString.insert(FLIP,      "Flip");
     enumToString.insert(AUTOTUNE,  "Autotune");
-    enumToString.insert(POS_HOLD,  "Pos Hold");
+    enumToString.insert(POS_HOLD,  "Position Hold");
     enumToString.insert(BRAKE,     "Brake");
+    enumToString.insert(THROW,     "Throw");
+    enumToString.insert(AVOID_ADSB,"Avoid ADSB");
+    enumToString.insert(GUIDED_NOGPS,"Guided No GPS");
 
     setEnumToStringMapping(enumToString);
 }
@@ -55,15 +56,18 @@ ArduCopterFirmwarePlugin::ArduCopterFirmwarePlugin(void)
     supportedFlightModes << APMCopterMode(APMCopterMode::LOITER    ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::RTL       ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::CIRCLE    ,true);
-    supportedFlightModes << APMCopterMode(APMCopterMode::POSITION  ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::LAND      ,true);
-    supportedFlightModes << APMCopterMode(APMCopterMode::OF_LOITER ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::DRIFT     ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::SPORT     ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::FLIP      ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::AUTOTUNE  ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::POS_HOLD  ,true);
     supportedFlightModes << APMCopterMode(APMCopterMode::BRAKE     ,true);
+    supportedFlightModes << APMCopterMode(APMCopterMode::THROW     ,true);
+    supportedFlightModes << APMCopterMode(APMCopterMode::AVOID_ADSB,true);
+    supportedFlightModes << APMCopterMode(APMCopterMode::GUIDED_NOGPS,true);
+
+
     setSupportedModes(supportedFlightModes);
 
     if (!_remapParamNameIntialized) {
@@ -133,8 +137,6 @@ void ArduCopterFirmwarePlugin::guidedModeLand(Vehicle* vehicle)
     vehicle->setFlightMode("Land");
 }
 
-#if 0
-// WIP
 void ArduCopterFirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle)
 {
     if (!_armVehicle(vehicle)) {
@@ -148,7 +150,6 @@ void ArduCopterFirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle)
                             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                             2.5);
 }
-#endif
 
 void ArduCopterFirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoordinate& gotoCoord)
 {
@@ -178,10 +179,12 @@ void ArduCopterFirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double
         altitudeChange = 3 - currentAltRel;
     }
 
+    setGuidedMode(vehicle, true);
+
     mavlink_message_t msg;
     mavlink_set_position_target_local_ned_t cmd;
 
-    memset(&cmd, 0, sizeof(mavlink_set_position_target_local_ned_t));
+    memset(&cmd, 0, sizeof(cmd));
 
     cmd.target_system = vehicle->id();
     cmd.target_component = vehicle->defaultComponentId();
@@ -197,8 +200,9 @@ void ArduCopterFirmwarePlugin::guidedModeChangeAltitude(Vehicle* vehicle, double
                                                           vehicle->priorityLink()->mavlinkChannel(),
                                                           &msg,
                                                           &cmd);
-
-    vehicle->sendMessageOnLink(vehicle->priorityLink(), msg);
+    if (!(vehicle->satcomActive())) {
+        vehicle->sendMessageOnLink(vehicle->priorityLink(), msg);
+    }
 }
 
 void ArduCopterFirmwarePlugin::pauseVehicle(Vehicle* vehicle)
@@ -234,9 +238,23 @@ QString ArduCopterFirmwarePlugin::geoFenceRadiusParam(Vehicle* vehicle)
 
 bool ArduCopterFirmwarePlugin::vehicleYawsToNextWaypointInMission(const Vehicle* vehicle) const
 {
-    if (vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, QStringLiteral("WP_YAW_BEHAVIOR"))) {
+    if (!vehicle->isOfflineEditingVehicle() && vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, QStringLiteral("WP_YAW_BEHAVIOR"))) {
         Fact* yawMode = vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, QStringLiteral("WP_YAW_BEHAVIOR"));
         return yawMode && yawMode->rawValue().toInt() != 0;
     }
-    return false;
+    return true;
+}
+
+void ArduCopterFirmwarePlugin::missionFlightSpeedInfo(Vehicle* vehicle, double& hoverSpeed, double& cruiseSpeed)
+{
+    QString hoverSpeedParam("WPNAV_SPEED");
+
+    // First pull settings defaults
+    FirmwarePlugin::missionFlightSpeedInfo(vehicle, hoverSpeed, cruiseSpeed);
+
+    cruiseSpeed = 0;
+    if (vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, hoverSpeedParam)) {
+        Fact* speed = vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, hoverSpeedParam);
+        hoverSpeed = speed->rawValue().toDouble() / 100; // cm/s -> m/s
+    }
 }

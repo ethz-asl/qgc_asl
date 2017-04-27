@@ -532,3 +532,7 @@ void FixedWingLandingComplexItem::_setDirty(void)
     setDirty(true);
 }
 
+void FixedWingLandingComplexItem::applyNewAltitude(double newAltitude)
+{
+    _loiterAltitudeFact.setRawValue(newAltitude);
+}

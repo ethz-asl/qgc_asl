@@ -79,8 +79,8 @@ QGCCorePlugin::~QGCCorePlugin()
     }
 }
 
-QGCCorePlugin::QGCCorePlugin(QGCApplication *app)
-    : QGCTool(app)
+QGCCorePlugin::QGCCorePlugin(QGCApplication *app, QGCToolbox* toolbox)
+    : QGCTool(app, toolbox)
     , _showTouchAreas(false)
     , _showAdvancedUI(true)
 {
@@ -183,4 +183,10 @@ void QGCCorePlugin::setShowAdvancedUI(bool show)
         _showAdvancedUI = show;
         emit showAdvancedUIChanged(show);
     }
+}
+
+void QGCCorePlugin::paletteOverride(QString colorName, QGCPalette::PaletteColorInfo_t& colorInfo)
+{
+    Q_UNUSED(colorName);
+    Q_UNUSED(colorInfo);
 }

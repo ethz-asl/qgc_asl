@@ -7,6 +7,10 @@
 #include "ui_EnergyBudget.h"
 #include "Vehicle.h"
 
+#define LEFTBATMONCOMPID 150
+#define CENTERBATMONCOMPID 151
+#define RIGHTBATMONCOMPID 152
+
 
 namespace Ui {
 class EnergyBudget;
