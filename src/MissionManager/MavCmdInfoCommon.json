@@ -147,7 +147,7 @@
             "param3": {
                 "label":            "Radius:",
                 "units":            "m",
-                "default":          100.0,
+                "default":          80.0,
                 "decimalPlaces":    2
             }
         },
@@ -179,25 +179,23 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Loiter",
-            "param1": {
-                "label":            "Heading wait",
-                "enumStrings":      "False,True",
-                "enumValues":       "0,1",
-                "default":          0,
-                "decimalPlaces":    0
-            },
             "param2": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          80.0,
+                "decimalPlaces":    2
+            },
+            "param3": {
+                "label":            "Acceptance",
+                "units":            "deg",
+                "default":          30.0,
                 "decimalPlaces":    2
             },
             "param4": {
-                "label":            "Exit loiter from",
-                "enumStrings":      "Center,Tangent",
-                "enumValues":       "0,1",
-                "default":          1,
-                "decimalPlaces":    0
+                "label":            "Exit heading",
+                "units":            "deg",
+                "default":          0.0,
+                "decimalPlaces":    2
             }
         },
         { "id": 32, "rawName": "MAV_CMD_DO_FOLLOW", "friendlyName": "Follow Me" },

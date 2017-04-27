@@ -33,7 +33,7 @@
     "decimalPlaces":    1,
     "min":              1,
     "units":            "m",
-    "defaultValue":     75.0
+    "defaultValue":     80.0
 },
 {
     "name":             "Acceptance radius",

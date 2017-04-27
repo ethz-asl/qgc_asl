@@ -479,8 +479,8 @@ void SimpleMissionItem::_rebuildCheckboxFacts(void)
     if (rawEdit()) {
         _checkboxFacts.append(&_missionItem._autoContinueFact);
     } else if ((specifiesCoordinate() || specifiesAltitudeOnly()) && !_homePositionSpecialCase) {
-	_checkboxFacts.append(&_missionItem._autoContinueFact);
         _checkboxFacts.append(&_altitudeRelativeToHomeFact);
+        _checkboxFacts.append(&_missionItem._autoContinueFact);
     }
 }
 
@@ -821,7 +821,7 @@ double SimpleMissionItem::circleRadius(void) // ETHZ-ASL/ThomasStastny
         _circleColor = "#CCFFFF00";
         _circleWidth = 2;
     } else if (_command == 31) {
-        _radius = _missionItem.param3();
+        _radius = _missionItem.param2();
         _circleColor = "#CCa99eff";
         _circleWidth = 2;
     }
