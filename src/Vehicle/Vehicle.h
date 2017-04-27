@@ -703,6 +703,8 @@ public:
     /// @return: true: initial request is complete, false: initial request is still in progress;
     bool initialPlanRequestComplete(void) const { return _initialPlanRequestComplete; }
 
+    void _setHomePosition(QGeoCoordinate& homeCoord);
+
 signals:
     void allLinksInactive(Vehicle* vehicle);
     void coordinateChanged(QGeoCoordinate coordinate);
@@ -880,6 +882,7 @@ private:
     void _commonInit(void);
     void _startPlanRequest(void);
     void _setupAutoDisarmSignalling(void);
+    void _setCapabilities(uint64_t capabilityBits);
 
     //asluav
     void _handleAslHighLatency(mavlink_message_t& message);
