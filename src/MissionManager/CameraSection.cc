@@ -20,8 +20,8 @@ const char* CameraSection::_cameraPhotoIntervalTimeName =      "CameraPhotoInter
 
 QMap<QString, FactMetaData*> CameraSection::_metaDataMap;
 
-CameraSection::CameraSection(QObject* parent)
-    : QObject(parent)
+CameraSection::CameraSection(Vehicle* vehicle, QObject* parent)
+    : Section(vehicle, parent)
     , _available(false)
     , _settingsSpecified(false)
     , _specifyGimbal(false)
@@ -48,13 +48,14 @@ CameraSection::CameraSection(QObject* parent)
     _cameraPhotoIntervalDistanceFact.setRawValue    (_cameraPhotoIntervalDistanceFact.rawDefaultValue());
     _cameraPhotoIntervalTimeFact.setRawValue        (_cameraPhotoIntervalTimeFact.rawDefaultValue());
 
-    connect(this,               &CameraSection::specifyGimbalChanged,   this, &CameraSection::_setDirtyAndUpdateMissionItemCount);
-    connect(&_cameraActionFact, &Fact::valueChanged,                    this, &CameraSection::_setDirtyAndUpdateMissionItemCount);
+    connect(this,               &CameraSection::specifyGimbalChanged,   this, &CameraSection::_specifyGimbalChanged);
+    connect(&_cameraActionFact, &Fact::valueChanged,                    this, &CameraSection::_cameraActionChanged);
 
-    connect(&_gimbalPitchFact,                  &Fact::valueChanged, this, &CameraSection::_setDirty);
-    connect(&_gimbalYawFact,                    &Fact::valueChanged, this, &CameraSection::_setDirty);
-    connect(&_cameraPhotoIntervalDistanceFact,  &Fact::valueChanged, this, &CameraSection::_setDirty);
-    connect(&_cameraPhotoIntervalTimeFact,      &Fact::valueChanged, this, &CameraSection::_setDirty);
+    connect(&_gimbalPitchFact,                  &Fact::valueChanged,                    this, &CameraSection::_setDirty);
+    connect(&_gimbalYawFact,                    &Fact::valueChanged,                    this, &CameraSection::_setDirty);
+    connect(&_cameraPhotoIntervalDistanceFact,  &Fact::valueChanged,                    this, &CameraSection::_setDirty);
+    connect(&_cameraPhotoIntervalTimeFact,      &Fact::valueChanged,                    this, &CameraSection::_setDirty);
+    connect(this,                               &CameraSection::specifyGimbalChanged,   this, &CameraSection::_setDirty);
 
     connect(&_gimbalYawFact,                    &Fact::valueChanged, this, &CameraSection::_updateSpecifiedGimbalYaw);
 }
@@ -67,7 +68,7 @@ void CameraSection::setSpecifyGimbal(bool specifyGimbal)
     }
 }
 
-int CameraSection::missionItemCount(void) const
+int CameraSection::itemCount(void) const
 {
     int itemCount = 0;
 
@@ -89,9 +90,9 @@ void CameraSection::setDirty(bool dirty)
     }
 }
 
-void CameraSection::appendMissionItems(QList<MissionItem*>& items, QObject* missionItemParent, int nextSequenceNumber)
+void CameraSection::appendSectionItems(QList<MissionItem*>& items, QObject* missionItemParent, int& nextSequenceNumber)
 {
-    // IMPORTANT NOTE: If anything changes here you must also change CameraSection::scanForMissionSettings
+    // IMPORTANT NOTE: If anything changes here you must also change CameraSection::scanForSection
 
     if (_specifyGimbal) {
         MissionItem* item = new MissionItem(nextSequenceNumber++,
@@ -188,13 +189,17 @@ void CameraSection::appendMissionItems(QList<MissionItem*>& items, QObject* miss
     }
 }
 
-bool CameraSection::scanForCameraSection(QmlObjectListModel* visualItems, int scanIndex)
+bool CameraSection::scanForSection(QmlObjectListModel* visualItems, int scanIndex)
 {
     bool foundGimbal = false;
     bool foundCameraAction = false;
     bool stopLooking = false;
 
     qCDebug(CameraSectionLog) << "CameraSection::scanForCameraSection" << visualItems->count() << scanIndex;
+
+    if (!_available || scanIndex >= visualItems->count()) {
+        return false;
+    }
 
     // Scan through the initial mission items for possible mission settings
 
@@ -304,9 +309,9 @@ void CameraSection::_setDirty(void)
     setDirty(true);
 }
 
-void CameraSection::_setDirtyAndUpdateMissionItemCount(void)
+void CameraSection::_setDirtyAndUpdateItemCount(void)
 {
-    emit missionItemCountChanged(missionItemCount());
+    emit itemCountChanged(itemCount());
     setDirty(true);
 }
 
@@ -326,4 +331,26 @@ double CameraSection::specifiedGimbalYaw(void) const
 void CameraSection::_updateSpecifiedGimbalYaw(void)
 {
     emit specifiedGimbalYawChanged(specifiedGimbalYaw());
+}
+
+void CameraSection::_updateSettingsSpecified(void)
+{
+    bool newSettingsSpecified = _specifyGimbal || _cameraActionFact.rawValue().toInt() != CameraActionNone;
+    if (newSettingsSpecified != _settingsSpecified) {
+        _settingsSpecified = newSettingsSpecified;
+        emit settingsSpecifiedChanged(newSettingsSpecified);
+    }
+}
+
+void CameraSection::_specifyGimbalChanged(bool specifyGimbal)
+{
+    Q_UNUSED(specifyGimbal);
+    _setDirtyAndUpdateItemCount();
+    _updateSettingsSpecified();
+}
+
+void CameraSection::_cameraActionChanged(void)
+{
+    _setDirtyAndUpdateItemCount();
+    _updateSettingsSpecified();
 }

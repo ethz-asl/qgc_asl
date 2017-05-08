@@ -32,29 +32,10 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",
-            "cameraSection":        true,
-            "param1": {
-                "label":            "Hold",
-                "units":            "secs",
-                "default":          0,
-                "decimalPlaces":    0
-            },
             "param2": {
                 "label":            "Acceptance",
                 "units":            "m",
-                "default":          3,
-                "decimalPlaces":    2
-            },
-            "param3": {
-                "label":            "PassThru",
-                "units":            "m",
-                "default":          0,
-                "decimalPlaces":    2
-            },
-            "param4": {
-                "label":            "Heading",
-                "units":            "radians",
-                "default":          0.0,
+                "default":          30.0,
                 "decimalPlaces":    2
             }
         },
@@ -69,7 +50,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          80.0,
                 "decimalPlaces":    2
             }
         },
@@ -93,11 +74,10 @@
                 "decimalPlaces":    2
             },
             "param4": {
-                "label":            "Exit loiter from",
-                "enumStrings":      "Center,Tangent",
-                "enumValues":       "0,1",
-                "default":          1,
-                "decimalPlaces":    0
+                "label":            "Heading",
+                "units":            "radians",
+                "nanUnchanged":     true,
+                "decimalPlaces":    2
             }
         },
         {
@@ -121,11 +101,10 @@
                 "decimalPlaces":    2
             },
             "param4": {
-                "label":            "Exit loiter from",
-                "enumStrings":      "Center,Tangent",
-                "enumValues":       "0,1",
-                "default":          1,
-                "decimalPlaces":    0
+                "label":            "Heading",
+                "units":            "radians",
+                "nanUnchanged":     true,
+                "decimalPlaces":    2
             }
         },
         {
@@ -153,7 +132,7 @@
             "param4": {
                 "label":            "Heading",
                 "units":            "radians",
-                "default":          0.0,
+                "nanUnchanged":     true,
                 "decimalPlaces":    2
             }
         },
@@ -165,16 +144,10 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",
-            "param1": {
-                "label":            "Pitch",
-                "units":            "deg",
-                "default":          15,
-                "decimalPlaces":    2
-            },
-            "param4": {
-                "label":            "Heading",
-                "units":            "radians",
-                "default":          0.0,
+            "param3": {
+                "label":            "Radius:",
+                "units":            "m",
+                "default":          80.0,
                 "decimalPlaces":    2
             }
         },
@@ -206,25 +179,23 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Loiter",
-            "param1": {
-                "label":            "Heading wait",
-                "enumStrings":      "False,True",
-                "enumValues":       "0,1",
-                "default":          0,
-                "decimalPlaces":    0
-            },
             "param2": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          80.0,
+                "decimalPlaces":    2
+            },
+            "param3": {
+                "label":            "Acceptance",
+                "units":            "deg",
+                "default":          30.0,
                 "decimalPlaces":    2
             },
             "param4": {
-                "label":            "Exit loiter from",
-                "enumStrings":      "Center,Tangent",
-                "enumValues":       "0,1",
-                "default":          1,
-                "decimalPlaces":    0
+                "label":            "Exit heading",
+                "units":            "deg",
+                "default":          0.0,
+                "decimalPlaces":    2
             }
         },
         { "id": 32, "rawName": "MAV_CMD_DO_FOLLOW", "friendlyName": "Follow Me" },
@@ -312,7 +283,7 @@
             "param4": {
                 "label":            "Heading",
                 "units":            "deg",
-                "default":          0.0,
+                "nanUnchanged":     true,
                 "decimalPlaces":    2
             }
         },
@@ -327,7 +298,7 @@
             "param4": {
                 "label":            "Heading",
                 "units":            "deg",
-                "default":          0.0,
+                "nanUnchanged":     true,
                 "decimalPlaces":    2
             }
         },
@@ -345,7 +316,7 @@
             }
         },
         {
-            "id":           94,
+            "id":           93,
             "rawName":      "MAV_CMD_NAV_DELAY",
             "friendlyName": "Delay until",
             "description":  "Delay unti the specified time is reached.",
@@ -985,7 +956,18 @@
                 "decimalPlaces":    0
             }
         },
-        { "id": 2001, "rawName": "MAV_CMD_IMAGE_STOP_CAPTURE", "friendlyName": "Stop image capture" },
+        {
+            "id": 2001,
+            "rawName": "MAV_CMD_IMAGE_STOP_CAPTURE",
+            "friendlyName": "Stop image capture",
+            "description":  "Stop taking photos.",
+            "category":     "Camera",
+            "param1": {
+                "label":            "Camera id",
+                "default":          0,
+                "decimalPlaces":    0
+            }
+        },
         { "id": 2003, "rawName": "MAV_CMD_DO_TRIGGER_CONTROL", "friendlyName": "Trigger control" },
         {
             "id":           2500,

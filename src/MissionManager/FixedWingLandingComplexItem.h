@@ -26,6 +26,7 @@ public:
 
     Q_PROPERTY(Fact*            loiterAltitude          READ    loiterAltitude                                                  CONSTANT)
     Q_PROPERTY(Fact*            loiterRadius            READ    loiterRadius                                                    CONSTANT)
+    Q_PROPERTY(Fact*            acceptanceRadius        READ    acceptanceRadius                                                CONSTANT)
     Q_PROPERTY(Fact*            landingAltitude         READ    landingAltitude                                                 CONSTANT)
     Q_PROPERTY(Fact*            landingDistance         READ    landingDistance                                                 CONSTANT)
     Q_PROPERTY(Fact*            landingHeading          READ    landingHeading                                                  CONSTANT)
@@ -39,6 +40,7 @@ public:
 
     Fact*           loiterAltitude          (void) { return &_loiterAltitudeFact; }
     Fact*           loiterRadius            (void) { return &_loiterRadiusFact; }
+    Fact*           acceptanceRadius        (void) { return &_acceptanceRadiusFact; }
     Fact*           landingAltitude         (void) { return &_landingAltitudeFact; }
     Fact*           landingDistance         (void) { return &_landingDistanceFact; }
     Fact*           landingHeading          (void) { return &_landingHeadingFact; }
@@ -76,6 +78,7 @@ public:
     double          specifiedFlightSpeed    (void) final { return std::numeric_limits<double>::quiet_NaN(); }
     double          specifiedGimbalYaw      (void) final { return std::numeric_limits<double>::quiet_NaN(); }
     void            appendMissionItems      (QList<MissionItem*>& items, QObject* missionItemParent) final;
+    void            applyNewAltitude        (double newAltitude) final;
 
     bool coordinateHasRelativeAltitude      (void) const final { return true; }
     bool exitCoordinateHasRelativeAltitude  (void) const final { return true; }
@@ -121,6 +124,7 @@ private:
     Fact            _landingDistanceFact;
     Fact            _loiterAltitudeFact;
     Fact            _loiterRadiusFact;
+    Fact            _acceptanceRadiusFact;
     Fact            _landingHeadingFact;
     Fact            _landingAltitudeFact;
 
@@ -133,11 +137,13 @@ private:
     static const char* _loiterToLandDistanceName;
     static const char* _loiterAltitudeName;
     static const char* _loiterRadiusName;
+    static const char* _acceptanceRadiusName;
     static const char* _landingHeadingName;
     static const char* _landingAltitudeName;
 
     static const char* _jsonLoiterCoordinateKey;
     static const char* _jsonLoiterRadiusKey;
+    static const char* _jsonAcceptanceRadiusKey;
     static const char* _jsonLoiterClockwiseKey;
     static const char* _jsonLoiterAltitudeRelativeKey;
     static const char* _jsonLandingCoordinateKey;

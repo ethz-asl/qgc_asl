@@ -28,8 +28,7 @@ Item {
     id: _root
 
     property var missionController
-
-    signal showConfirmAction(string title, string message, int action, var actionData)
+    property var confirmDialog
 
     readonly property string emergencyStopTitle:    qsTr("Emergency Stop")
     readonly property string armTitle:              qsTr("Arm")
@@ -38,6 +37,7 @@ Item {
     readonly property string takeoffTitle:          qsTr("Takeoff")
     readonly property string landTitle:             qsTr("Land")
     readonly property string startMissionTitle:     qsTr("Start Mission")
+    readonly property string continueMissionTitle:  qsTr("Continue Mission")
     readonly property string resumeMissionTitle:    qsTr("Resume Mission")
     readonly property string pauseTitle:            qsTr("Pause")
     readonly property string changeAltTitle:        qsTr("Change Altitude")
@@ -46,12 +46,13 @@ Item {
     readonly property string setWaypointTitle:      qsTr("Set Waypoint")
     readonly property string gotoTitle:             qsTr("Goto Location")
 
-    readonly property string armMessage:                qsTr("arm")
-    readonly property string disarmMessage:             qsTr("disarm")
+    readonly property string armMessage:                qsTr("Arm the vehicle.")
+    readonly property string disarmMessage:             qsTr("Disarm the vehicle")
     readonly property string emergencyStopMessage:      qsTr("WARNING: This still stop all motors. If vehicle is currently in air it will crash.")
     readonly property string takeoffMessage:            qsTr("Takeoff from ground and hold position.")
     readonly property string startMissionMessage:       qsTr("Start the mission which is currently displayed above. If the vehicle is on the ground it will takeoff.")
-             property string resumeMissionMessage:      qsTr("Resume the mission which is displayed above. This will re-generate the mission from waypoint %1, takeoff and continue the mission.").arg(_resumeMissionItem)
+    readonly property string continueMissionMessage:    qsTr("Continue the mission from the current waypoint.")
+             property string resumeMissionMessage:      qsTr("Resume the mission which is displayed above. This will re-generate the mission from waypoint %1, takeoff and continue the mission.").arg(_resumeMissionIndex)
     readonly property string resumeMissionReadyMessage: qsTr("Review the modified mission above. Confirm if you want to takeoff and begin mission.")
     readonly property string landMessage:               qsTr("Land the vehicle at the current position.")
     readonly property string rtlMessage:                qsTr("Return to the home position of the vehicle.")
@@ -74,102 +75,147 @@ Item {
     readonly property int actionOrbit:              10
     readonly property int actionLandAbort:          11
     readonly property int actionStartMission:       12
-    readonly property int actionResumeMission:      13
-    readonly property int actionResumeMissionReady: 14
-    readonly property int actionPause:              15
+    readonly property int actionContinueMission:    13
+    readonly property int actionResumeMission:      14
+    readonly property int actionResumeMissionReady: 15
+    readonly property int actionPause:              16
 
-    property bool showEmergenyStop:     !_hideEmergenyStop && _activeVehicle && _activeVehicle.armed && _activeVehicle.flying
-    property bool showDisarm:           _activeVehicle && _activeVehicle.armed && !_activeVehicle.flying
-    property bool showRTL:              _activeVehicle && _activeVehicle.armed && _activeVehicle.guidedModeSupported && _activeVehicle.flying && !_vehicleInRTLMode
-    property bool showTakeoff:          _activeVehicle && _activeVehicle.guidedModeSupported && !_activeVehicle.flying  && !_activeVehicle.fixedWing
-    property bool showLand:             _activeVehicle && _activeVehicle.guidedModeSupported && _activeVehicle.armed && !_activeVehicle.fixedWing && !_vehicleInLandMode
-    property bool showStartMission:     _activeVehicle && _missionAvailable && !_missionActive
-    property bool showResumeMission:    _activeVehicle && !_activeVehicle.flying && _missionAvailable && _resumeMissionItem > 1
-    property bool showPause:            _activeVehicle && _activeVehicle.armed && _activeVehicle.pauseVehicleSupported && _activeVehicle.flying && !_vehiclePaused
-    property bool showChangeAlt:        (_activeVehicle && _activeVehicle.flying) && _activeVehicle.guidedModeSupported && _activeVehicle.armed && !_missionActive
-    property bool showOrbit:            !_hideOrbit && _activeVehicle && _activeVehicle.flying && _activeVehicle.orbitModeSupported && _activeVehicle.armed && !_missionActive
-    property bool showLandAbort:        _activeVehicle && _activeVehicle.flying && _activeVehicle.fixedWing
-    property bool showGotoLocation:     _activeVehicle && _activeVehicle.guidedMode && _activeVehicle.flying
+    property bool showEmergenyStop:     !_hideEmergenyStop && _activeVehicle && _vehicleArmed && _vehicleFlying
+    property bool showArm:              _activeVehicle && !_vehicleArmed
+    property bool showDisarm:           _activeVehicle && _vehicleArmed && !_vehicleFlying
+    property bool showRTL:              _activeVehicle && _vehicleArmed && _activeVehicle.guidedModeSupported && _vehicleFlying && !_vehicleInRTLMode
+    property bool showTakeoff:          _activeVehicle && _activeVehicle.guidedModeSupported && !_vehicleFlying  && !_activeVehicle.fixedWing
+    property bool showLand:             _activeVehicle && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
+    property bool showStartMission:     _activeVehicle && _missionAvailable && !_missionActive && !_vehicleFlying
+    property bool showContinueMission:  _activeVehicle && _missionAvailable && !_missionActive && _vehicleFlying && (_currentMissionIndex < missionController.visualItems.count - 1)
+    property bool showResumeMission:    _activeVehicle && !_vehicleFlying && _missionAvailable && _resumeMissionIndex > 0 && (_resumeMissionIndex < missionController.visualItems.count - 2)
+    property bool showPause:            _activeVehicle && _vehicleArmed && _activeVehicle.pauseVehicleSupported && _vehicleFlying && !_vehiclePaused
+    property bool showChangeAlt:        (_activeVehicle && _vehicleFlying) && _activeVehicle.guidedModeSupported && _vehicleArmed && !_missionActive
+    property bool showOrbit:            !_hideOrbit && _activeVehicle && _vehicleFlying && _activeVehicle.orbitModeSupported && _vehicleArmed && !_missionActive
+    property bool showLandAbort:        _activeVehicle && _vehicleFlying && _activeVehicle.fixedWing
+    property bool showGotoLocation:     _activeVehicle && _activeVehicle.guidedMode && _vehicleFlying
 
-    property var  _activeVehicle:       QGroundControl.multiVehicleManager.activeVehicle
-    property bool _missionAvailable:    missionController.containsItems
-    property bool _missionActive:       _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.missionFlightMode : false
-    property bool _vehiclePaused:       _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.pauseFlightMode : false
-    property bool _vehicleInRTLMode:    _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.rtlFlightMode : false
-    property bool _vehicleInLandMode:   _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.landFlightMode : false
-    property int  _resumeMissionItem:   missionController.resumeMissionItem
-    property bool _hideEmergenyStop:    !QGroundControl.corePlugin.options.guidedBarShowEmergencyStop
-    property bool _hideOrbit:           !QGroundControl.corePlugin.options.guidedBarShowOrbit
-    property var  _actionData
+    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
+    property string _flightMode:            _activeVehicle ? _activeVehicle.flightMode : ""
+    property bool   _missionAvailable:      missionController.containsItems
+    property bool   _missionActive:         _activeVehicle ? _vehicleArmed && (_vehicleInLandMode || _vehicleInRTLMode || _vehicleInMissionMode) : false
+    property bool   _vehicleArmed:          _activeVehicle ? _activeVehicle.armed  : false
+    property bool   _vehicleFlying:         _activeVehicle ? _activeVehicle.flying  : false
+    property bool   _vehiclePaused:         false
+    property bool   _vehicleInMissionMode:  false
+    property bool   _vehicleInRTLMode:      false
+    property bool   _vehicleInLandMode:     false
+    property int    _currentMissionIndex:   missionController.currentMissionIndex
+    property int    _resumeMissionIndex:    missionController.resumeMissionIndex
+    property bool   _hideEmergenyStop:      !QGroundControl.corePlugin.options.guidedBarShowEmergencyStop
+    property bool   _hideOrbit:             !QGroundControl.corePlugin.options.guidedBarShowOrbit
+    property var    _actionData
+
+    on_CurrentMissionIndexChanged: console.log("_currentMissionIndex", _currentMissionIndex)
+
+    on_FlightModeChanged: {
+        _vehiclePaused =        _flightMode === _activeVehicle.pauseFlightMode
+        _vehicleInRTLMode =     _flightMode === _activeVehicle.rtlFlightMode
+        _vehicleInLandMode =    _flightMode === _activeVehicle.landFlightMode
+        _vehicleInMissionMode = _flightMode === _activeVehicle.missionFlightMode // Must be last to get correct signalling for showStartMission popups
+    }
 
     // Called when an action is about to be executed in order to confirm
     function confirmAction(actionCode, actionData) {
-        var title
-        var message
+        confirmDialog.action = actionCode
+        confirmDialog.actionData = actionData
         _actionData = actionData
         switch (actionCode) {
         case actionArm:
-            title = armTitle
-            message = armMessage
+            if (_vehicleFlying) {
+                return
+            }
+            confirmDialog.title = armTitle
+            confirmDialog.message = armMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showArm })
             break;
         case actionDisarm:
-            title = disarmTitle
-            message = disarmMessage
+            if (_vehicleFlying) {
+                return
+            }
+            confirmDialog.title = disarmTitle
+            confirmDialog.message = disarmMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showDisarm })
             break;
         case actionEmergencyStop:
-            title = emergencyStopTitle
-            message = emergencyStopMessage
+            confirmDialog.title = emergencyStopTitle
+            confirmDialog.message = emergencyStopMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showEmergenyStop })
             break;
         case actionTakeoff:
-            title = takeoffTitle
-            message = takeoffMessage
+            confirmDialog.title = takeoffTitle
+            confirmDialog.message = takeoffMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showTakeoff })
             break;
         case actionStartMission:
-            title = startMissionTitle
-            message = startMissionMessage
+            confirmDialog.title = startMissionTitle
+            confirmDialog.message = startMissionMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showStartMission })
+            break;
+        case actionContinueMission:
+            confirmDialog.title = continueMissionTitle
+            confirmDialog.message = continueMissionMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showContinueMission })
             break;
         case actionResumeMission:
-            title = resumeMissionTitle
-            message = resumeMissionMessage
+            confirmDialog.title = resumeMissionTitle
+            confirmDialog.message = resumeMissionMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showResumeMission })
             break;
         case actionResumeMissionReady:
-            title = resumeMissionTitle
-            message = resumeMissionReadyMessage
+            confirmDialog.title = resumeMissionTitle
+            confirmDialog.message = resumeMissionReadyMessage
+            confirmDialog.hideTrigger = false
             break;
         case actionLand:
-            title = landTitle
-            message = landMessage
+            confirmDialog.title = landTitle
+            confirmDialog.message = landMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showLand })
             break;
         case actionRTL:
-            title = rtlTitle
-            message = rtlMessage
+            confirmDialog.title = rtlTitle
+            confirmDialog.message = rtlMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showRTL })
             break;
         case actionChangeAlt:
-            title = changeAltTitle
-            message = changeAltMessage
+            confirmDialog.title = changeAltTitle
+            confirmDialog.message = changeAltMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showChangeAlt })
             break;
         case actionGoto:
-            title = gotoTitle
-            message = gotoMessage
+            confirmDialog.title = gotoTitle
+            confirmDialog.message = gotoMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showGotoLocation })
             break;
         case actionSetWaypoint:
-            title = setWaypointTitle
-            message = setWaypointMessage
+            confirmDialog.title = setWaypointTitle
+            confirmDialog.message = setWaypointMessage
             break;
         case actionOrbit:
-            title = orbitTitle
-            message = orbitMessage
+            confirmDialog.title = orbitTitle
+            confirmDialog.message = orbitMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showOrbit })
             break;
         case actionLandAbort:
-            title = landAbortTitle
-            message = landAbortMessage
+            confirmDialog.title = landAbortTitle
+            confirmDialog.message = landAbortMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showLandAbort })
             break;
         case actionPause:
-            title = pauseTitle
-            message = pauseMessage
+            confirmDialog.title = pauseTitle
+            confirmDialog.message = pauseMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showPause })
             break;
+        default:
+            console.warn("Unknown actionCode", actionCode)
+            return
         }
-        showConfirmAction(title, message, actionCode, actionData)
+        confirmDialog.visible = true
     }
 
     // Executes the specified action
@@ -185,12 +231,13 @@ Item {
             _activeVehicle.guidedModeTakeoff()
             break
         case actionResumeMission:
-            missionController.resumeMission(missionController.resumeMissionItem)
+            missionController.resumeMission(missionController.resumeMissionIndex)
             break
         case actionResumeMissionReady:
             _activeVehicle.startMission()
             break
         case actionStartMission:
+        case actionContinueMission:
             _activeVehicle.startMission()
             break
         case actionArm:

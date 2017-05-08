@@ -387,13 +387,17 @@ DebugBuild { PX4FirmwarePlugin { PX4FirmwarePluginFactory  { APMFirmwarePlugin {
         src/FactSystem/FactSystemTestGeneric.h \
         src/FactSystem/FactSystemTestPX4.h \
         src/FactSystem/ParameterManagerTest.h \
-        src/MissionManager/ComplexMissionItemTest.h \
+        src/MissionManager/CameraSectionTest.h \
         src/MissionManager/MissionCommandTreeTest.h \
         src/MissionManager/MissionControllerManagerTest.h \
         src/MissionManager/MissionControllerTest.h \
         src/MissionManager/MissionItemTest.h \
         src/MissionManager/MissionManagerTest.h \
+        src/MissionManager/SectionTest.h \
         src/MissionManager/SimpleMissionItemTest.h \
+        src/MissionManager/SpeedSectionTest.h \
+        src/MissionManager/SurveyMissionItemTest.h \
+        src/MissionManager/VisualMissionItemTest.h \
         src/qgcunittest/FileDialogTest.h \
         src/qgcunittest/FileManagerTest.h \
         src/qgcunittest/FlightGearTest.h \
@@ -415,13 +419,17 @@ DebugBuild { PX4FirmwarePlugin { PX4FirmwarePluginFactory  { APMFirmwarePlugin {
         src/FactSystem/FactSystemTestGeneric.cc \
         src/FactSystem/FactSystemTestPX4.cc \
         src/FactSystem/ParameterManagerTest.cc \
-        src/MissionManager/ComplexMissionItemTest.cc \
+        src/MissionManager/CameraSectionTest.cc \
         src/MissionManager/MissionCommandTreeTest.cc \
         src/MissionManager/MissionControllerManagerTest.cc \
         src/MissionManager/MissionControllerTest.cc \
         src/MissionManager/MissionItemTest.cc \
         src/MissionManager/MissionManagerTest.cc \
+        src/MissionManager/SectionTest.cc \
         src/MissionManager/SimpleMissionItemTest.cc \
+        src/MissionManager/SpeedSectionTest.cc \
+        src/MissionManager/SurveyMissionItemTest.cc \
+        src/MissionManager/VisualMissionItemTest.cc \
         src/qgcunittest/FileDialogTest.cc \
         src/qgcunittest/FileManagerTest.cc \
         src/qgcunittest/FlightGearTest.cc \
@@ -467,11 +475,14 @@ HEADERS += \
     src/MissionManager/MissionManager.h \
     src/MissionManager/MissionSettingsItem.h \
     src/MissionManager/PlanElementController.h \
+    src/MissionManager/PlanMasterController.h \
     src/MissionManager/QGCMapPolygon.h \
     src/MissionManager/RallyPoint.h \
     src/MissionManager/RallyPointController.h \
     src/MissionManager/RallyPointManager.h \
     src/MissionManager/SimpleMissionItem.h \
+    src/MissionManager/Section.h \
+    src/MissionManager/SpeedSection.h \
     src/MissionManager/SurveyMissionItem.h \
     src/MissionManager/VisualMissionItem.h \
     src/PositionManager/PositionManager.h \
@@ -505,6 +516,7 @@ HEADERS += \
     src/Settings/AppSettings.h \
     src/Settings/AutoConnectSettings.h \
     src/Settings/FlightMapSettings.h \
+    src/Settings/RTKSettings.h \
     src/Settings/SettingsGroup.h \
     src/Settings/SettingsManager.h \
     src/Settings/UnitsSettings.h \
@@ -558,6 +570,7 @@ HEADERS += \
 !MobileBuild {
 HEADERS += \
     src/AnalyzeView/GeoTagController.h \
+    src/AnalyzeView/MavlinkConsoleController.h \
     src/GPS/Drivers/src/gps_helper.h \
     src/GPS/Drivers/src/ubx.h \
     src/GPS/GPSManager.h \
@@ -648,11 +661,13 @@ SOURCES += \
     src/MissionManager/MissionManager.cc \
     src/MissionManager/MissionSettingsItem.cc \
     src/MissionManager/PlanElementController.cc \
+    src/MissionManager/PlanMasterController.cc \
     src/MissionManager/QGCMapPolygon.cc \
     src/MissionManager/RallyPoint.cc \
     src/MissionManager/RallyPointController.cc \
     src/MissionManager/RallyPointManager.cc \
     src/MissionManager/SimpleMissionItem.cc \
+    src/MissionManager/SpeedSection.cc \
     src/MissionManager/SurveyMissionItem.cc \
     src/MissionManager/VisualMissionItem.cc \
     src/PositionManager/PositionManager.cpp \
@@ -684,6 +699,7 @@ SOURCES += \
     src/Settings/AppSettings.cc \
     src/Settings/AutoConnectSettings.cc \
     src/Settings/FlightMapSettings.cc \
+    src/Settings/RTKSettings.cc \
     src/Settings/SettingsGroup.cc \
     src/Settings/SettingsManager.cc \
     src/Settings/UnitsSettings.cc \
@@ -724,6 +740,7 @@ contains(DEFINES, QGC_ENABLE_BLUETOOTH) {
 !MobileBuild {
 SOURCES += \
     src/AnalyzeView/GeoTagController.cc \
+    src/AnalyzeView/MavlinkConsoleController.cc \
     src/GPS/Drivers/src/gps_helper.cpp \
     src/GPS/Drivers/src/ubx.cpp \
     src/GPS/GPSManager.cc \

@@ -50,8 +50,8 @@ const char* MAVLinkProtocol::_logFileExtension = "mavlink";             ///< Ext
  * The default constructor will create a new MAVLink object sending heartbeats at
  * the MAVLINK_HEARTBEAT_DEFAULT_RATE to all connected links.
  */
-MAVLinkProtocol::MAVLinkProtocol(QGCApplication* app)
-    : QGCTool(app)
+MAVLinkProtocol::MAVLinkProtocol(QGCApplication* app, QGCToolbox* toolbox)
+    : QGCTool(app, toolbox)
     , m_enable_version_check(true)
     , versionMismatchIgnore(false)
     , systemId(255)
@@ -215,8 +215,10 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 // process telemetry status message
                 mavlink_radio_status_t rstatus;
                 mavlink_msg_radio_status_decode(&message, &rstatus);
-                int rssi = rstatus.rssi,
-                    remrssi = rstatus.remrssi;
+                int rssi     = rstatus.rssi;
+                int remrssi  = rstatus.remrssi;
+                int noise    = rstatus.noise;
+                int remnoise = rstatus.remnoise;
                 // 3DR Si1k radio needs rssi fields to be converted to dBm
                 if (message.sysid == '3' && message.compid == 'D') {
                     /* Per the Si1K datasheet figure 23.25 and SI AN474 code
@@ -232,12 +234,13 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     rssi    = qMin(qMax(qRound(static_cast<qreal>(rssi)    / 1.9 - 127.0), - 120), 0);
                     remrssi = qMin(qMax(qRound(static_cast<qreal>(remrssi) / 1.9 - 127.0), - 120), 0);
                 } else {
-                    rssi = (int8_t) rstatus.rssi;
-                    remrssi = (int8_t) rstatus.remrssi;
+                    rssi     = (int8_t) rstatus.rssi;
+                    remrssi  = (int8_t) rstatus.remrssi;
+                    noise    = (int8_t) rstatus.noise;
+                    remnoise = (int8_t) rstatus.remnoise;
                 }
-
                 emit radioStatusChanged(link, rstatus.rxerrors, rstatus.fixed, rssi, remrssi,
-                    rstatus.txbuf, rstatus.noise, rstatus.remnoise);
+                    rstatus.txbuf, noise, remnoise);
             }
 
 #ifndef __mobile__
