@@ -1142,6 +1142,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     _headingFact.setRawValue(data.heading * 2);
 
     // throttle --> energybudget
+    emit thrustChanged(this, data.throttle);
 
     // gps_fix_type, gps_nsat, latitude, longitude, altitude_amsl
     _gpsFactGroup.lock()->setRawValue(data.gps_fix_type);
@@ -1156,7 +1157,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     // altitude_sp
 
     // airspeed
-    _airSpeedFact.setRawValue(data.airspeed);
+    _airSpeedFact.setRawValue(data.airspeed / 10.0f);
 
     // airspeed_sp
 
@@ -1164,7 +1165,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     _windFactGroup.speed()->setRawValue(data.windspeed / 10.0f);
 
     // groundspeed
-    _groundSpeedFact.setRawValue(data.groundspeed);
+    _groundSpeedFact.setRawValue(data.groundspeed / 10.0f);
 
     // temperature_air
 
