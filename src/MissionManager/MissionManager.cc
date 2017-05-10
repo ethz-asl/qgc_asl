@@ -37,6 +37,7 @@ MissionManager::MissionManager(Vehicle* vehicle)
     _ackTimeoutTimer->setInterval(_ackTimeoutMilliseconds);
     
     connect(_ackTimeoutTimer, &QTimer::timeout, this, &MissionManager::_ackTimeout);
+    connect(_vehicle, &Vehicle::WPnumChanged, this, &MissionManager::_updateWPnum);
 }
 
 MissionManager::~MissionManager()
@@ -932,6 +933,22 @@ void MissionManager::_handleMissionCurrent(const mavlink_message_t& message)
     if (missionCurrent.seq != _currentMissionIndex) {
         qCDebug(MissionManagerLog) << "_handleMissionCurrent currentIndex:" << missionCurrent.seq;
         _currentMissionIndex = missionCurrent.seq;
+        emit currentIndexChanged(_currentMissionIndex);
+    }
+
+    if (_vehicle->flightMode() == _vehicle->missionFlightMode() && _currentMissionIndex != _lastCurrentIndex) {
+        qCDebug(MissionManagerLog) << "_handleMissionCurrent lastCurrentIndex:" << _currentMissionIndex;
+        _lastCurrentIndex = _currentMissionIndex;
+        emit lastCurrentIndexChanged(_lastCurrentIndex);
+    }
+}
+
+
+void MissionManager::_updateWPnum(int currentWP)
+{
+    if (currentWP != _currentMissionIndex) {
+        qCDebug(MissionManagerLog) << "_handleMissionCurrent currentIndex:" << currentWP;
+        _currentMissionIndex = currentWP;
         emit currentIndexChanged(_currentMissionIndex);
     }
 

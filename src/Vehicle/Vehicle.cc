@@ -1172,6 +1172,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     // failsafe
 
     // wp_num
+    emit WPnumChanged(data.wp_num);
 
     // mppts
     emit MPPTDataChanged(data.v_avg_mppt0 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt0), 0, 0, data.v_avg_mppt1 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt1), 0, 0, data.v_avg_mppt2 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt2), 0, 0);

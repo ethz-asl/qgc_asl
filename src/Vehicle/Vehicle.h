@@ -747,6 +747,7 @@ signals:
     void SensPowerBoardChanged(uint8_t pwr_brd_status);
     void speedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
     void thrustChanged(Vehicle* vehicle, double thrust);
+    void WPnumChanged(int currentWP);
 
 
     /// Used internally to move sendMessage call to main thread
