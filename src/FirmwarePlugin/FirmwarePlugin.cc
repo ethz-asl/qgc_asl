@@ -89,10 +89,10 @@ QString FirmwarePlugin::flightMode(uint8_t base_mode, uint32_t custom_mode) cons
     } else {
         for (size_t i=0; i<sizeof(rgBit2Name)/sizeof(rgBit2Name[0]); i++) {
             if (base_mode & rgBit2Name[i].baseModeBit) {
-                if (i != 0) {
-                    flightMode += " ";
-                }
-                flightMode += rgBit2Name[i].name;
+//                if (i != 0) {
+//                    flightMode += " ";
+//                }
+                flightMode = rgBit2Name[i].name;
             }
         }
     }
