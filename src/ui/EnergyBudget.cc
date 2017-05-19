@@ -23,7 +23,7 @@
 #define BATPOWERLOWMIN -3
 #define BATPOWERLOWMAX -1
 #define MPPTRESETTIMEMS 3000
-
+#define BATMONLEDDIAMETER 3
 
 class Hysteresisf
 {
@@ -71,6 +71,119 @@ m_MPPTUpdateReset(new QTimer(this))
 	ui->overviewGraphicsView->setScene(m_scene);
 	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
     //connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
+
+    // set LED size
+    ui->bat1FCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2FCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3FCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1FDLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2FDLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3FDLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1COVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2COVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3COVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1CUVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2CUVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3CUVLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1OTCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2OTCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3OTCLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1DSGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2DSGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3DSGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1CHGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2CHGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3CHGLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat1PFLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat2PFLed->setDiameter(BATMONLEDDIAMETER);
+    ui->bat3PFLed->setDiameter(BATMONLEDDIAMETER);
+
+    // set LED color
+    ui->bat1FCLed->setColor(QColor(Qt::green));
+    ui->bat2FCLed->setColor(QColor(Qt::green));
+    ui->bat3FCLed->setColor(QColor(Qt::green));
+    ui->bat1FDLed->setColor(QColor(Qt::red));
+    ui->bat2FDLed->setColor(QColor(Qt::red));
+    ui->bat3FDLed->setColor(QColor(Qt::red));
+    ui->bat1COVLed->setColor(QColor(Qt::red));
+    ui->bat2COVLed->setColor(QColor(Qt::red));
+    ui->bat3COVLed->setColor(QColor(Qt::red));
+    ui->bat1CUVLed->setColor(QColor(Qt::red));
+    ui->bat2CUVLed->setColor(QColor(Qt::red));
+    ui->bat3CUVLed->setColor(QColor(Qt::red));
+    ui->bat1OTCLed->setColor(QColor(Qt::red));
+    ui->bat2OTCLed->setColor(QColor(Qt::red));
+    ui->bat3OTCLed->setColor(QColor(Qt::red));
+    ui->bat1DSGLed->setColor(QColor(Qt::red));
+    ui->bat2DSGLed->setColor(QColor(Qt::red));
+    ui->bat3DSGLed->setColor(QColor(Qt::red));
+    ui->bat1CHGLed->setColor(QColor(Qt::red));
+    ui->bat2CHGLed->setColor(QColor(Qt::red));
+    ui->bat3CHGLed->setColor(QColor(Qt::red));
+    ui->bat1PFLed->setColor(QColor(Qt::red));
+    ui->bat2PFLed->setColor(QColor(Qt::red));
+    ui->bat3PFLed->setColor(QColor(Qt::red));
+
+    // temp start set to flashing
+    ui->bat1FCLed->startFlashing();
+    ui->bat2FCLed->startFlashing();
+    ui->bat3FCLed->startFlashing();
+    ui->bat1FDLed->startFlashing();
+    ui->bat2FDLed->startFlashing();
+    ui->bat3FDLed->startFlashing();
+    ui->bat1COVLed->startFlashing();
+    ui->bat2COVLed->startFlashing();
+    ui->bat3COVLed->startFlashing();
+    ui->bat1CUVLed->startFlashing();
+    ui->bat2CUVLed->startFlashing();
+    ui->bat3CUVLed->startFlashing();
+    ui->bat1OTCLed->startFlashing();
+    ui->bat2OTCLed->startFlashing();
+    ui->bat3OTCLed->startFlashing();
+    ui->bat1DSGLed->startFlashing();
+    ui->bat2DSGLed->startFlashing();
+    ui->bat3DSGLed->startFlashing();
+    ui->bat1CHGLed->startFlashing();
+    ui->bat2CHGLed->startFlashing();
+    ui->bat3CHGLed->startFlashing();
+    ui->bat1PFLed->startFlashing();
+    ui->bat2PFLed->startFlashing();
+    ui->bat3PFLed->startFlashing();
+
+    ///////////////// -> JUNK (for testing delete later!)!
+    uint8_t temp_batmon1StatusByte;
+    uint8_t temp_batmon2StatusByte;
+    uint8_t temp_batmon3StatusByte;
+    temp_batmon1StatusByte = 0xAA;
+    temp_batmon2StatusByte = 0x55;
+    temp_batmon3StatusByte = 0xAA;
+
+    ui->bat1FCLed->setState((0x1 & (temp_batmon1StatusByte >> 0)));
+    ui->bat2FCLed->setState((0x1 & (temp_batmon2StatusByte >> 0)));
+    ui->bat3FCLed->setState((0x1 & (temp_batmon3StatusByte >> 0)));
+    ui->bat1FDLed->setState((0x1 & (temp_batmon1StatusByte >> 1)));
+    ui->bat2FDLed->setState((0x1 & (temp_batmon2StatusByte >> 1)));
+    ui->bat3FDLed->setState((0x1 & (temp_batmon3StatusByte >> 1)));
+    ui->bat1COVLed->setState((0x1 & (temp_batmon1StatusByte >> 2)));
+    ui->bat2COVLed->setState((0x1 & (temp_batmon2StatusByte >> 2)));
+    ui->bat3COVLed->setState((0x1 & (temp_batmon3StatusByte >> 2)));
+    ui->bat1CUVLed->setState((0x1 & (temp_batmon1StatusByte >> 3)));
+    ui->bat2CUVLed->setState((0x1 & (temp_batmon2StatusByte >> 3)));
+    ui->bat3CUVLed->setState((0x1 & (temp_batmon3StatusByte >> 3)));
+    ui->bat1OTCLed->setState((0x1 & (temp_batmon1StatusByte >> 4)));
+    ui->bat2OTCLed->setState((0x1 & (temp_batmon2StatusByte >> 4)));
+    ui->bat3OTCLed->setState((0x1 & (temp_batmon3StatusByte >> 4)));
+    ui->bat1DSGLed->setState((0x1 & (temp_batmon1StatusByte >> 5)));
+    ui->bat2DSGLed->setState((0x1 & (temp_batmon2StatusByte >> 5)));
+    ui->bat3DSGLed->setState((0x1 & (temp_batmon3StatusByte >> 5)));
+    ui->bat1CHGLed->setState((0x1 & (temp_batmon1StatusByte >> 6)));
+    ui->bat2CHGLed->setState((0x1 & (temp_batmon2StatusByte >> 6)));
+    ui->bat3CHGLed->setState((0x1 & (temp_batmon3StatusByte >> 6)));
+    ui->bat1PFLed->setState((0x1 & (temp_batmon1StatusByte >> 7)));
+    ui->bat2PFLed->setState((0x1 & (temp_batmon2StatusByte >> 7)));
+    ui->bat3PFLed->setState((0x1 & (temp_batmon3StatusByte >> 7)));
+    /////////// <- till here!
+
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
 	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
 	m_MPPTUpdateReset->setInterval(MPPTRESETTIMEMS);
@@ -187,7 +300,7 @@ void EnergyBudget::onSensPowerBoardChanged(uint8_t pwr_brd_status)
 
 }
 
-void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
+void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6, uint8_t batmonStatusByte)
 {
 	Q_UNUSED(hostfetcontrol);
 	Q_UNUSED(cellvolt1);
@@ -214,7 +327,16 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat1Cell4Label->setText(QString("%1").arg(cellvolt4));
 			ui->bat1Cell5Label->setText(QString("%1").arg(cellvolt5));
 			ui->bat1Cell6Label->setText(QString("%1").arg(cellvolt6));
+            ui->bat1FCLed->setState((0x1 & (batmonStatusByte >> 0)));
+            ui->bat1FDLed->setState((0x1 & (batmonStatusByte >> 1)));
+            ui->bat1COVLed->setState((0x1 & (batmonStatusByte >> 2)));
+            ui->bat1CUVLed->setState((0x1 & (batmonStatusByte >> 3)));
+            ui->bat1OTCLed->setState((0x1 & (batmonStatusByte >> 4)));
+            ui->bat1DSGLed->setState((0x1 & (batmonStatusByte >> 5)));
+            ui->bat1CHGLed->setState((0x1 & (batmonStatusByte >> 6)));
+            ui->bat1PFLed->setState((0x1 & (batmonStatusByte >> 7)));
 			break;
+
     case CENTERBATMONCOMPID:
 			ui->bat2VLabel->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat2VLabel_2->setText(QString("%1").arg(volt / 1000.0));
@@ -231,7 +353,16 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat2Cell4Label->setText(QString("%1").arg(cellvolt4));
 			ui->bat2Cell5Label->setText(QString("%1").arg(cellvolt5));
 			ui->bat2Cell6Label->setText(QString("%1").arg(cellvolt6));
+            ui->bat2FCLed->setState((0x1 & (batmonStatusByte >> 0)));
+            ui->bat2FDLed->setState((0x1 & (batmonStatusByte >> 1)));
+            ui->bat2COVLed->setState((0x1 & (batmonStatusByte >> 2)));
+            ui->bat2CUVLed->setState((0x1 & (batmonStatusByte >> 3)));
+            ui->bat2OTCLed->setState((0x1 & (batmonStatusByte >> 4)));
+            ui->bat2DSGLed->setState((0x1 & (batmonStatusByte >> 5)));
+            ui->bat2CHGLed->setState((0x1 & (batmonStatusByte >> 6)));
+            ui->bat2PFLed->setState((0x1 & (batmonStatusByte >> 7)));
 			break;
+
     case RIGHTBATMONCOMPID:
 			ui->bat3VLabel->setText(QString("%1").arg(volt / 1000.0));
 			ui->bat3VLabel_2->setText(QString("%1").arg(volt / 1000.0));
@@ -248,6 +379,14 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat3Cell4Label->setText(QString("%1").arg(cellvolt4));
 			ui->bat3Cell5Label->setText(QString("%1").arg(cellvolt5));
 			ui->bat3Cell6Label->setText(QString("%1").arg(cellvolt6));
+            ui->bat3FCLed->setState((0x1 & (batmonStatusByte >> 0)));
+            ui->bat3FDLed->setState((0x1 & (batmonStatusByte >> 1)));
+            ui->bat3COVLed->setState((0x1 & (batmonStatusByte >> 2)));
+            ui->bat3CUVLed->setState((0x1 & (batmonStatusByte >> 3)));
+            ui->bat3OTCLed->setState((0x1 & (batmonStatusByte >> 4)));
+            ui->bat3DSGLed->setState((0x1 & (batmonStatusByte >> 5)));
+            ui->bat3CHGLed->setState((0x1 & (batmonStatusByte >> 6)));
+            ui->bat3PFLed->setState((0x1 & (batmonStatusByte >> 7)));
 			break;
 	}
 
@@ -351,7 +490,7 @@ void EnergyBudget::setActiveUAS(void)
 	//disconnect any previous uas
 	disconnect(this, SLOT(updatePower(float, float, float, float)));
 	disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-	disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint8_t)));
     disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
     disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
 
@@ -361,7 +500,7 @@ void EnergyBudget::setActiveUAS(void)
 	{
         connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
         connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t,uint8_t)));
         connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
         connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));
 	}
