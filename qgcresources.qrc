@@ -167,7 +167,6 @@
         <file alias="EnergyBudget/Battery">src/ui/Images/energyWidget/Battery.png</file>
         <file alias="EnergyBudget/Prop">src/ui/Images/energyWidget/prop.JPG</file>
         <file alias="EnergyBudget/Solarcell">src/ui/Images/energyWidget/solarcell.png</file>
-        <file alias="EnergyBudget/LEDred">src/ui/Images/energyWidget/led_red.png</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="action.svg">resources/action.svg</file>
