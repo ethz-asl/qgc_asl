@@ -1272,7 +1272,11 @@ void Vehicle::_handleSensBatmon(mavlink_message_t& message)
 {
     mavlink_sens_batmon_t data;
     mavlink_msg_sens_batmon_decode(&message, &data);
-    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.hostfetcontrol, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+
+    // TODO: add bit mapping as on pixhawk, such that we emit signal with same stuff that is sent via asl_high_latency
+    uint8_t batmonStatusByte = 0;
+
+    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, batmonStatusByte, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
 }
 
 void Vehicle::_handleAslctrlData(mavlink_message_t& message)
@@ -1485,7 +1489,7 @@ bool Vehicle::xConfigMotors(void)
 
 QString Vehicle::getMavIconColor()
 {
-    // TODO: Not using because not only the colors are ghastly, it doesn't respect dark/light palette
+    // TO-DO: Not using because not only the colors are ghastly, it doesn't respect dark/light palette
     if(_mav)
         return _mav->getColor().name();
     else

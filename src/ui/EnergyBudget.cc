@@ -300,9 +300,8 @@ void EnergyBudget::onSensPowerBoardChanged(uint8_t pwr_brd_status)
 
 }
 
-void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint16_t hostfetcontrol, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6, uint8_t batmonStatusByte)
+void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint8_t batmonStatusByte, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
 {
-	Q_UNUSED(hostfetcontrol);
 	Q_UNUSED(cellvolt1);
 	Q_UNUSED(cellvolt2);
 	Q_UNUSED(cellvolt3);
@@ -320,7 +319,6 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat1StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat1TempLabel->setText(QString("%1").arg(temp));
 			ui->bat1SoCBar->setValue(soc);
-			ui->bat1HFLabel->setText(convertHostfet(hostfetcontrol));
 			ui->bat1Cell1Label->setText(QString("%1").arg(cellvolt1));
 			ui->bat1Cell2Label->setText(QString("%1").arg(cellvolt2));
 			ui->bat1Cell3Label->setText(QString("%1").arg(cellvolt3));
@@ -346,7 +344,6 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat2StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat2TempLabel->setText(QString("%1").arg(temp));
 			ui->bat2SoCBar->setValue(soc);
-			ui->bat2HFLabel->setText(convertHostfet(hostfetcontrol));
 			ui->bat2Cell1Label->setText(QString("%1").arg(cellvolt1));
 			ui->bat2Cell2Label->setText(QString("%1").arg(cellvolt2));
 			ui->bat2Cell3Label->setText(QString("%1").arg(cellvolt3));
@@ -372,7 +369,6 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 			ui->bat3StatLabel->setText(convertBatteryStatus(batStatus));
 			ui->bat3TempLabel->setText(QString("%1").arg(temp));
 			ui->bat3SoCBar->setValue(soc);
-			ui->bat3HFLabel->setText(convertHostfet(hostfetcontrol));
 			ui->bat3Cell1Label->setText(QString("%1").arg(cellvolt1));
 			ui->bat3Cell2Label->setText(QString("%1").arg(cellvolt2));
 			ui->bat3Cell3Label->setText(QString("%1").arg(cellvolt3));
@@ -500,7 +496,7 @@ void EnergyBudget::setActiveUAS(void)
 	{
         connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
         connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t,uint8_t)));
+        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, u_int8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, u_int16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
         connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
         connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));
 	}
