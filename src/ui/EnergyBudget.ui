@@ -627,9 +627,9 @@
     <widget class="QLabel" name="bat1VLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>9</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -643,9 +643,9 @@
     <widget class="QLabel" name="bat2VLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>9</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -659,9 +659,9 @@
     <widget class="QLabel" name="bat3VLabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>9</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -688,9 +688,9 @@
     <widget class="QLabel" name="bat1ALabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>32</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -704,9 +704,9 @@
     <widget class="QLabel" name="bat2ALabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>32</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -720,9 +720,9 @@
     <widget class="QLabel" name="bat3ALabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>32</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -749,9 +749,9 @@
     <widget class="QLabel" name="bat1PowerLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>55</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -765,9 +765,9 @@
     <widget class="QLabel" name="bat2PowerLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>55</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -781,9 +781,9 @@
     <widget class="QLabel" name="bat3PowerLabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>55</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -810,9 +810,9 @@
     <widget class="QLabel" name="bat1TempLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>78</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -826,9 +826,9 @@
     <widget class="QLabel" name="bat2TempLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>78</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -842,9 +842,9 @@
     <widget class="QLabel" name="bat3TempLabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>78</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -871,9 +871,9 @@
     <widget class="QLabel" name="bat1StatLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>101</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -887,9 +887,9 @@
     <widget class="QLabel" name="bat2StatLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>101</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -903,9 +903,9 @@
     <widget class="QLabel" name="bat3StatLabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>101</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -932,9 +932,9 @@
     <widget class="QLabel" name="bat1SafetyLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>124</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -948,9 +948,9 @@
     <widget class="QLabel" name="bat2SafetyLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>124</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -964,9 +964,9 @@
     <widget class="QLabel" name="bat3SafetyLabel">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>124</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -993,9 +993,9 @@
     <widget class="QLabel" name="bat1Cell1Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>170</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1009,9 +1009,9 @@
     <widget class="QLabel" name="bat2Cell1Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>170</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1025,9 +1025,9 @@
     <widget class="QLabel" name="bat3Cell1Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>170</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1054,9 +1054,9 @@
     <widget class="QLabel" name="bat1Cell2Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>194</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1070,9 +1070,9 @@
     <widget class="QLabel" name="bat2Cell2Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>194</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1086,9 +1086,9 @@
     <widget class="QLabel" name="bat3Cell2Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>194</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1115,9 +1115,9 @@
     <widget class="QLabel" name="bat1Cell3Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>217</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1131,9 +1131,9 @@
     <widget class="QLabel" name="bat2Cell3Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>217</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1147,9 +1147,9 @@
     <widget class="QLabel" name="bat3Cell3Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>217</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1176,9 +1176,9 @@
     <widget class="QLabel" name="bat1Cell4Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>240</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1192,9 +1192,9 @@
     <widget class="QLabel" name="bat2Cell4Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>240</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1208,9 +1208,9 @@
     <widget class="QLabel" name="bat3Cell4Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>240</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1237,9 +1237,9 @@
     <widget class="QLabel" name="bat1Cell5Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>263</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1253,9 +1253,9 @@
     <widget class="QLabel" name="bat2Cell5Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>263</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1269,9 +1269,9 @@
     <widget class="QLabel" name="bat3Cell5Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>263</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1298,9 +1298,9 @@
     <widget class="QLabel" name="bat1Cell6Label">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>286</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1314,9 +1314,9 @@
     <widget class="QLabel" name="bat2Cell6Label">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>286</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1330,9 +1330,9 @@
     <widget class="QLabel" name="bat3Cell6Label">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>286</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -1473,7 +1473,7 @@
     <widget class="LED" name="bat2FDLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>332</y>
        <width>21</width>
        <height>21</height>
@@ -1496,7 +1496,7 @@
     <widget class="LED" name="bat3FDLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>332</y>
        <width>21</width>
        <height>21</height>
@@ -1519,7 +1519,7 @@
     <widget class="LED" name="bat3COVLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>355</y>
        <width>21</width>
        <height>21</height>
@@ -1565,7 +1565,7 @@
     <widget class="LED" name="bat2COVLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>355</y>
        <width>21</width>
        <height>21</height>
@@ -1588,7 +1588,7 @@
     <widget class="LED" name="bat2CUVLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>379</y>
        <width>21</width>
        <height>21</height>
@@ -1611,7 +1611,7 @@
     <widget class="LED" name="bat3CUVLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>379</y>
        <width>21</width>
        <height>21</height>
@@ -1657,7 +1657,7 @@
     <widget class="LED" name="bat3OTCLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>402</y>
        <width>21</width>
        <height>21</height>
@@ -1680,7 +1680,7 @@
     <widget class="LED" name="bat2DSGLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>425</y>
        <width>21</width>
        <height>21</height>
@@ -1703,7 +1703,7 @@
     <widget class="LED" name="bat3DSGLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>425</y>
        <width>21</width>
        <height>21</height>
@@ -1772,7 +1772,7 @@
     <widget class="LED" name="bat3CHGLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>448</y>
        <width>21</width>
        <height>21</height>
@@ -1818,7 +1818,7 @@
     <widget class="LED" name="bat2CHGLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>448</y>
        <width>21</width>
        <height>21</height>
@@ -1841,7 +1841,7 @@
     <widget class="LED" name="bat2OTCLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>402</y>
        <width>21</width>
        <height>21</height>
@@ -1887,7 +1887,7 @@
     <widget class="LED" name="bat3PFLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>471</y>
        <width>21</width>
        <height>21</height>
@@ -1910,7 +1910,7 @@
     <widget class="LED" name="bat2PFLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>471</y>
        <width>21</width>
        <height>21</height>
@@ -1933,7 +1933,7 @@
     <widget class="LED" name="bat3FCLed" native="true">
      <property name="geometry">
       <rect>
-       <x>196</x>
+       <x>214</x>
        <y>309</y>
        <width>21</width>
        <height>21</height>
@@ -1979,7 +1979,7 @@
     <widget class="LED" name="bat2FCLed" native="true">
      <property name="geometry">
       <rect>
-       <x>155</x>
+       <x>165</x>
        <y>309</y>
        <width>21</width>
        <height>21</height>
@@ -2002,9 +2002,9 @@
     <widget class="QLabel" name="bat2OperLabel">
      <property name="geometry">
       <rect>
-       <x>156</x>
+       <x>150</x>
        <y>147</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -2020,20 +2020,20 @@
       <rect>
        <x>9</x>
        <y>147</y>
-       <width>101</width>
+       <width>71</width>
        <height>17</height>
       </rect>
      </property>
      <property name="text">
-      <string>Bat operation:</string>
+      <string>Bat oper:</string>
      </property>
     </widget>
     <widget class="QLabel" name="bat1OperLabel">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>98</x>
        <y>147</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
@@ -2047,9 +2047,9 @@
     <widget class="QLabel" name="bat3HFLabel_2">
      <property name="geometry">
       <rect>
-       <x>197</x>
+       <x>200</x>
        <y>147</y>
-       <width>19</width>
+       <width>50</width>
        <height>17</height>
       </rect>
      </property>
