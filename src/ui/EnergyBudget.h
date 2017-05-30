@@ -55,8 +55,6 @@ protected:
 	float m_chargePower;
 	double m_thrust;
 
-    int isWidgetStarted;
-
 	enum class batChargeStatus : int8_t
 	{
 		DSCHRG,
