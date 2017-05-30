@@ -114,12 +114,12 @@ m_MPPTUpdateReset(new QTimer(this))
     ui->bat1OTCLed->setColor(QColor(Qt::red));
     ui->bat2OTCLed->setColor(QColor(Qt::red));
     ui->bat3OTCLed->setColor(QColor(Qt::red));
-    ui->bat1DSGLed->setColor(QColor(Qt::red));
-    ui->bat2DSGLed->setColor(QColor(Qt::red));
-    ui->bat3DSGLed->setColor(QColor(Qt::red));
-    ui->bat1CHGLed->setColor(QColor(Qt::red));
-    ui->bat2CHGLed->setColor(QColor(Qt::red));
-    ui->bat3CHGLed->setColor(QColor(Qt::red));
+    ui->bat1DSGLed->setColor(QColor(Qt::yellow));
+    ui->bat2DSGLed->setColor(QColor(Qt::yellow));
+    ui->bat3DSGLed->setColor(QColor(Qt::yellow));
+    ui->bat1CHGLed->setColor(QColor(Qt::yellow));
+    ui->bat2CHGLed->setColor(QColor(Qt::yellow));
+    ui->bat3CHGLed->setColor(QColor(Qt::yellow));
     ui->bat1PFLed->setColor(QColor(Qt::red));
     ui->bat2PFLed->setColor(QColor(Qt::red));
     ui->bat3PFLed->setColor(QColor(Qt::red));
@@ -184,6 +184,7 @@ m_MPPTUpdateReset(new QTimer(this))
     ui->bat3PFLed->setState((0x1 & (temp_batmon3StatusByte >> 7)));
     /////////// <- till here!
 #endif
+
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
 	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
 	m_MPPTUpdateReset->setInterval(MPPTRESETTIMEMS);
@@ -332,7 +333,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
             ui->bat1OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
             ui->bat1DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
             ui->bat1CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
-            ui->bat1PFLed->setState((bool)(0x1 & (batmonStatusByte >> 7)));
+            ui->bat1PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
 			break;
 
     case CENTERBATMONCOMPID:
@@ -357,7 +358,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
             ui->bat2OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
             ui->bat2DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
             ui->bat2CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
-            ui->bat2PFLed->setState((bool)(0x1 & (batmonStatusByte >> 7)));
+            ui->bat2PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
 			break;
 
     case RIGHTBATMONCOMPID:
@@ -382,7 +383,7 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
             ui->bat3OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
             ui->bat3DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
             ui->bat3CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
-            ui->bat3PFLed->setState((bool)(0x1 & (batmonStatusByte >> 7)));
+            ui->bat3PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
 			break;
 	}
 
