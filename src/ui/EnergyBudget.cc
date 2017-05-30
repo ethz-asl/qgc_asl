@@ -58,7 +58,6 @@ m_batUsePower(0.0),
 m_propUsePower(0.0),
 m_chargePower(0.0),
 m_thrust(0.0),
-isWidgetStarted(0),
 m_batCharging(batChargeStatus::CHRG),
 m_batHystHigh(new Hysteresisf(BATPOWERHIGHMIN, BATPOWERHIGHMAX, true)),
 m_batHystLow(new Hysteresisf(BATPOWERLOWMIN, BATPOWERLOWMAX, true)),
@@ -484,29 +483,23 @@ void EnergyBudget::resizeEvent(QResizeEvent *event)
 
 void EnergyBudget::setActiveUAS(void)
 {
-    connect(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle(), &Vehicle::energyBudgetStarter, this, &EnergyBudget::setActiveUAS);
+    //disconnect any previous uas
+    disconnect(this, SLOT(updatePower(float, float, float, float)));
+    disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
+    disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
 
-    if (isWidgetStarted == 0 && qgcApp()->toolbox()->multiVehicleManager()->activeVehicle())
-    {
-        //disconnect any previous uas
-        disconnect(this, SLOT(updatePower(float, float, float, float)));
-        disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-        disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
-        disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
-        disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
-
-        ///////connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
-        //connect the uas if asluas
-        Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
-        //if (tempUAS)
-        //{
-        connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
-        connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
-        connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
-        connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
-        connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));
-        isWidgetStarted = 1;
-    }
+    ///////connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
+    //connect the uas if asluas
+    Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    //if (tempUAS)
+    //{
+    connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
+    connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
+    connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));
     //else set to standard output
     //else
     //{

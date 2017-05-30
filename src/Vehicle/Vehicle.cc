@@ -1001,8 +1001,6 @@ void Vehicle::_handleHeartbeat(mavlink_message_t& message)
         _parameterManager->setWaitingParamTimeoutVariable(3000);
     }
 
-    emit energyBudgetStarter(this);
-
     if (message.compid != _defaultComponentId) {
         return;
     }

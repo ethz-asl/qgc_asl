@@ -748,8 +748,6 @@ signals:
     void speedChanged(Vehicle* vehicle, double groundspeed, double airspeed);
     void thrustChanged(Vehicle* vehicle, double thrust);
     void WPnumChanged(int currentWP);
-    void energyBudgetStarter(Vehicle* vehicle);
-
 
     /// Used internally to move sendMessage call to main thread
     void _sendMessageOnLinkOnThread(LinkInterface* link, mavlink_message_t message);
