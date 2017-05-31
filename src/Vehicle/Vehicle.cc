@@ -1179,9 +1179,9 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
 
     // batmon states
     // TDOO: adapt data.state_batmon (16 -> 8 bit)
-    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
 
     // powerboard status
     emit SensPowerBoardChanged(data.status_pwrbrd);
@@ -1286,7 +1286,7 @@ void Vehicle::_handleSensBatmon(mavlink_message_t& message)
         batmonStatusByte |= ((0x1 & (data.operationstatus >> 12)) << 7); 	// PF: permanent failure
     //
 
-    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, batmonStatusByte, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.safetystatus, data.operationstatus, batmonStatusByte, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
 }
 
 void Vehicle::_handleAslctrlData(mavlink_message_t& message)
