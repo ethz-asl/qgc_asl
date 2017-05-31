@@ -909,6 +909,13 @@ void Vehicle::_handleWindCov(mavlink_message_t& message)
 
 void Vehicle::_handleSysStatus(mavlink_message_t& message)
 {
+    if (satcomActive()) {
+        setSatcomActive(false);
+        setConnectionLostVariable(3500);
+        setMavCommandTimerVariable(3000);
+        _parameterManager->setWaitingParamTimeoutVariable(3000);
+    }
+
     mavlink_sys_status_t sysStatus;
     mavlink_msg_sys_status_decode(&message, &sysStatus);
 
@@ -994,13 +1001,6 @@ void Vehicle::_handleHomePosition(mavlink_message_t& message)
 
 void Vehicle::_handleHeartbeat(mavlink_message_t& message)
 {
-    if (satcomActive()) {
-        setSatcomActive(false);
-        setConnectionLostVariable(3500);
-        setMavCommandTimerVariable(3000);
-        _parameterManager->setWaitingParamTimeoutVariable(3000);
-    }
-
     if (message.compid != _defaultComponentId) {
         return;
     }
@@ -1179,9 +1179,9 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
 
     // batmon states
     // TDOO: adapt data.state_batmon (16 -> 8 bit)
-    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 * 100.0f, 0, 0, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 * 100.0f, 0, 0, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 * 100.0f, 0, 0, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
 
     // powerboard status
     emit SensPowerBoardChanged(data.status_pwrbrd);
