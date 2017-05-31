@@ -2066,7 +2066,6 @@ bool Vehicle::switchSatcomClick()
     }
 
     if (satcomActive()) {
-        emit satcomActiveChanged(false);
         setSatcomActive(false);
         setConnectionLostVariable(3500);
         setMavCommandTimerVariable(3000);
@@ -2096,7 +2095,6 @@ bool Vehicle::switchSatcomClick()
         sendMessageOnLink(priorityLink(), msg);
     }
     else {
-        emit satcomActiveChanged(true);
         setSatcomActive(true);
         setConnectionLostVariable(60000);
         setMavCommandTimerVariable(60000);
