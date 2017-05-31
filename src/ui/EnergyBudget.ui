@@ -6,328 +6,161 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>356</width>
-    <height>576</height>
+    <width>489</width>
+    <height>755</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QGraphicsView" name="overviewGraphicsView">
-     <property name="minimumSize">
-      <size>
-       <width>250</width>
-       <height>200</height>
-      </size>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="interactive">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="tabShape">
-      <enum>QTabWidget::Triangular</enum>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="overviewTab">
-      <attribute name="title">
-       <string>Overview</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QGroupBox" name="PowerGroupBox">
-         <property name="title">
-          <string>Power</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QLabel" name="powerVLabel">
-            <property name="text">
-             <string>V PB</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="powerALabel">
-            <property name="text">
-             <string>A PB</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="powerA1Label">
-            <property name="text">
-             <string>A 1</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="powerA2Label">
-            <property name="text">
-             <string>A 2</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="powerVValue">
-            <property name="text">
-             <string>???</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="powerAValue">
-            <property name="text">
-             <string>???</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="powerA1Value">
-            <property name="text">
-             <string>???</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="powerA2Value">
-            <property name="text">
-             <string>???</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <widget class="QLabel" name="batVLabel_2">
-           <property name="text">
-            <string>Voltage:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="bat1VLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="bat2VLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="QLabel" name="bat3VLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="batPowerLabel_2">
-           <property name="text">
-            <string>Current:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="bat1CurrentLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="bat2CurrentLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QLabel" name="bat3CurrentLabel_2">
-           <property name="text">
-            <string>???</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QProgressBar" name="bat1SoCBar">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>30</width>
-             <height>90</height>
-            </size>
-           </property>
-           <property name="value">
-            <number>80</number>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="textVisible">
-            <bool>true</bool>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-           <property name="textDirection">
-            <enum>QProgressBar::BottomToTop</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QProgressBar" name="bat2SoCBar">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>30</width>
-             <height>90</height>
-            </size>
-           </property>
-           <property name="value">
-            <number>80</number>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="textVisible">
-            <bool>true</bool>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-           <property name="textDirection">
-            <enum>QProgressBar::BottomToTop</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3">
-          <widget class="QProgressBar" name="bat3SoCBar">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>30</width>
-             <height>90</height>
-            </size>
-           </property>
-           <property name="value">
-            <number>80</number>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="textVisible">
-            <bool>true</bool>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-           <property name="textDirection">
-            <enum>QProgressBar::BottomToTop</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mpptTab">
-      <attribute name="title">
-       <string>MPPT</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout">
+  <property name="windowTitle">
+   <string>Energy widget</string>
+  </property>
+  <widget class="QGraphicsView" name="overviewGraphicsView">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>471</width>
+     <height>200</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>250</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="verticalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="horizontalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="interactive">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>215</y>
+     <width>471</width>
+     <height>531</height>
+    </rect>
+   </property>
+   <property name="tabShape">
+    <enum>QTabWidget::Triangular</enum>
+   </property>
+   <property name="currentIndex">
+    <number>2</number>
+   </property>
+   <widget class="QWidget" name="overviewTab">
+    <attribute name="title">
+     <string>Overview</string>
+    </attribute>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QGroupBox" name="PowerGroupBox">
+       <property name="title">
+        <string>Power</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="1" column="2">
+         <widget class="QLabel" name="powerA1Value">
+          <property name="text">
+           <string>???</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="powerA2Value">
+          <property name="text">
+           <string>???</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="powerALabel">
+          <property name="text">
+           <string>A PB</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="powerA1Label">
+          <property name="text">
+           <string>A 1</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="powerA2Label">
+          <property name="text">
+           <string>A 2</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="powerVLabel">
+          <property name="text">
+           <string>V PB</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="powerVValue">
+          <property name="text">
+           <string>???</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="powerAValue">
+          <property name="text">
+           <string>???</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
-        <widget class="QLabel" name="mpptVLabel">
+        <widget class="QLabel" name="batVLabel_2">
          <property name="text">
           <string>Voltage:</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="mppt1VLabel">
+        <widget class="QLabel" name="bat1VLabel_2">
          <property name="text">
           <string>???</string>
          </property>
@@ -337,7 +170,7 @@
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QLabel" name="mppt2VLabel">
+        <widget class="QLabel" name="bat2VLabel_2">
          <property name="text">
           <string>???</string>
          </property>
@@ -347,7 +180,7 @@
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QLabel" name="mppt3VLabel">
+        <widget class="QLabel" name="bat3VLabel_2">
          <property name="text">
           <string>???</string>
          </property>
@@ -357,14 +190,14 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="mpptALabel">
+        <widget class="QLabel" name="batPowerLabel_2">
          <property name="text">
           <string>Current:</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLabel" name="mppt1ALabel">
+        <widget class="QLabel" name="bat1CurrentLabel_2">
          <property name="text">
           <string>???</string>
          </property>
@@ -374,7 +207,7 @@
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="QLabel" name="mppt2ALabel">
+        <widget class="QLabel" name="bat2CurrentLabel_2">
          <property name="text">
           <string>???</string>
          </property>
@@ -384,716 +217,1912 @@
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="QLabel" name="mppt3ALabel">
+        <widget class="QLabel" name="bat3CurrentLabel_2">
          <property name="text">
           <string>???</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="mpptPowerLabel">
-         <property name="text">
-          <string>Power:</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="mppt1PowerLabel">
-         <property name="text">
-          <string>???</string>
+        <widget class="QProgressBar" name="bat1SoCBar">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>90</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>80</number>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+         <property name="textVisible">
+          <bool>true</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+         <property name="textDirection">
+          <enum>QProgressBar::BottomToTop</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="2">
-        <widget class="QLabel" name="mppt2PowerLabel">
-         <property name="text">
-          <string>???</string>
+        <widget class="QProgressBar" name="bat2SoCBar">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>90</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>80</number>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+         <property name="textVisible">
+          <bool>true</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+         <property name="textDirection">
+          <enum>QProgressBar::BottomToTop</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="3">
-        <widget class="QLabel" name="mppt3PowerLabel">
-         <property name="text">
-          <string>???</string>
+        <widget class="QProgressBar" name="bat3SoCBar">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>90</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>80</number>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="mpptModLabel">
-         <property name="text">
-          <string>Modus:</string>
+         <property name="textVisible">
+          <bool>true</bool>
          </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="mppt1ModLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="mppt2ModLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QLabel" name="mppt3ModLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="mpptStatLabel">
-         <property name="text">
-          <string>Status:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLabel" name="mppt1StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QLabel" name="mppt2StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="QLabel" name="mppt3StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="mpptPwmLabel">
-         <property name="text">
-          <string>PWM:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="mppt1PwmLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QLabel" name="mppt2PwmLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="3">
-        <widget class="QLabel" name="mppt3PwmLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>125</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="1">
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>125</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="2">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>125</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="3">
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>125</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="batteryTab">
-      <attribute name="title">
-       <string>Battery</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QLabel" name="batVLabel">
-         <property name="text">
-          <string>Voltage:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="bat1VLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="bat2VLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="bat3VLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="batALabel">
-         <property name="text">
-          <string>Current:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="bat1ALabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="bat2ALabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QLabel" name="bat3ALabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="batPowerLabel">
-         <property name="text">
-          <string>Power:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="bat1PowerLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="bat2PowerLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QLabel" name="bat3PowerLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="batTempLabel">
-         <property name="text">
-          <string>Temp:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="bat1TempLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="bat2TempLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QLabel" name="bat3TempLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="batStatLabel">
-         <property name="text">
-          <string>Status:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLabel" name="bat1StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QLabel" name="bat2StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="QLabel" name="bat3StatLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="batHFLabel">
-         <property name="text">
-          <string>HostFet:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="bat1HFLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QLabel" name="bat2HFLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="3">
-        <widget class="QLabel" name="bat3HFLabel">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="batCell1Label">
-         <property name="text">
-          <string>Cell1:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLabel" name="bat1Cell1Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="2">
-        <widget class="QLabel" name="bat2Cell1Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="3">
-        <widget class="QLabel" name="bat3Cell1Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="batCell2Label">
-         <property name="text">
-          <string>Cell2:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="bat1Cell2Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="2">
-        <widget class="QLabel" name="bat2Cell2Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="3">
-        <widget class="QLabel" name="bat3Cell2Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="batCell3Label">
-         <property name="text">
-          <string>Cell3:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="bat1Cell3Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="2">
-        <widget class="QLabel" name="bat2Cell3Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="3">
-        <widget class="QLabel" name="bat3Cell3Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="batCell4Label">
-         <property name="text">
-          <string>Cell4:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QLabel" name="bat1Cell4Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="2">
-        <widget class="QLabel" name="bat2Cell4Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="3">
-        <widget class="QLabel" name="bat3Cell4Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="batCell5Label">
-         <property name="text">
-          <string>Cell5:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <widget class="QLabel" name="bat1Cell5Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="2">
-        <widget class="QLabel" name="bat2Cell5Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="3">
-        <widget class="QLabel" name="bat3Cell5Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="batCell6Label">
-         <property name="text">
-          <string>Cell6:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="1">
-        <widget class="QLabel" name="bat1Cell6Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="2">
-        <widget class="QLabel" name="bat2Cell6Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="3">
-        <widget class="QLabel" name="bat3Cell6Label">
-         <property name="text">
-          <string>???</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
+         <property name="textDirection">
+          <enum>QProgressBar::BottomToTop</enum>
          </property>
         </widget>
        </item>
       </layout>
-     </widget>
-     <widget class="QWidget" name="CMDTab">
-      <attribute name="title">
-       <string>CMD</string>
-      </attribute>
-      <widget class="QPushButton" name="ResetMPPTButton">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>10</y>
-         <width>111</width>
-         <height>24</height>
-        </rect>
-       </property>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="mpptTab">
+    <attribute name="title">
+     <string>MPPT</string>
+    </attribute>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="mpptVLabel">
        <property name="text">
-        <string>PushButton</string>
+        <string>Voltage:</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="ResetMPPTEdit">
-       <property name="geometry">
-        <rect>
-         <x>112</x>
-         <y>10</y>
-         <width>41</width>
-         <height>24</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="ResetMPPTLabel">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>91</width>
-         <height>24</height>
-        </rect>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::TabFocus</enum>
-       </property>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="mppt1VLabel">
        <property name="text">
-        <string>Reset MPPT Nr. :</string>
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
-     </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="mppt2VLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="mppt3VLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="mpptALabel">
+       <property name="text">
+        <string>Current:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="mppt1ALabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="mppt2ALabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLabel" name="mppt3ALabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="mpptPowerLabel">
+       <property name="text">
+        <string>Power:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="mppt1PowerLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="mppt2PowerLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QLabel" name="mppt3PowerLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="mpptModLabel">
+       <property name="text">
+        <string>Modus:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="mppt1ModLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="mppt2ModLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QLabel" name="mppt3ModLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="mpptStatLabel">
+       <property name="text">
+        <string>Status:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="mppt1StatLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLabel" name="mppt2StatLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QLabel" name="mppt3StatLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="mpptPwmLabel">
+       <property name="text">
+        <string>PWM:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="mppt1PwmLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QLabel" name="mppt2PwmLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QLabel" name="mppt3PwmLabel">
+       <property name="text">
+        <string>???</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>125</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="2">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>125</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="3">
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>125</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="0">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>125</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="batteryTab">
+    <attribute name="title">
+     <string>Battery</string>
+    </attribute>
+    <widget class="QLabel" name="batVLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>9</y>
+       <width>57</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Voltage:</string>
+     </property>
     </widget>
-   </item>
-  </layout>
+    <widget class="QLabel" name="bat1VLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>9</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2VLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>9</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3VLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>9</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batALabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>32</y>
+       <width>56</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Current:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1ALabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>32</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2ALabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>32</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3ALabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>32</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batPowerLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>55</y>
+       <width>47</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Power:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1PowerLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>55</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2PowerLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>55</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3PowerLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>55</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batTempLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>78</y>
+       <width>42</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Temp:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1TempLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>78</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2TempLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>78</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3TempLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>78</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batStatLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>101</y>
+       <width>81</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Bat status:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1StatLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>101</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2StatLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>101</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3StatLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>101</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batSafetyLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>124</y>
+       <width>81</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Bat safety:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1SafetyLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>124</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2SafetyLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>124</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3SafetyLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>124</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell1Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>170</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell1:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell1Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>170</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell1Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>170</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell1Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>170</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell2Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>194</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell2:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell2Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>194</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell2Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>194</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell2Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>194</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell3Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>217</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell3:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell3Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>217</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell3Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>217</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell3Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>217</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell4Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>240</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell4:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell4Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>240</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell4Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>240</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell4Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>240</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell5Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>263</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell5:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell5Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>263</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell5Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>263</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell5Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>263</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCell6Label">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>286</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cell6:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1Cell6Label">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>286</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2Cell6Label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>286</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3Cell6Label">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>286</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batPFLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>471</y>
+       <width>41</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>PF:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCHG">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>448</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>CHG:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCellCOVLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>355</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>COV:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batFDLable">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>332</y>
+       <width>31</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>FD:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batCUVLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>379</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>CUV:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batFCLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>309</y>
+       <width>31</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>FC:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batDGSLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>425</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>DSG:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batOTCLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>402</y>
+       <width>38</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>OTC:</string>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1FDLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>332</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2FDLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>332</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3FDLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>332</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3COVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>355</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1COVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>355</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2COVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>355</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2CUVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>379</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3CUVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>379</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1CUVLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>379</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3OTCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>402</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2DSGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>425</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3DSGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>425</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1OTCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>402</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1CHGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>448</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3CHGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>448</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1DSGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>425</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2CHGLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>448</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2OTCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>402</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1PFLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>471</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3PFLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>471</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2PFLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>471</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat3FCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>381</x>
+       <y>309</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat1FCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>167</x>
+       <y>309</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="LED" name="bat2FCLed" native="true">
+     <property name="geometry">
+      <rect>
+       <x>275</x>
+       <y>309</y>
+       <width>21</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>UpArrowCursor</cursorShape>
+     </property>
+     <property name="diameter" stdset="0">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>85</red>
+       <green>85</green>
+       <blue>255</blue>
+      </color>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat2OperLabel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>147</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="batOperLabel">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>147</y>
+       <width>71</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Bat oper:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat1OperLabel">
+     <property name="geometry">
+      <rect>
+       <x>151</x>
+       <y>147</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="bat3OperLabel">
+     <property name="geometry">
+      <rect>
+       <x>367</x>
+       <y>147</y>
+       <width>50</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>???</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="CMDTab">
+    <attribute name="title">
+     <string>CMD</string>
+    </attribute>
+    <widget class="QPushButton" name="ResetMPPTButton">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>10</y>
+       <width>91</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ResetMPPTEdit">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>10</y>
+       <width>21</width>
+       <height>24</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="ResetMPPTLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>111</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+     <property name="text">
+      <string>Reset MPPT Nr. :</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LED</class>
+   <extends>QWidget</extends>
+   <header>LED.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -89,6 +89,7 @@ public:
     void        loadSettings    (QSettings& settings, const QString& root);
     void        saveSettings    (QSettings& settings, const QString& root);
     void        updateSettings  ();
+    bool        isAutoConnectAllowed () { return true; }
     QString     settingsURL     () { return "SerialSettings.qml"; }
 
 signals:

@@ -624,6 +624,7 @@ HEADERS += \
     src/ui/AutoTrim.h \
     src/ui/EnergyBudget.h \
     src/ui/SensorpodStatus.h \
+    src/ui/LED.h \
 }
 
 iOSBuild {
@@ -788,6 +789,7 @@ SOURCES += \
     src/ui/AutoTrim.cc \
     src/ui/EnergyBudget.cc \
     src/ui/SensorpodStatus.cc \
+    src/ui/LED.cc \
 }
 
 # Palette test widget in debug builds

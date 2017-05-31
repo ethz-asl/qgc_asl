@@ -1178,10 +1178,10 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     emit MPPTDataChanged(data.v_avg_mppt0 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt0), 0, 0, data.v_avg_mppt1 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt1), 0, 0, data.v_avg_mppt2 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt2), 0, 0);
 
     // batmon states
-    // todo: adapt data.state_batmon (16 -> 8 bit)
-    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
+    // TDOO: adapt data.state_batmon (16 -> 8 bit)
+    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 / 10.0f, 0, 0, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0, 0);
 
     // powerboard status
     emit SensPowerBoardChanged(data.status_pwrbrd);
@@ -1272,7 +1272,21 @@ void Vehicle::_handleSensBatmon(mavlink_message_t& message)
 {
     mavlink_sens_batmon_t data;
     mavlink_msg_sens_batmon_decode(&message, &data);
-    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.hostfetcontrol, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+
+    // TODO: add bit mapping as on pixhawk, such that we emit signal with same stuff that is sent via asl_high_latency
+    uint8_t batmonStatusByte = 0;
+    // TODO: Check if this is right:
+        batmonStatusByte |= ((0x1 & (data.batterystatus >> 5)) << 0); 		// FC: fully charged
+        batmonStatusByte |= ((0x1 & (data.batterystatus >> 4)) << 1); 		// FD: fully discharged
+        batmonStatusByte |= ((0x1 & (data.safetystatus >> 1)) << 2); 		// COV: cell overvoltage
+        batmonStatusByte |= ((0x1 & (data.safetystatus >> 0)) << 3); 		// CUV: cell undervoltage
+        batmonStatusByte |= ((0x1 & (data.safetystatus >> 8)) << 4); 		// OTC: cell overtemperature during charge
+        batmonStatusByte |= ((0x1 & (data.operationstatus >> 2)) << 5); 	// DSG: discharge FET status
+        batmonStatusByte |= ((0x1 & (data.operationstatus >> 1)) << 6); 	// CHG: charge FET status
+        batmonStatusByte |= ((0x1 & (data.operationstatus >> 12)) << 7); 	// PF: permanent failure
+    //
+
+    emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.safetystatus, data.operationstatus, batmonStatusByte, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
 }
 
 void Vehicle::_handleAslctrlData(mavlink_message_t& message)
@@ -1485,7 +1499,7 @@ bool Vehicle::xConfigMotors(void)
 
 QString Vehicle::getMavIconColor()
 {
-    // TODO: Not using because not only the colors are ghastly, it doesn't respect dark/light palette
+    // TO-DO: Not using because not only the colors are ghastly, it doesn't respect dark/light palette
     if(_mav)
         return _mav->getColor().name();
     else
