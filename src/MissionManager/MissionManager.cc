@@ -37,6 +37,7 @@ MissionManager::MissionManager(Vehicle* vehicle)
     _ackTimeoutTimer->setInterval(_ackTimeoutMilliseconds);
     
     connect(_ackTimeoutTimer, &QTimer::timeout, this, &MissionManager::_ackTimeout);
+    connect(_vehicle, &Vehicle::WPnumChanged, this, &MissionManager::_updateWPnum);
 }
 
 MissionManager::~MissionManager()
@@ -125,8 +126,8 @@ void MissionManager::_writeMissionCount(void)
                                           &missionCount);
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        _startAckTimeout(AckMissionRequest);
     }
-    _startAckTimeout(AckMissionRequest);
 }
 
 void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoCoord, bool altChangeOnly)
@@ -165,9 +166,9 @@ void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoC
                                          &missionItem);
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), messageOut);
+        _startAckTimeout(AckGuidedItem);
+        emit inProgressChanged(true);
     }
-    _startAckTimeout(AckGuidedItem);
-    emit inProgressChanged(true);
 }
 
 void MissionManager::loadFromVehicle(void)
@@ -185,8 +186,10 @@ void MissionManager::loadFromVehicle(void)
 
     _retryCount = 0;
     _transactionInProgress = TransactionRead;
-    emit inProgressChanged(true);
-    _requestList();
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        emit inProgressChanged(true);
+        _requestList();
+    }
 }
 
 /// Internal call to request list of mission items. May be called during a retry sequence.
@@ -213,8 +216,8 @@ void MissionManager::_requestList(void)
                                                  &request);
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        _startAckTimeout(AckMissionCount);
     }
-    _startAckTimeout(AckMissionCount);
 }
 
 void MissionManager::_ackTimeout(void)
@@ -408,8 +411,8 @@ void MissionManager::_requestNextMissionItem(void)
     }
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        _startAckTimeout(AckMissionItem);
     }
-    _startAckTimeout(AckMissionItem);
 }
 
 void MissionManager::_handleMissionItem(const mavlink_message_t& message, bool missionItemInt)
@@ -614,8 +617,8 @@ void MissionManager::_handleMissionRequest(const mavlink_message_t& message, boo
     }
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), messageOut);
+        _startAckTimeout(AckMissionRequest);
     }
-    _startAckTimeout(AckMissionRequest);
 }
 
 void MissionManager::_handleMissionAck(const mavlink_message_t& message)
@@ -940,6 +943,22 @@ void MissionManager::_handleMissionCurrent(const mavlink_message_t& message)
     }
 }
 
+
+void MissionManager::_updateWPnum(int currentWP)
+{
+    if (currentWP != _currentMissionIndex) {
+        qCDebug(MissionManagerLog) << "_handleMissionCurrent currentIndex:" << currentWP;
+        _currentMissionIndex = currentWP;
+        emit currentIndexChanged(_currentMissionIndex);
+    }
+
+    if (_vehicle->flightMode() == _vehicle->missionFlightMode() && _currentMissionIndex != _lastCurrentIndex) {
+        qCDebug(MissionManagerLog) << "_handleMissionCurrent lastCurrentIndex:" << _currentMissionIndex;
+        _lastCurrentIndex = _currentMissionIndex;
+        emit lastCurrentIndexChanged(_lastCurrentIndex);
+    }
+}
+
 void MissionManager::_removeAllWorker(void)
 {
     mavlink_message_t message;
@@ -948,16 +967,18 @@ void MissionManager::_removeAllWorker(void)
 
     emit progressPct(0);
 
-    _dedicatedLink = _vehicle->priorityLink();
+    //_dedicatedLink = _vehicle->priorityLink();
     mavlink_msg_mission_clear_all_pack_chan(qgcApp()->toolbox()->mavlinkProtocol()->getSystemId(),
                                             qgcApp()->toolbox()->mavlinkProtocol()->getComponentId(),
-                                            _dedicatedLink->mavlinkChannel(),
+                                            _vehicle->priorityLink()->mavlinkChannel(),
                                             &message,
                                             _vehicle->id(),
                                             MAV_COMP_ID_MISSIONPLANNER,
                                             MAV_MISSION_TYPE_MISSION);
-    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
-    _startAckTimeout(AckMissionClearAll);
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        _vehicle->sendMessageOnLink(_vehicle->priorityLink(), message);
+        _startAckTimeout(AckMissionClearAll);
+    }
 }
 
 void MissionManager::removeAll(void)
@@ -977,9 +998,11 @@ void MissionManager::removeAll(void)
 
     _transactionInProgress = TransactionRemoveAll;
     _retryCount = 0;
-    emit inProgressChanged(true);
 
-    _removeAllWorker();
+    if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
+        emit inProgressChanged(true);
+        _removeAllWorker();
+    }
 }
 
 void MissionManager::generateResumeMission(int resumeIndex)

@@ -24,6 +24,11 @@ import QGroundControl.Palette               1.0
 Item {
     property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
 
+    property real   satcomOpacity:      _activeVehicle.satcomActive ? 1.0 : 0.5
+    property string activeCommText:     _activeVehicle.satcomActive ? "Satcom Active" : "Telemetry Active"
+    property string switchCommText:     _activeVehicle.satcomActive ? "Switch to Telemetry" : "Switch to Satcom"
+
+
     width:          satcomRow.width * 1.1
     anchors.top:    parent.top
     anchors.bottom: parent.bottom
@@ -58,7 +63,7 @@ Item {
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     anchors.horizontalCenter: parent.horizontalCenter
-                    QGCLabel { text: mainWindow.activeCommText }
+                    QGCLabel { text: activeCommText }
                 }
 
                 Button {
@@ -69,21 +74,21 @@ Item {
                     visible: mainWindow.multipleLinks
                     Text {
                         id: switchButtonText
-                        text: mainWindow.switchCommText
+                        text: switchCommText
                         font.pointSize: 8
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
                     onClicked: {
                         if (_activeVehicle.switchSatcomClick()) {
-                            mainWindow.satcomOpacity = 1.0
-                            mainWindow.activeCommText = "Satcom Active"
-                            mainWindow.switchCommText = "Switch to Telemetry"
+                            satcomOpacity = 1.0
+                            activeCommText = "Satcom Active"
+                            switchCommText = "Switch to Telemetry"
                         }
                         else {
-                            mainWindow.satcomOpacity = 0.5
-                            mainWindow.activeCommText = "Telemetry Active"
-                            mainWindow.switchCommText = "Switch to Satcom"
+                            satcomOpacity = 0.5
+                            activeCommText = "Telemetry Active"
+                            switchCommText = "Switch to Satcom"
                         }
                     }
                 }
@@ -110,8 +115,17 @@ Item {
             sourceSize.height:  height
             source:             "/qmlimages/SatPlane.svg"
             fillMode:           Image.PreserveAspectFit
-            opacity:            mainWindow.satcomOpacity
+            opacity:            satcomOpacity
             color:              qgcPal.buttonText
+        }
+    }
+
+    Connections {
+        target: _activeVehicle
+        onSatcomActiveChanged: {
+            satcomOpacity = _activeVehicle.satcomActive ? 1.0 : 0.5
+            activeCommText = _activeVehicle.satcomActive ? "Satcom Active" : "Telemetry Active"
+            switchCommText = _activeVehicle.satcomActive ? "Switch to Telemetry" : "Switch to Satcom"
         }
     }
 

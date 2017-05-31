@@ -74,7 +74,7 @@ QString FirmwarePlugin::flightMode(uint8_t base_mode, uint32_t custom_mode) cons
     };
     static const struct Bit2Name rgBit2Name[] = {
     { MAV_MODE_FLAG_MANUAL_INPUT_ENABLED,   "Manual" },
-    { MAV_MODE_FLAG_STABILIZE_ENABLED,      "Stabilize" },
+    { MAV_MODE_FLAG_STABILIZE_ENABLED,      "Stabilized" },
     { MAV_MODE_FLAG_GUIDED_ENABLED,         "Guided" },
     { MAV_MODE_FLAG_AUTO_ENABLED,           "Auto" },
     { MAV_MODE_FLAG_TEST_ENABLED,           "Test" },
@@ -89,10 +89,10 @@ QString FirmwarePlugin::flightMode(uint8_t base_mode, uint32_t custom_mode) cons
     } else {
         for (size_t i=0; i<sizeof(rgBit2Name)/sizeof(rgBit2Name[0]); i++) {
             if (base_mode & rgBit2Name[i].baseModeBit) {
-                if (i != 0) {
-                    flightMode += " ";
-                }
-                flightMode += rgBit2Name[i].name;
+//                if (i != 0) {
+//                    flightMode += " ";
+//                }
+                flightMode = rgBit2Name[i].name;
             }
         }
     }

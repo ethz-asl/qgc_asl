@@ -93,6 +93,9 @@ signals:
     void removeAllComplete              (void);
     void sendComplete                   (void);
 
+public slots:
+    void _updateWPnum(int currentWP);
+
 private slots:
     void _mavlinkMessageReceived(const mavlink_message_t& message);
     void _ackTimeout(void);
