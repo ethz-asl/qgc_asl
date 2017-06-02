@@ -1142,7 +1142,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     _headingFact.setRawValue(data.heading * 2);
 
     // throttle --> energybudget
-    emit thrustChanged(this, data.throttle);
+    emit thrustChanged(this, data.throttle / 100.0f);
 
     // gps_fix_type, gps_nsat, latitude, longitude, altitude_amsl
     _gpsFactGroup.lock()->setRawValue(data.gps_fix_type);
