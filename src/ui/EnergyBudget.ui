@@ -37,6 +37,12 @@
      <height>200</height>
     </size>
    </property>
+   <property name="baseSize">
+    <size>
+     <width>250</width>
+     <height>200</height>
+    </size>
+   </property>
    <property name="verticalScrollBarPolicy">
     <enum>Qt::ScrollBarAlwaysOff</enum>
    </property>

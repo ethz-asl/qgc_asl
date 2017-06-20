@@ -36,7 +36,7 @@ MultiVehicleManager::MultiVehicleManager(QGCApplication* app, QGCToolbox* toolbo
     , _firmwarePluginManager(NULL)
     , _joystickManager(NULL)
     , _mavlinkProtocol(NULL)
-    , _gcsHeartbeatEnabled(true)
+    , _gcsHeartbeatEnabled(false)
 {
     QSettings settings;
 
