@@ -136,7 +136,7 @@ m_MPPTUpdateReset(new QTimer(this))
 	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
     if (qgcApp()->toolbox()->multiVehicleManager()->activeVehicle())
     {
-        setActiveUAS();
+        setActiveUAS(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle());
     }
     m_MPPTUpdateReset->start();
 }
@@ -575,7 +575,7 @@ void EnergyBudget::updateGraphicsImage(void)
 //    ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
 //}
 
-void EnergyBudget::setActiveUAS(void)
+void EnergyBudget::setActiveUAS(Vehicle* vehicle)
 {
     //disconnect any previous uas
     disconnect(this, SLOT(updatePower(float, float, float, float)));
@@ -588,7 +588,7 @@ void EnergyBudget::setActiveUAS(void)
     disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
 
     //connect the uas if asluas
-    Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    Vehicle* tempUAS = vehicle;
 
     connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
     connect(tempUAS, SIGNAL(SensPowerChangedHL(uint8_t)), this, SLOT(updatePowerHL(uint8_t)));

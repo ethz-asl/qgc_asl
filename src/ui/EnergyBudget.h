@@ -84,7 +84,7 @@ protected slots:
     void updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint8_t batmonStatusByte, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
     void updateBatMonHL(uint8_t compid, uint8_t volt, int8_t p_avg, uint8_t batmonStatusByte);
     void onSensPowerBoardChanged(uint8_t status);
-    void setActiveUAS(void);
+    void setActiveUAS(Vehicle* vehicle);
 	void styleChanged(bool);
     void MPPTTimerTimeout(void);
     void onThrustChanged(Vehicle* vehicle, double);
