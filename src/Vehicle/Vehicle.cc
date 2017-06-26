@@ -1168,6 +1168,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     _groundSpeedFact.setRawValue(data.groundspeed / 10.0f);
 
     // temperature_air
+    _temperatureFactGroup.temperature1()->setRawValue(data.temperature_air);
 
     // failsafe
 
@@ -1178,7 +1179,6 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     emit MPPTDataChangedHL(data.v_avg_mppt0, data.v_avg_mppt1, data.v_avg_mppt2);
 
     // batmon states
-    // TDOO: adapt data.state_batmon (16 -> 8 bit)
     emit BatMonDataChangedHL(LEFTBATMONCOMPID, data.v_avg_bat0, data.p_avg_bat, data.state_batmon0);
     emit BatMonDataChangedHL(CENTERBATMONCOMPID, data.v_avg_bat1, data.p_avg_bat, data.state_batmon1);
     emit BatMonDataChangedHL(RIGHTBATMONCOMPID, data.v_avg_bat2, data.p_avg_bat, data.state_batmon2);

@@ -40,7 +40,7 @@ MultiVehicleManager::MultiVehicleManager(QGCApplication* app, QGCToolbox* toolbo
 {
     QSettings settings;
 
-    _gcsHeartbeatEnabled = settings.value(_gcsHeartbeatEnabledKey, true).toBool();
+    _gcsHeartbeatEnabled = settings.value(_gcsHeartbeatEnabledKey, false).toBool();
 
     _gcsHeartbeatTimer.setInterval(_gcsHeartbeatRateMSecs);
     _gcsHeartbeatTimer.setSingleShot(false);
