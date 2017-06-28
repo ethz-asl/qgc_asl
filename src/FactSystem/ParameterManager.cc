@@ -415,10 +415,10 @@ void ParameterManager::refreshAllParameters(uint8_t componentId)
                                              componentId);
     if (_vehicle->priorityLink()->getLinkConfiguration()->type() == 0 && !(_vehicle->satcomActive())) {
         _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
-    }
 
-    QString what = (componentId == MAV_COMP_ID_ALL) ? "MAV_COMP_ID_ALL" : QString::number(componentId);
-    qCDebug(ParameterManagerLog) << _logVehiclePrefix() << "Request to refresh all parameters for component ID:" << what;
+        QString what = (componentId == MAV_COMP_ID_ALL) ? "MAV_COMP_ID_ALL" : QString::number(componentId);
+        qCDebug(ParameterManagerLog) << _logVehiclePrefix() << "Request to refresh all parameters for component ID:" << what;
+    }
 }
 
 /// Translates FactSystem::defaultComponentId to real component id if needed

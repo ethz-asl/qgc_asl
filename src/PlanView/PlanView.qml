@@ -677,6 +677,17 @@ QGCView {
         }
     }
 
+    Component {
+        id: setHomePositionDialog
+        QGCViewMessage {
+            message: qsTr("Do you want to set the current position as home position?")
+            function accept() {
+                masterController.setHomePosition()
+                hideDialog()
+            }
+        }
+    }
+
     //- ToolStrip DropPanel Components
 
     Component {
@@ -791,6 +802,17 @@ QGCView {
                         dropPanel.hide()
                         _qgcView.showDialog(removeAllPromptDialog, qsTr("Remove all"), _qgcView.showDialogDefaultWidth, StandardButton.Yes | StandardButton.No)
                     }
+                }
+
+                QGCButton {
+                    text:               qsTr("Set Home Position")
+                    Layout.fillWidth:   true
+                    enabled:            !masterController.offline && !masterController.syncInProgress
+                    onClicked:  {
+                        dropPanel.hide()
+                        _qgcView.showDialog(setHomePositionDialog, qsTr("Set Home Position"), _qgcView.showDialogDefaultWidth, StandardButton.Yes | StandardButton.No)
+                    }
+
                 }
             }
         }

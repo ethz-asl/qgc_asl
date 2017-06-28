@@ -14,6 +14,7 @@
 #include "AppSettings.h"
 #include "JsonHelper.h"
 #include "MissionManager.h"
+#include "MAVLinkProtocol.h"
 
 #include <QJsonDocument>
 #include <QFileInfo>
@@ -406,5 +407,36 @@ void PlanMasterController::_showPlanFromManagerVehicle(void)
         if (!_geoFenceController.showPlanFromManagerVehicle()) {
             _rallyPointController.showPlanFromManagerVehicle();
         }
+    }
+}
+
+void PlanMasterController::setHomePosition(void)
+{
+    Vehicle* activeVeh = _multiVehicleMgr->activeVehicle();
+    MAVLinkProtocol* mavlink = qgcApp()->toolbox()->mavlinkProtocol();
+
+
+    mavlink_message_t       msg;
+    mavlink_command_long_t  cmd;
+
+    cmd.command = MAV_CMD_DO_SET_HOME;
+    cmd.confirmation = 0;
+    cmd.param1 = 1.0f;
+    cmd.param2 = 0.0f;
+    cmd.param3 = 0.0f;
+    cmd.param4 = 0.0f;
+    cmd.param5 = 0.0f;
+    cmd.param6 = 0.0f;
+    cmd.param7 = 0.0f;
+    cmd.target_system = activeVeh->id();
+    cmd.target_component = activeVeh->defaultComponentId();
+    mavlink_msg_command_long_encode_chan(mavlink->getSystemId(),
+                                         mavlink->getComponentId(),
+                                         activeVeh->priorityLink()->mavlinkChannel(),
+                                         &msg,
+                                         &cmd);
+
+    if (activeVeh->priorityLink()->getLinkConfiguration()->type() == 0 && !(activeVeh->satcomActive())) {
+        activeVeh->sendMessageOnLink(activeVeh->priorityLink(), msg);
     }
 }
