@@ -68,8 +68,9 @@ m_MPPTUpdateReset(new QTimer(this))
     ui->overviewGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->overviewGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->buildGraphicsImage();
-	ui->overviewGraphicsView->setScene(m_scene);
-    ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+    ui->overviewGraphicsView->setScene(m_scene);
+    ui->overviewGraphicsView->fitInView(QRectF(0,0,150,150), Qt::AspectRatioMode::KeepAspectRatio);
+    //ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
     connect(qgcApp()->toolbox()->multiVehicleManager(), &MultiVehicleManager::vehicleAdded, this, &EnergyBudget::setActiveUAS);
 
     // set LED size
@@ -128,14 +129,14 @@ m_MPPTUpdateReset(new QTimer(this))
     ui->bat3PFLed->setState(false);
 
 	connect(ui->ResetMPPTButton, SIGNAL(clicked()), this, SLOT(ResetMPPTCmd()));
-	connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
+    //connect(qgcApp(), SIGNAL(styleChanged(bool)), this, SLOT(styleChanged(bool)));
 	m_MPPTUpdateReset->setInterval(MPPTRESETTIMEMS);
 	m_MPPTUpdateReset->setSingleShot(false);
 	connect(m_MPPTUpdateReset, SIGNAL(timeout()), this, SLOT(MPPTTimerTimeout()));
 	ui->ResetMPPTEdit->setValidator(new QIntValidator(this));
     if (qgcApp()->toolbox()->multiVehicleManager()->activeVehicle())
     {
-        setActiveUAS();
+        setActiveUAS(qgcApp()->toolbox()->multiVehicleManager()->activeVehicle());
     }
     m_MPPTUpdateReset->start();
 }
@@ -152,8 +153,8 @@ EnergyBudget::~EnergyBudget()
 
 void EnergyBudget::buildGraphicsImage()
 {
-	m_scene->setSceneRect(0.0, 0.0, 1000.0, 1000.0);
-	qreal penWidth(40);
+    m_scene->setSceneRect(0.0, 0.0, 1000.0, 1000.0);
+    qreal penWidth(40);
 	// scale and place images
 
     QRectF tempRectF=m_propPixmap->boundingRect();
@@ -200,9 +201,10 @@ void EnergyBudget::buildGraphicsImage()
 	m_BckpBatText->setVisible(false);
 
     // set the right textcolor
-    this->styleChanged(qgcApp()->toolbox()->settingsManager()->appSettings()->indoorPalette()->rawValue().toBool());
+    styleChanged(qgcApp()->toolbox()->settingsManager()->appSettings()->indoorPalette()->rawValue().toBool());
+
 	// Recalc scene bounding rect
-	m_scene->setSceneRect(QRectF(0.0, 0.0, 0.0, 0.0));
+    m_scene->setSceneRect(QRectF(0.0, 0.0, 0.0, 0.0));
 }
 
 qreal EnergyBudget::adjustImageScale(const QRectF &viewSize, QRectF &img)
@@ -220,6 +222,18 @@ void EnergyBudget::updatePower(float volt, float currpb, float curr_1, float cur
 	ui->powerVValue->setText(QString("%1").arg(volt));
 
 	updateGraphicsImage();
+}
+
+void EnergyBudget::updatePowerHL(uint8_t p_out)
+{
+    m_propUsePower = p_out * 2;
+    m_SystemUsePowerText->setPlainText(QString("%1W @Thr %2%").arg(m_propUsePower, 0, 'f', 1).arg(m_thrust*100.0,0,'f',0));
+    ui->powerA1Value->setText(QString("N/A"));
+    ui->powerA2Value->setText(QString("N/A"));
+    ui->powerAValue->setText(QString("N/A"));
+    ui->powerVValue->setText(QString("N/A"));
+
+    updateGraphicsImage();
 }
 
 void EnergyBudget::onSensPowerBoardChanged(uint8_t pwr_brd_status)
@@ -245,12 +259,6 @@ void EnergyBudget::onSensPowerBoardChanged(uint8_t pwr_brd_status)
 
 void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint8_t batmonStatusByte, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
 {
-	Q_UNUSED(cellvolt1);
-	Q_UNUSED(cellvolt2);
-	Q_UNUSED(cellvolt3);
-	Q_UNUSED(cellvolt4);
-	Q_UNUSED(cellvolt5);
-	Q_UNUSED(cellvolt6);
 	switch (compid)
 	{
     case LEFTBATMONCOMPID:
@@ -357,6 +365,116 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 	updateGraphicsImage();
 }
 
+void EnergyBudget::updateBatMonHL(uint8_t compid, uint8_t volt, int8_t p_avg, uint8_t batmonStatusByte)
+{
+    switch (compid)
+    {
+    case LEFTBATMONCOMPID:
+            ui->bat1VLabel->setText(QString("%1").arg(volt / 10.0));
+            ui->bat1VLabel_2->setText(QString("%1").arg(volt / 10.0));
+            ui->bat1ALabel->setText(QString("N/A"));
+            ui->bat1PowerLabel->setText(QString("%1").arg(p_avg * 4 / 3.0));
+            ui->bat1CurrentLabel_2->setText(QString("N/A"));
+            ui->bat1StatLabel->setText(QString("N/A"));
+            ui->bat1SafetyLabel->setText(QString("N/A"));
+            ui->bat1OperLabel->setText(QString("N/A"));
+            ui->bat1TempLabel->setText(QString("N/A"));
+            ui->bat1SoCBar->setValue(QString("N/A").toInt());
+            ui->bat1Cell1Label->setText(QString("N/A"));
+            ui->bat1Cell2Label->setText(QString("N/A"));
+            ui->bat1Cell3Label->setText(QString("N/A"));
+            ui->bat1Cell4Label->setText(QString("N/A"));
+            ui->bat1Cell5Label->setText(QString("N/A"));
+            ui->bat1Cell6Label->setText(QString("N/A"));
+            ui->bat1FCLed->setState((bool)(0x1 & (batmonStatusByte >> 0)));
+            ui->bat1FDLed->setState((bool)(0x1 & (batmonStatusByte >> 1)));
+            ui->bat1COVLed->setState((bool)(0x1 & (batmonStatusByte >> 2)));
+            ui->bat1CUVLed->setState((bool)(0x1 & (batmonStatusByte >> 3)));
+            ui->bat1OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
+            ui->bat1DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
+            ui->bat1CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
+            ui->bat1PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
+            break;
+
+    case CENTERBATMONCOMPID:
+            ui->bat2VLabel->setText(QString("%1").arg(volt / 10.0));
+            ui->bat2VLabel_2->setText(QString("%1").arg(volt / 10.0));
+            ui->bat2ALabel->setText(QString("N/A"));
+            ui->bat2PowerLabel->setText(QString("%1").arg(p_avg * 4 / 3.0));
+            ui->bat2CurrentLabel_2->setText(QString("N/A"));
+            ui->bat2StatLabel->setText(QString("N/A"));
+            ui->bat2SafetyLabel->setText(QString("N/A"));
+            ui->bat2OperLabel->setText(QString("N/A"));
+            ui->bat2TempLabel->setText(QString("N/A"));
+            ui->bat2SoCBar->setValue(QString("N/A").toInt());
+            ui->bat2Cell1Label->setText(QString("N/A"));
+            ui->bat2Cell2Label->setText(QString("N/A"));
+            ui->bat2Cell3Label->setText(QString("N/A"));
+            ui->bat2Cell4Label->setText(QString("N/A"));
+            ui->bat2Cell5Label->setText(QString("N/A"));
+            ui->bat2Cell6Label->setText(QString("N/A"));
+            ui->bat2FCLed->setState((bool)(0x1 & (batmonStatusByte >> 0)));
+            ui->bat2FDLed->setState((bool)(0x1 & (batmonStatusByte >> 1)));
+            ui->bat2COVLed->setState((bool)(0x1 & (batmonStatusByte >> 2)));
+            ui->bat2CUVLed->setState((bool)(0x1 & (batmonStatusByte >> 3)));
+            ui->bat2OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
+            ui->bat2DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
+            ui->bat2CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
+            ui->bat2PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
+            break;
+
+    case RIGHTBATMONCOMPID:
+            ui->bat3VLabel->setText(QString("%1").arg(volt / 10.0));
+            ui->bat3VLabel_2->setText(QString("%1").arg(volt / 10.0));
+            ui->bat3ALabel->setText(QString("N/A"));
+            ui->bat3PowerLabel->setText(QString("%1").arg(p_avg * 4 / 3.0));
+            ui->bat3CurrentLabel_2->setText(QString("N/A"));
+            ui->bat3StatLabel->setText(QString("N/A"));
+            ui->bat3SafetyLabel->setText(QString("N/A"));
+            ui->bat3OperLabel->setText(QString("N/A"));
+            ui->bat3TempLabel->setText(QString("N/A"));
+            ui->bat3SoCBar->setValue(QString("N/A").toInt());
+            ui->bat3Cell1Label->setText(QString("N/A"));
+            ui->bat3Cell2Label->setText(QString("N/A"));
+            ui->bat3Cell3Label->setText(QString("N/A"));
+            ui->bat3Cell4Label->setText(QString("N/A"));
+            ui->bat3Cell5Label->setText(QString("N/A"));
+            ui->bat3Cell6Label->setText(QString("N/A"));
+            ui->bat3FCLed->setState((bool)(0x1 & (batmonStatusByte >> 0)));
+            ui->bat3FDLed->setState((bool)(0x1 & (batmonStatusByte >> 1)));
+            ui->bat3COVLed->setState((bool)(0x1 & (batmonStatusByte >> 2)));
+            ui->bat3CUVLed->setState((bool)(0x1 & (batmonStatusByte >> 3)));
+            ui->bat3OTCLed->setState((bool)(0x1 & (batmonStatusByte >> 4)));
+            ui->bat3DSGLed->setState((bool)(0x1 & (batmonStatusByte >> 5)));
+            ui->bat3CHGLed->setState((bool)(0x1 & (batmonStatusByte >> 6)));
+            ui->bat3PFLed->setFlashing((bool)(0x1 & (batmonStatusByte >> 7)));
+            break;
+    }
+
+    float power((ui->bat1PowerLabel->text().toDouble() + ui->bat2PowerLabel->text().toDouble() + ui->bat3PowerLabel->text().toDouble()));
+    if (m_batHystHigh->check(power))
+    {
+        m_batCharging = batChargeStatus::CHRG;
+        m_chargePower = power;
+        m_batUsePower = 0;
+    }
+    else if(!(m_batHystLow->check(power)))
+    {
+        m_batCharging = batChargeStatus::DSCHRG;
+        m_chargePower = 0;
+        m_batUsePower = -power;
+    }
+    else
+    {
+        m_batCharging = batChargeStatus::LVL;
+        m_chargePower = 0;
+        m_batUsePower = 0;
+    }
+    updateGraphicsImage();
+}
+
+
+
 void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3)
 {
 	m_MPPTUpdateReset->stop();
@@ -382,6 +500,33 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
 	m_cellPower = (volt1*amp1 + volt2*amp2 + volt3*amp3);
 	updateGraphicsImage();
 	m_MPPTUpdateReset->start(MPPTRESETTIMEMS);
+}
+
+void EnergyBudget::updateMPPTHL(uint8_t volt1, uint8_t volt2, uint8_t volt3)
+{
+    m_MPPTUpdateReset->stop();
+    ui->mppt1VLabel->setText(QString("%1").arg(volt1 / 10.0));
+    ui->mppt2VLabel->setText(QString("%1").arg(volt2 / 10.0));
+    ui->mppt3VLabel->setText(QString("%1").arg(volt3 / 10.0));
+    ui->mppt1ALabel->setText(QString("N/A"));
+    ui->mppt2ALabel->setText(QString("N/A"));
+    ui->mppt3ALabel->setText(QString("N/A"));
+    ui->mppt1PowerLabel->setText(QString("N/A"));
+    ui->mppt2PowerLabel->setText(QString("N/A"));
+    ui->mppt3PowerLabel->setText(QString("N/A"));
+    ui->mppt1ModLabel->setText(QString("N/A"));
+    ui->mppt2ModLabel->setText(QString("N/A"));
+    ui->mppt3ModLabel->setText(QString("N/A"));
+    ui->mppt1StatLabel->setText(QString("N/A"));
+    ui->mppt2StatLabel->setText(QString("N/A"));
+    ui->mppt3StatLabel->setText(QString("N/A"));
+    ui->mppt1PwmLabel->setText(QString("N/A"));
+    ui->mppt2PwmLabel->setText(QString("N/A"));
+    ui->mppt3PwmLabel->setText(QString("N/A"));
+
+    m_cellPower = (QString("N/A").toFloat());
+    updateGraphicsImage();
+    m_MPPTUpdateReset->start(MPPTRESETTIMEMS);
 }
 
 void EnergyBudget::updateGraphicsImage(void)
@@ -424,27 +569,33 @@ void EnergyBudget::updateGraphicsImage(void)
 	}
 }
 
-void EnergyBudget::resizeEvent(QResizeEvent *event)
-{
-	QWidget::resizeEvent(event);
-	ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
-}
+//void EnergyBudget::resizeEvent(QResizeEvent *event)
+//{
+//    QWidget::resizeEvent(event);
+//    ui->overviewGraphicsView->fitInView(m_scene->sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
+//}
 
-void EnergyBudget::setActiveUAS(void)
+void EnergyBudget::setActiveUAS(Vehicle* vehicle)
 {
     //disconnect any previous uas
     disconnect(this, SLOT(updatePower(float, float, float, float)));
+    disconnect(this, SLOT(updatePowerHL(uint8_t)));
     disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    disconnect(this, SLOT(updateMPPTHL(uint8_t, uint8_t, uint8_t)));
     disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint16_t, uint16_t,uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    disconnect(this, SLOT(updateBatMonHL(uint8_t, uint8_t, int8_t, uint8_t)));
     disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
     disconnect(this, SLOT(onSensPowerBoardChanged(uint8_t)));
 
     //connect the uas if asluas
-    Vehicle* tempUAS = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    Vehicle* tempUAS = vehicle;
 
     connect(tempUAS, SIGNAL(SensPowerChanged(float, float, float, float)), this, SLOT(updatePower(float, float, float, float)));
+    connect(tempUAS, SIGNAL(SensPowerChangedHL(uint8_t)), this, SLOT(updatePowerHL(uint8_t)));
     connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    connect(tempUAS, SIGNAL(MPPTDataChangedHL(uint8_t, uint8_t, uint8_t)), this, SLOT(updateMPPTHL(uint8_t, uint8_t, uint8_t)));
     connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    connect(tempUAS, SIGNAL(BatMonDataChangedHL(uint8_t, uint8_t, int8_t, uint8_t)), this, SLOT(updateBatMonHL(uint8_t, uint8_t, int8_t, uint8_t)));
 
     connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
     connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint8_t)), this, SLOT(onSensPowerBoardChanged(uint8_t)));

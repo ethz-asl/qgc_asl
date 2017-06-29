@@ -1168,6 +1168,7 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     _groundSpeedFact.setRawValue(data.groundspeed / 10.0f);
 
     // temperature_air
+    _temperatureFactGroup.temperature1()->setRawValue(data.temperature_air);
 
     // failsafe
 
@@ -1175,19 +1176,18 @@ void Vehicle::_handleAslHighLatency(mavlink_message_t &message)
     emit WPnumChanged(data.wp_num);
 
     // mppts
-    emit MPPTDataChanged(data.v_avg_mppt0 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt0), 0, 0, data.v_avg_mppt1 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt1), 0, 0, data.v_avg_mppt2 / 10.0f, (data.p_avg_bat + data.p_out) / (3.0f * data.v_avg_mppt2), 0, 0);
+    emit MPPTDataChangedHL(data.v_avg_mppt0, data.v_avg_mppt1, data.v_avg_mppt2);
 
     // batmon states
-    // TDOO: adapt data.state_batmon (16 -> 8 bit)
-    emit BatMonDataChanged(LEFTBATMONCOMPID, data.v_avg_bat0 * 100.0f, 0, 0, 0, 0, 0, 0, data.state_batmon0, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(CENTERBATMONCOMPID, data.v_avg_bat1 * 100.0f, 0, 0, 0, 0, 0, 0, data.state_batmon1, 0, 0, 0, 0, 0, 0);
-    emit BatMonDataChanged(RIGHTBATMONCOMPID, data.v_avg_bat2 * 100.0f, 0, 0, 0, 0, 0, 0, data.state_batmon2, 0, 0, 0, 0, 0, 0);
+    emit BatMonDataChangedHL(LEFTBATMONCOMPID, data.v_avg_bat0, data.p_avg_bat, data.state_batmon0);
+    emit BatMonDataChangedHL(CENTERBATMONCOMPID, data.v_avg_bat1, data.p_avg_bat, data.state_batmon1);
+    emit BatMonDataChangedHL(RIGHTBATMONCOMPID, data.v_avg_bat2, data.p_avg_bat, data.state_batmon2);
 
     // powerboard status
     emit SensPowerBoardChanged(data.status_pwrbrd);
 
     // p_out
-    emit SensPowerChanged(data.p_out * 2, 1, 0, 0);
+    emit SensPowerChangedHL(data.p_out);
 
 }
 

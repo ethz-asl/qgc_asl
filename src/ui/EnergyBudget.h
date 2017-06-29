@@ -69,7 +69,7 @@ protected:
 
 	void buildGraphicsImage();
     qreal adjustImageScale(const QRectF&, QRectF&);
-	virtual void resizeEvent(QResizeEvent * event);
+    //virtual void resizeEvent(QResizeEvent * event);
     void updateGraphicsImage(void);
 	QString convertHostfet(uint16_t);
 	QString convertBatteryStatus(uint16_t);
@@ -78,10 +78,13 @@ protected:
 
 protected slots:
 	void updatePower(float volt, float currpb, float curr_1, float curr_2);
+    void updatePowerHL(uint8_t p_out);
 	void updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3);
+    void updateMPPTHL(uint8_t volt1, uint8_t volt2, uint8_t volt3);
     void updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint8_t batmonStatusByte, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6);
+    void updateBatMonHL(uint8_t compid, uint8_t volt, int8_t p_avg, uint8_t batmonStatusByte);
     void onSensPowerBoardChanged(uint8_t status);
-    void setActiveUAS(void);
+    void setActiveUAS(Vehicle* vehicle);
 	void styleChanged(bool);
     void MPPTTimerTimeout(void);
     void onThrustChanged(Vehicle* vehicle, double);
