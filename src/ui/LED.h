@@ -6,7 +6,7 @@
 
 class QTimer;
 
-class QDESIGNER_WIDGET_EXPORT LED : public QWidget
+class LED : public QWidget
 {
 	Q_OBJECT
 
