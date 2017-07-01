@@ -36,11 +36,11 @@ MultiVehicleManager::MultiVehicleManager(QGCApplication* app, QGCToolbox* toolbo
     , _firmwarePluginManager(NULL)
     , _joystickManager(NULL)
     , _mavlinkProtocol(NULL)
-    , _gcsHeartbeatEnabled(false)
+    , _gcsHeartbeatEnabled(true)
 {
     QSettings settings;
 
-    _gcsHeartbeatEnabled = settings.value(_gcsHeartbeatEnabledKey, false).toBool();
+    _gcsHeartbeatEnabled = settings.value(_gcsHeartbeatEnabledKey, true).toBool();
 
     _gcsHeartbeatTimer.setInterval(_gcsHeartbeatRateMSecs);
     _gcsHeartbeatTimer.setSingleShot(false);
