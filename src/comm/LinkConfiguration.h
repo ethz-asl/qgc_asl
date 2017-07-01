@@ -101,7 +101,7 @@ public:
      * Is this a high latency link?
      * @return True if this is a high latency link (only available in UDP link settings)
      */
-    virtual bool highLatency() { return false; }
+    virtual bool highLatency() { return true; }
 
     /*!
      * @brief Connection type
