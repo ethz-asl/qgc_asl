@@ -27,9 +27,11 @@ Item {
     property var    _itemVisuals:       [ ]
     property var    _dragArea
     property bool   _dragAreaShowing:   false
+    property var    _linePoints
 
     readonly property int _indicatorIndex:   0
-    readonly property int _radiusIndex:   1
+    readonly property int _pathIndex:   1
+    readonly property int _lineIndex:   2
 
     signal clicked(int sequenceNumber)
 
@@ -45,9 +47,12 @@ Item {
             var _itemVisual = indicatorComponent.createObject(map)
             map.addMapItem(_itemVisual)
             _itemVisuals[_indicatorIndex] = _itemVisual
-            _itemVisual = radiusComponent.createObject(map)
+            _itemVisual = pathComponent.createObject(map)
             map.addMapItem(_itemVisual)
-            _itemVisuals[_radiusIndex] = _itemVisual
+            _itemVisuals[_pathIndex] = _itemVisual
+            _itemVisual = lineComponent.createObject(map)
+            map.addMapItem(_itemVisual)
+            _itemVisuals[_lineIndex] = _itemVisual
         }
     }
 
@@ -65,11 +70,16 @@ Item {
         }
     }
 
+    function _setLine() {
+        _linePoints = [ _missionItem.coordinate, _missionItem.pathCoordinate ]
+    }
+
     Component.onCompleted: {
         showItemVisuals()
         if (_missionItem.isCurrentItem && map.planView) {
             showDragArea()
         }
+        _setLine()
     }
 
     Component.onDestruction: {
@@ -89,8 +99,9 @@ Item {
             }
         }
 
-        onCircleRadiusChanged: {
+        onPathRadiusChanged: {
             showItemVisuals()
+            _setLine()
         }
     }
 
@@ -139,17 +150,30 @@ Item {
         }
     }
 
-    // circle visual
+    // arc visual
     Component {
-        id: radiusComponent
+        id: pathComponent
 
         MapCircle {
             z:              QGroundControl.zOrderMapItems
-            center:         _missionItem.coordinate
-            radius:         _missionItem.circleRadius
-            border.width:   _missionItem.circleWidth
-            border.color:   _missionItem.circleColor
+            center:         _missionItem.pathCoordinate
+            radius:         _missionItem.pathRadius
+            border.width:   (_missionItem.command!==31000) ? _missionItem.pathWidth : 0;
+            border.color:   _missionItem.pathColor
             color:          "transparent"
         }
     }
+    // line visual
+    Component {
+        id: lineComponent
+
+        MapPolyline {
+            z:          QGroundControl.zOrderMapItems
+            line.color: _missionItem.pathColor
+            line.width: 2//(_missionItem.command===31000) ? _missionItem.pathWidth : 0;
+            path:       _linePoints
+        }
+    }
+
+
 }

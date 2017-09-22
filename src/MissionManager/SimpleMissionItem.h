@@ -35,9 +35,11 @@ public:
     Q_PROPERTY(bool             friendlyEditAllowed     READ friendlyEditAllowed                                NOTIFY friendlyEditAllowedChanged)
     Q_PROPERTY(bool             rawEdit                 READ rawEdit                WRITE setRawEdit            NOTIFY rawEditChanged)              ///< true: raw item editing with all params
     Q_PROPERTY(bool             relativeAltitude        READ relativeAltitude                                   NOTIFY frameChanged)
-    Q_PROPERTY(double           circleRadius            READ circleRadius                                       NOTIFY circleRadiusChanged)
-    Q_PROPERTY(QColor           circleColor             READ circleColor                                        NOTIFY circleColorChanged)
-    Q_PROPERTY(int              circleWidth             READ circleWidth                                        NOTIFY circleWidthChanged)
+    Q_PROPERTY(QGeoCoordinate   pathCoordinate          READ pathCoordinate                                     NOTIFY pathCoordinateChanged)
+    Q_PROPERTY(double           pathRadius              READ pathRadius                                         NOTIFY pathRadiusChanged)
+    Q_PROPERTY(QColor           pathColor               READ pathColor                                          NOTIFY pathColorChanged)
+    Q_PROPERTY(int              pathWidth               READ pathWidth                                          NOTIFY pathWidthChanged)
+    Q_PROPERTY(QVariantList     linePoints              READ linePoints                                         NOTIFY linePointsChanged)
     Q_PROPERTY(MavlinkQmlSingleton::Qml_MAV_CMD command READ command                WRITE setCommand            NOTIFY commandChanged)
 
     /// Optional sections
@@ -63,11 +65,13 @@ public:
     MavlinkQmlSingleton::Qml_MAV_CMD command(void) const { return (MavlinkQmlSingleton::Qml_MAV_CMD)_missionItem._commandFact.cookedValue().toInt(); }
     bool            friendlyEditAllowed (void) const;
     bool            rawEdit             (void) const;
+    QGeoCoordinate  pathCoordinate      (void) { return _pathCoordinate; }
+    double          pathRadius          (void) { return _pathRadius; }
+    QColor          pathColor           (void) { return _pathColor; }
+    int             pathWidth           (void) { return _pathWidth; }
     CameraSection*  cameraSection       (void) { return _cameraSection; }
-    double          circleRadius        (void);
-    QColor          circleColor         (void) const    { return _circleColor; }
-    int             circleWidth         (void) const    { return _circleWidth; }
     SpeedSection*   speedSection        (void) { return _speedSection; }
+    QVariantList    linePoints          (void) { return _linePoints; }
 
     QmlObjectListModel* textFieldFacts  (void) { return &_textFieldFacts; }
     QmlObjectListModel* nanFacts        (void) { return &_nanFacts; }
@@ -132,9 +136,11 @@ signals:
     void headingDegreesChanged      (double heading);
     void rawEditChanged             (bool rawEdit);
     void cameraSectionChanged       (QObject* cameraSection);
-    void circleRadiusChanged        (double circleRadius);
-    void circleColorChanged         (QColor circleColor);
-    void circleWidthChanged         (QColor circleWidth);
+    void pathCoordinateChanged      (QGeoCoordinate pathCoordinate);
+    void pathRadiusChanged          (double pathRadius);
+    void pathColorChanged           (QColor pathColor);
+    void pathWidthChanged           (QColor pathWidth);
+    void linePointsChanged          (void);
     void speedSectionChanged        (QObject* cameraSection);
 
 private slots:
@@ -148,6 +154,8 @@ private slots:
     void _syncFrameToAltitudeRelativeToHome (void);
     void _updateLastSequenceNumber          (void);
     void _rebuildFacts                      (void);
+    void _sendPathChanged                   (void);
+    QGeoCoordinate _calcLineSegmentStart    (void);
 
 private:
     void _connectSignals        (void);
@@ -158,15 +166,17 @@ private:
     void _rebuildCheckboxFacts  (void);
     void _rebuildComboBoxFacts  (void);
 
-    MissionItem _missionItem;
-    bool        _rawEdit;
-    bool        _dirty;
-    bool        _ignoreDirtyChangeSignals;
-    QColor      _circleColor;
-    int         _circleWidth;
-
+    MissionItem     _missionItem;
+    bool            _rawEdit;
+    bool            _dirty;
+    bool            _ignoreDirtyChangeSignals;
+    QGeoCoordinate _pathCoordinate;
+    double          _pathRadius;
+    QColor          _pathColor;
+    int             _pathWidth;
+    QVariantList    _linePoints;
     SpeedSection*   _speedSection;
-    CameraSection* _cameraSection;
+    CameraSection*  _cameraSection;
 
     MissionCommandTree* _commandTree;
 

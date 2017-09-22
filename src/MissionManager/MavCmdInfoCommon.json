@@ -1018,6 +1018,60 @@
             }
         },
         { "id": 30001, "rawName": "MAV_CMD_PAYLOAD_PREPARE_DEPLOY", "friendlyName": "Payload prepare deploy" },
-        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" }
+        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" },
+        {
+            "id":                   31000,
+            "rawName":              "MAV_CMD_WAYPOINT_USER_1",
+            "friendlyName":         "Dubins Line",
+            "description":          "Follow Dubins aircraft line segment",
+            "specifiesCoordinate":  true,
+            "friendlyEdit":         true,
+            "category":             "Dubins Aircraft Segment",
+            "param2": {
+                "label":            "Length (horizontal)",
+                "units":            "m",
+                "default":          50.0,
+                "decimalPlaces":    2
+            },
+            "param3": {
+                "label":            "Course",
+                "units":            "deg",
+                "default":          0.0,
+                "decimalPlaces":    2
+            },
+            "param4": {
+                "label":            "Ascent Angle",
+                "units":            "m",
+                "default":          0.0,
+                "decimalPlaces":    2
+            }
+        },
+        {
+            "id":                   31001,
+            "rawName":              "MAV_CMD_WAYPOINT_USER_2",
+            "friendlyName":         "Dubins Arc",
+            "description":          "Follow Dubins aircraft arc segment",
+            "specifiesCoordinate":  true,
+            "friendlyEdit":         true,
+            "category":             "Dubins Aircraft Segment",
+            "param2": {
+                "label":            "Radius",
+                "units":            "m",
+                "default":          80.0,
+                "decimalPlaces":    2
+            },
+            "param3": {
+                "label":            "Exit Course",
+                "units":            "deg",
+                "default":          0.0,
+                "decimalPlaces":    2
+            },
+            "param4": {
+                "label":            "Ascent Angle",
+                "units":            "deg",
+                "default":          0.0,
+                "decimalPlaces":    2
+            }
+        }
     ]
 }

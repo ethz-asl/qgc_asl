@@ -52,8 +52,9 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, QObject* parent)
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
-    , _circleColor("white")
-    , _circleWidth(1)
+    , _pathRadius(0.0)
+    , _pathColor("white")
+    , _pathWidth(0)
     , _speedSection(NULL)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
@@ -93,8 +94,9 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missio
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
-    , _circleColor("white")
-    , _circleWidth(1)
+    , _pathRadius(0.0)
+    , _pathColor("white")
+    , _pathWidth(0)
     , _speedSection(NULL)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
@@ -112,6 +114,8 @@ SimpleMissionItem::SimpleMissionItem(Vehicle* vehicle, const MissionItem& missio
 {
     _editorQml = QStringLiteral("qrc:/qml/SimpleItemEditor.qml");
 
+    _pathCoordinate = missionItem.coordinate();
+
     _altitudeRelativeToHomeFact.setRawValue(true);
     _isCurrentItem = missionItem.isCurrentItem();
 
@@ -128,8 +132,9 @@ SimpleMissionItem::SimpleMissionItem(const SimpleMissionItem& other, QObject* pa
     , _rawEdit(false)
     , _dirty(false)
     , _ignoreDirtyChangeSignals(false)
-    , _circleColor("white")
-    , _circleWidth(1)
+    , _pathRadius(0.0)
+    , _pathColor("white")
+    , _pathWidth(0)
     , _speedSection(NULL)
     , _cameraSection(NULL)
     , _commandTree(qgcApp()->toolbox()->missionCommandTree())
@@ -214,10 +219,13 @@ void SimpleMissionItem::_connectSignals(void)
     // Sequence number is kept in mission iteem, so we need to propagate signal up as well
     connect(&_missionItem, &MissionItem::sequenceNumberChanged, this, &SimpleMissionItem::sequenceNumberChanged);
 
-    // These signals require an update to the circle radius
-    connect(&_missionItem._param2Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
-    connect(&_missionItem._param3Fact,  &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
-    connect(&_missionItem._commandFact, &Fact::valueChanged, this, &SimpleMissionItem::circleRadius);
+    // These signals require an update the path decorations
+    connect(&_missionItem._commandFact, &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
+    connect(&_missionItem._param2Fact,  &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
+    connect(&_missionItem._param3Fact,  &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
+    connect(&_missionItem._param5Fact, &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
+    connect(&_missionItem._param6Fact, &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
+    connect(&_missionItem._param7Fact, &Fact::valueChanged, this, &SimpleMissionItem::_sendPathChanged);
 }
 
 void SimpleMissionItem::_setupMetaData(void)
@@ -803,32 +811,90 @@ void SimpleMissionItem::applyNewAltitude(double newAltitude)
     }
 }
 
-double SimpleMissionItem::circleRadius(void) // ETHZ-ASL/ThomasStastny
+void SimpleMissionItem::_sendPathChanged(void)
 {
-    double _radius = 0.0;
-    int _command = _missionItem._commandFact.cookedValue().toInt();
+    int command = _missionItem._commandFact.cookedValue().toInt();
 
-    if (_command == 16) {
-        _radius = _missionItem.param2();
-        _circleColor = "#CCFFFFFF";
-        _circleWidth = 2;
-    } else if (_command == 17) {
-        _radius = _missionItem.param3();
-        _circleColor = "#CCFFFF00";
-        _circleWidth = 2;
-    } else if (_command == 22) {
-        _radius = _missionItem.param3();
-        _circleColor = "#CCFFFF00";
-        _circleWidth = 2;
-    } else if (_command == 31) {
-        _radius = _missionItem.param2();
-        _circleColor = "#CCa99eff";
-        _circleWidth = 2;
+    _linePoints.clear();
+
+    if (command == 16) {
+        // Position waypoint
+
+        _pathCoordinate = _missionItem.coordinate();
+        _pathRadius = fabs(_missionItem.param2());
+        _pathColor = "#CCFFFFFF";
+        _pathWidth = 2;
+    }
+    else if (command == 17) {
+        // Loiter waypoint
+
+        _pathCoordinate = _missionItem.coordinate();
+        _pathRadius = fabs(_missionItem.param3());
+        _pathColor = "#CCFFFF00";
+        _pathWidth = 2;
+    }
+    else if (command == 22) {
+        // Take-off waypoint
+
+        _pathCoordinate = _missionItem.coordinate();
+        _pathRadius = fabs(_missionItem.param3());
+        _pathColor = "#CCFFFF00";
+        _pathWidth = 2;
+    }
+    else if (command == 31) {
+        // Loiter-to-alt waypoint
+
+        _pathCoordinate = _missionItem.coordinate();
+        _pathRadius = fabs(_missionItem.param2());
+        _pathColor = "#CCa99eff";
+        _pathWidth = 2;
+    }
+    else if (command == 30000) {
+        // Dubins line segment
+
+        _pathCoordinate = _calcLineSegmentStart();
+        _pathRadius = 0.0;
+        _pathColor = "#CC33DDFF";
+        _pathWidth = 2;
+
+        _linePoints.append(QVariant::fromValue(_missionItem.coordinate()));
+        _linePoints.append(QVariant::fromValue(_pathCoordinate));
+    }
+    else if (command == 31001) {
+        // Dubins arc segment
+
+        double radius = _missionItem.param2();
+        double azimuth = _missionItem.param3() + ((radius<0.0) ? -90.0 : 90.0);
+        if (azimuth > 180.0) azimuth = azimuth - 360.0;
+        if (azimuth < -180.0) azimuth = azimuth + 360.0;
+
+        _pathCoordinate = _missionItem.coordinate().atDistanceAndAzimuth(fabs(radius), azimuth);
+        _pathRadius = fabs(_missionItem.param2());
+        _pathColor = "#CC33DDFF";
+        _pathWidth = 2;
+    }
+    else {
+        _pathCoordinate = _missionItem.coordinate();
+        _pathRadius = 0.0;
+        _pathColor = "CCFFFFFF";
+        _pathWidth = 0;
     }
 
-    emit circleRadiusChanged(_radius);
-    emit circleColorChanged(_circleColor);
-    emit circleWidthChanged(_circleWidth);
+    emit pathCoordinateChanged(_pathCoordinate);
+    emit pathRadiusChanged(_pathRadius);
+    emit pathColorChanged(_pathColor);
+    emit pathWidthChanged(_pathWidth);
+    emit linePointsChanged();
+}
 
-    return _radius;
+QGeoCoordinate SimpleMissionItem::_calcLineSegmentStart(void) {
+
+    QGeoCoordinate lineEnd = _missionItem.coordinate();
+    double heightUp = -_missionItem.param2() * tan((M_PI / 180.0) * _missionItem.param4());
+    double azimuth = _missionItem.param3() + 180.0;
+    if (azimuth > 180.0) azimuth = azimuth - 360.0;
+    if (azimuth < -180.0) azimuth = azimuth + 360.0;
+    QGeoCoordinate lineStart = lineEnd.atDistanceAndAzimuth(_missionItem.param2(), azimuth, heightUp);
+
+    return lineStart;
 }
