@@ -155,11 +155,24 @@ Item {
         id: pathComponent
 
         MapCircle {
-            z:              QGroundControl.zOrderMapItems
+            z:              QGroundControl.zOrderMapItems - 1
             center:         _missionItem.pathCoordinate
             radius:         _missionItem.pathRadius
             border.width:   (_missionItem.command!==31000) ? _missionItem.pathWidth : 0;
             border.color:   _missionItem.pathColor
+            color:          "transparent"
+        }
+    }
+    // arc visual 2
+    Component {
+        id: pathComponent2
+
+        MapCircle {
+            z:              QGroundControl.zOrderMapItems - 1
+            center:         _missionItem.pathCoordinate2
+            radius:         5
+            border.width:   (_missionItem.command!==31000) ? 2 : 0;
+            border.color:   (_missionItem.command!==31000) ? "CC33DDFF" : 0;
             color:          "transparent"
         }
     }
@@ -168,9 +181,9 @@ Item {
         id: lineComponent
 
         MapPolyline {
-            z:          QGroundControl.zOrderMapItems
-            line.color: _missionItem.pathColor
-            line.width: 2//(_missionItem.command===31000) ? _missionItem.pathWidth : 0;
+            z:          QGroundControl.zOrderMapItems - 1
+            line.color: (_missionItem.command===31000) ? _missionItem.pathColor : "transparent";
+            line.width: (_missionItem.command===31000) ? _missionItem.pathWidth : 0;
             path:       _linePoints
         }
     }

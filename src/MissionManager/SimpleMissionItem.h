@@ -36,10 +36,10 @@ public:
     Q_PROPERTY(bool             rawEdit                 READ rawEdit                WRITE setRawEdit            NOTIFY rawEditChanged)              ///< true: raw item editing with all params
     Q_PROPERTY(bool             relativeAltitude        READ relativeAltitude                                   NOTIFY frameChanged)
     Q_PROPERTY(QGeoCoordinate   pathCoordinate          READ pathCoordinate                                     NOTIFY pathCoordinateChanged)
+    Q_PROPERTY(QGeoCoordinate   pathCoordinate2         READ pathCoordinate2                                    NOTIFY pathCoordinate2Changed)
     Q_PROPERTY(double           pathRadius              READ pathRadius                                         NOTIFY pathRadiusChanged)
     Q_PROPERTY(QColor           pathColor               READ pathColor                                          NOTIFY pathColorChanged)
     Q_PROPERTY(int              pathWidth               READ pathWidth                                          NOTIFY pathWidthChanged)
-    Q_PROPERTY(QVariantList     linePoints              READ linePoints                                         NOTIFY linePointsChanged)
     Q_PROPERTY(MavlinkQmlSingleton::Qml_MAV_CMD command READ command                WRITE setCommand            NOTIFY commandChanged)
 
     /// Optional sections
@@ -66,12 +66,12 @@ public:
     bool            friendlyEditAllowed (void) const;
     bool            rawEdit             (void) const;
     QGeoCoordinate  pathCoordinate      (void) { return _pathCoordinate; }
+    QGeoCoordinate  pathCoordinate2     (void) { return _pathCoordinate2; }
     double          pathRadius          (void) { return _pathRadius; }
     QColor          pathColor           (void) { return _pathColor; }
     int             pathWidth           (void) { return _pathWidth; }
     CameraSection*  cameraSection       (void) { return _cameraSection; }
     SpeedSection*   speedSection        (void) { return _speedSection; }
-    QVariantList    linePoints          (void) { return _linePoints; }
 
     QmlObjectListModel* textFieldFacts  (void) { return &_textFieldFacts; }
     QmlObjectListModel* nanFacts        (void) { return &_nanFacts; }
@@ -137,10 +137,10 @@ signals:
     void rawEditChanged             (bool rawEdit);
     void cameraSectionChanged       (QObject* cameraSection);
     void pathCoordinateChanged      (QGeoCoordinate pathCoordinate);
+    void pathCoordinate2Changed     (QGeoCoordinate pathCoordinate2);
     void pathRadiusChanged          (double pathRadius);
     void pathColorChanged           (QColor pathColor);
     void pathWidthChanged           (QColor pathWidth);
-    void linePointsChanged          (void);
     void speedSectionChanged        (QObject* cameraSection);
 
 private slots:
@@ -170,11 +170,11 @@ private:
     bool            _rawEdit;
     bool            _dirty;
     bool            _ignoreDirtyChangeSignals;
-    QGeoCoordinate _pathCoordinate;
+    QGeoCoordinate  _pathCoordinate;
+    QGeoCoordinate  _pathCoordinate2;
     double          _pathRadius;
     QColor          _pathColor;
     int             _pathWidth;
-    QVariantList    _linePoints;
     SpeedSection*   _speedSection;
     CameraSection*  _cameraSection;
 

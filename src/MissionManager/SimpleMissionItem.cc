@@ -815,8 +815,6 @@ void SimpleMissionItem::_sendPathChanged(void)
 {
     int command = _missionItem._commandFact.cookedValue().toInt();
 
-    _linePoints.clear();
-
     if (command == 16) {
         // Position waypoint
 
@@ -849,16 +847,13 @@ void SimpleMissionItem::_sendPathChanged(void)
         _pathColor = "#CCa99eff";
         _pathWidth = 2;
     }
-    else if (command == 30000) {
+    else if (command == 31000) {
         // Dubins line segment
 
         _pathCoordinate = _calcLineSegmentStart();
         _pathRadius = 0.0;
         _pathColor = "#CC33DDFF";
         _pathWidth = 2;
-
-        _linePoints.append(QVariant::fromValue(_missionItem.coordinate()));
-        _linePoints.append(QVariant::fromValue(_pathCoordinate));
     }
     else if (command == 31001) {
         // Dubins arc segment
@@ -884,7 +879,6 @@ void SimpleMissionItem::_sendPathChanged(void)
     emit pathRadiusChanged(_pathRadius);
     emit pathColorChanged(_pathColor);
     emit pathWidthChanged(_pathWidth);
-    emit linePointsChanged();
 }
 
 QGeoCoordinate SimpleMissionItem::_calcLineSegmentStart(void) {
