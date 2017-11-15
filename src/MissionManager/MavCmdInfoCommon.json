@@ -1054,6 +1054,12 @@
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Dubins Aircraft Segment",
+            "param1": {
+                "label":            "Acceptance",
+                "units":            "m",
+                "default":          30.0,
+                "decimalPlaces":    2
+            },
             "param2": {
                 "label":            "Radius",
                 "units":            "m",
