@@ -9,10 +9,11 @@
         <file alias="GPSRTKIndicator.qml">src/ui/toolbar/GPSRTKIndicator.qml</file>
         <file alias="MessageIndicator.qml">src/ui/toolbar/MessageIndicator.qml</file>
         <file alias="ModeIndicator.qml">src/ui/toolbar/ModeIndicator.qml</file>
-		<file alias="VTOLModeIndicator.qml">src/ui/toolbar/VTOLModeIndicator.qml</file>
+        <file alias="VTOLModeIndicator.qml">src/ui/toolbar/VTOLModeIndicator.qml</file>
         <file alias="RCRSSIIndicator.qml">src/ui/toolbar/RCRSSIIndicator.qml</file>
         <file alias="TelemetryRSSIIndicator.qml">src/ui/toolbar/TelemetryRSSIIndicator.qml</file>
         <file alias="JoystickIndicator.qml">src/ui/toolbar/JoystickIndicator.qml</file>
+        <file alias="LinkIndicator.qml">src/ui/toolbar/LinkIndicator.qml</file>
     </qresource>
     <qresource prefix="/qml">
         <file alias="CorridorScanEditor.qml">src/PlanView/CorridorScanEditor.qml</file>
@@ -126,7 +127,7 @@
         <file alias="QGroundControl/Controls/SliderSwitch.qml">src/QmlControls/SliderSwitch.qml</file>
         <file alias="QGroundControl/Controls/SubMenuButton.qml">src/QmlControls/SubMenuButton.qml</file>
         <file alias="QGroundControl/Controls/SurveyMapVisual.qml">src/PlanView/SurveyMapVisual.qml</file>
-		<file alias="QGroundControl/Controls/TransectStyleComplexItemStats.qml">src/PlanView/TransectStyleComplexItemStats.qml</file>
+        <file alias="QGroundControl/Controls/TransectStyleComplexItemStats.qml">src/PlanView/TransectStyleComplexItemStats.qml</file>
         <file alias="QGroundControl/Controls/ToolStrip.qml">src/QmlControls/ToolStrip.qml</file>
         <file alias="QGroundControl/Controls/VehicleRotationCal.qml">src/QmlControls/VehicleRotationCal.qml</file>
         <file alias="QGroundControl/Controls/VehicleSummaryRow.qml">src/QmlControls/VehicleSummaryRow.qml</file>
@@ -225,7 +226,7 @@
         <file alias="Vehicle/ClockFact.json">src/Vehicle/ClockFact.json</file>
         <file alias="Vehicle/GPSFact.json">src/Vehicle/GPSFact.json</file>
         <file alias="Vehicle/GPSRTKFact.json">src/Vehicle/GPSRTKFact.json</file>
-		<file alias="Vehicle/SetpointFact.json">src/Vehicle/SetpointFact.json</file>
+        <file alias="Vehicle/SetpointFact.json">src/Vehicle/SetpointFact.json</file>
         <file alias="Vehicle/SubmarineFact.json">src/Vehicle/SubmarineFact.json</file>
         <file alias="Vehicle/TemperatureFact.json">src/Vehicle/TemperatureFact.json</file>
         <file alias="Vehicle/VehicleFact.json">src/Vehicle/VehicleFact.json</file>
