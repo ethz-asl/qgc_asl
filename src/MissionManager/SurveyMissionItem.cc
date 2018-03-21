@@ -999,7 +999,6 @@ int SurveyMissionItem::_gridGenerator(const QList<QPointF>& polygonPoints,  QLis
 
     return cameraShots;
 }
-
 int SurveyMissionItem::_appendWaypointToMission(QList<MissionItem*>& items, int seqNum, QGeoCoordinate& coord, CameraTriggerCode cameraTrigger, QObject* missionItemParent)
 {
     double  altitude =          _gridAltitudeFact.rawValue().toDouble();
@@ -1068,6 +1067,28 @@ int SurveyMissionItem::_appendWaypointToMission(QList<MissionItem*>& items, int 
     return seqNum;
 }
 
+int SurveyMissionItem::_appendPayloadMountControlToMission(QList<MissionItem*>& items, int seqNum, bool openBay, QObject* missionItemParent)
+{
+
+    qCDebug(SurveyMissionItemLog) << "_appendPayloadMountControlToMission seq:open" << seqNum << (openBay);
+
+    MissionItem* item = new MissionItem(seqNum++,
+                                        MAV_CMD_DO_MOUNT_CONTROL,
+                                        MAV_FRAME_MISSION,
+                                        std::numeric_limits<double>::quiet_NaN(),  // param 1
+                                        std::numeric_limits<double>::quiet_NaN(), // param 2
+                                        std::numeric_limits<double>::quiet_NaN(),   // param 3
+                                        std::numeric_limits<double>::quiet_NaN(),   // param 4
+                                        std::numeric_limits<double>::quiet_NaN(),   // param 5
+                                        std::numeric_limits<double>::quiet_NaN(),   // param 6
+                                        openBay ? MAV_MOUNT_MODE_NEUTRAL : MAV_MOUNT_MODE_RETRACT,   // param 7
+                                        true,                                       // autoContinue
+                                        false,                                      // isCurrentItem
+                                        missionItemParent);
+    items.append(item);
+    return seqNum;
+}
+
 bool SurveyMissionItem::_nextTransectCoord(const QList<QGeoCoordinate>& transectPoints, int pointIndex, QGeoCoordinate& coord)
 {
     if (pointIndex > transectPoints.count()) {
@@ -1112,6 +1133,9 @@ bool SurveyMissionItem::_appendMissionItemsWorker(QList<MissionItem*>& items, QO
                 return false;
             }
             seqNum = _appendWaypointToMission(items, seqNum, coord, firstWaypointTrigger ? CameraTriggerOn : CameraTriggerNone, missionItemParent);
+            if (segmentIndex == 0) {
+                seqNum = _appendPayloadMountControlToMission(items, seqNum, true, missionItemParent);
+            }
             firstWaypointTrigger = false;
         }
 
@@ -1152,6 +1176,10 @@ bool SurveyMissionItem::_appendMissionItemsWorker(QList<MissionItem*>& items, QO
                 return false;
             }
             seqNum = _appendWaypointToMission(items, seqNum, coord, CameraTriggerNone, missionItemParent);
+            if (segmentIndex == transectSegments.count() - 1) {
+                seqNum = _appendPayloadMountControlToMission(items, seqNum, false, missionItemParent);
+            }
+
         }
 
         qCDebug(SurveyMissionItemLog) << "last PointIndex" << pointIndex;
