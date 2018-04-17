@@ -393,6 +393,16 @@ QGCView {
                                 }
                             }
                         }
+
+                        //-----------------------------------------------------------------
+                        //-- Checklist Settings
+                        FactCheckBox {
+                            text:       qsTr("Use preflight checklist")
+                            fact:       _useChecklist
+                            visible:    _useChecklist.visible
+
+                            property Fact _useChecklist: QGroundControl.settingsManager.appSettings.useChecklist
+                        }
                     }
                 }
 
