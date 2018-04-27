@@ -255,6 +255,9 @@ MainWindow::MainWindow()
     if(msgHandler) {
         msgHandler->showErrorsInToolbar();
     }
+
+    // Show ASL Energy Widget by default
+    _showDockWidget("Energy Budget",true);
 }
 
 MainWindow::~MainWindow()
