@@ -243,15 +243,15 @@ void EnergyBudget::updateBatMon(int* Failure, bool* FailureChanged, uint8_t comp
     int FailureOld=*Failure;
     *Failure = 0;
     QString stateFlags="";
-    //ui->bat1StateFlags->clear();
     if(0x1 & (batmonStatusByte >> 0)) { stateFlags+="Fully charged \n";}
     if(0x1 & (batmonStatusByte >> 1)) { stateFlags+="Fully discharged \n"; *Failure = 1;}
-    if(0x1 & (batmonStatusByte >> 5)) { stateFlags+="Discharging \n"; }
+    if((0x1 & (batmonStatusByte >> 5)) == 0) { stateFlags+="Discharge not allowed. \n"; }
     if(0x1 & (batmonStatusByte >> 2)) { stateFlags+="Cell overvoltage \n"; *Failure = 2;}
     if(0x1 & (batmonStatusByte >> 3)) { stateFlags+="Cell undervoltage \n"; *Failure = 2;}
     if(0x1 & (batmonStatusByte >> 4)) { stateFlags+="Cell overtemperature \n"; *Failure = 2;}
-    if(0x1 & (batmonStatusByte >> 6)) { stateFlags+="Charging \n"; }
+    if((0x1 & (batmonStatusByte >> 6)) == 0) { stateFlags+="Charge not allowed. \n"; }
     if(0x1 & (batmonStatusByte >> 7)) { stateFlags+="Permanent Failure \n"; *Failure = 2;}
+    if(stateFlags=="") stateFlags="OK";
     ui->bat1StatusFlags->setText(stateFlags);
     if(*Failure!=FailureOld) *FailureChanged=true;
 
