@@ -24,6 +24,8 @@
 #define BATPOWERLOWMAX -1
 #define MPPTRESETTIMEMS 3000
 
+QGC_LOGGING_CATEGORY(EnergyBudgetLog, "EnergyBudgetLog")
+
 class Hysteresisf
 {
 public:
@@ -157,8 +159,12 @@ qreal EnergyBudget::adjustImageScale(const QRectF &viewSize, QRectF &img)
 	return std::fmin((viewSize.height() / (OVERVIEWTOIMAGEHEIGHTSCALE*img.height())), (viewSize.width() / (OVERVIEWTOIMAGEWIDTHSCALE*img.width())));
 }
 
-void EnergyBudget::updatePowerBoard(uint64_t timestamp, uint8_t status, uint8_t led_status, float system_volt, float servo_volt, float digital_volt, float mot_l_amp, float mot_r_amp, float analog_amp, float digital_amp, float ext_amp, float aux_amp)
+void EnergyBudget::updatePowerBoard(int* Failure, bool* FailureChanged, uint64_t timestamp, uint8_t status, uint8_t led_status, float system_volt, float servo_volt, float digital_volt, float mot_l_amp, float mot_r_amp, float analog_amp, float digital_amp, float ext_amp, float aux_amp)
 {
+    Q_UNUSED(timestamp);
+    Q_UNUSED(led_status);
+    Q_UNUSED(mot_r_amp);
+
 #define BCKPBATREG 0x20
     if (status & BCKPBATREG) {
         m_scene->setBackgroundBrush(Qt::red);
@@ -191,16 +197,22 @@ void EnergyBudget::updatePowerBoard(uint64_t timestamp, uint8_t status, uint8_t 
     ui->PwrBrdSysVolt->setText(QString("%1V").arg(system_volt, 0, 'f', 1));
     ui->PwrBrdSysPower->setText(QString("%1W").arg(m_SystemPower, 0, 'f', 1));
 
+    int FailureOld=*Failure;
+    *Failure = 0;
     ui->PwrBrdHealthLED->setColor(QColor(Qt::green));
     ui->PwrBrdStatusFlags->setStyleSheet("QLabel { background-color : green;}");
     if(convertPowerboardStatus(status)!="OK") {
+        *Failure = 2;
         ui->PwrBrdHealthLED->setColor(QColor(Qt::red));
         ui->PwrBrdStatusFlags->setStyleSheet("QLabel { background-color : red;}");
     }
+    if(*Failure!=FailureOld) *FailureChanged=true;
 }
 
-void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
+void EnergyBudget::updateBatMon(int* Failure, bool* FailureChanged, uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
 {
+    Q_UNUSED(compid);
+
     ui->bat1VLabel->setText(QString("%1V").arg(volt/1000.0, 0, 'f', 1));
     ui->bat1ALabel->setText(QString("%1A").arg(current / 1000.0, 0, 'f', 1));
     ui->bat1PowerLabel->setText(QString("%1W").arg((volt / 1000.0)*(current / 1000.0), 0, 'f', 1));
@@ -228,25 +240,27 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
     batmonStatusByte |= ((0x1 & (batOperation >> 1)) << 6); 	// CHG: charge FET status
     batmonStatusByte |= ((0x1 & (batOperation >> 12)) << 7); 	// PF: permanent failure
 
-    int failure = 0;
+    int FailureOld=*Failure;
+    *Failure = 0;
     QString stateFlags="";
     //ui->bat1StateFlags->clear();
     if(0x1 & (batmonStatusByte >> 0)) { stateFlags+="Fully charged \n";}
-    if(0x1 & (batmonStatusByte >> 1)) { stateFlags+="Fully discharged \n"; failure=1;}
+    if(0x1 & (batmonStatusByte >> 1)) { stateFlags+="Fully discharged \n"; *Failure = 1;}
     if(0x1 & (batmonStatusByte >> 5)) { stateFlags+="Discharging \n"; }
-    if(0x1 & (batmonStatusByte >> 2)) { stateFlags+="Cell overvoltage \n"; failure=2;}
-    if(0x1 & (batmonStatusByte >> 3)) { stateFlags+="Cell undervoltage \n"; failure=2;}
-    if(0x1 & (batmonStatusByte >> 4)) { stateFlags+="Cell overtemperature \n"; failure=2;}
+    if(0x1 & (batmonStatusByte >> 2)) { stateFlags+="Cell overvoltage \n"; *Failure = 2;}
+    if(0x1 & (batmonStatusByte >> 3)) { stateFlags+="Cell undervoltage \n"; *Failure = 2;}
+    if(0x1 & (batmonStatusByte >> 4)) { stateFlags+="Cell overtemperature \n"; *Failure = 2;}
     if(0x1 & (batmonStatusByte >> 6)) { stateFlags+="Charging \n"; }
-    if(0x1 & (batmonStatusByte >> 7)) { stateFlags+="Permanent Failure \n"; failure=2;}
+    if(0x1 & (batmonStatusByte >> 7)) { stateFlags+="Permanent Failure \n"; *Failure = 2;}
     ui->bat1StatusFlags->setText(stateFlags);
+    if(*Failure!=FailureOld) *FailureChanged=true;
 
     ui->BatteryHealthLED->setColor(QColor(Qt::green));
     ui->bat1StatusFlags->setStyleSheet("QLabel { background-color : green;}");
-    if(failure==1) {
+    if(*Failure==1) {
         ui->BatteryHealthLED->setColor(QColor(239, 163, 0));
         ui->bat1StatusFlags->setStyleSheet("QLabel { background-color : rgb(239, 163, 0);}");
-    } else if (failure==2) {
+    } else if (*Failure==2) {
         ui->BatteryHealthLED->setColor(QColor(Qt::red));
         ui->bat1StatusFlags->setStyleSheet("QLabel { background-color : red;}");
     }
@@ -383,8 +397,17 @@ void EnergyBudget::updateBatMon(uint8_t compid, uint16_t volt, int16_t current, 
 
 
 
-void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3)
+void EnergyBudget::updateMPPT(int* Failure, bool* FailureChanged, float volt1, float amp1, uint16_t pwm1, uint8_t status1, float volt2, float amp2, uint16_t pwm2, uint8_t status2, float volt3, float amp3, uint16_t pwm3, uint8_t status3)
 {
+    Q_UNUSED(volt2);
+    Q_UNUSED(amp2);
+    Q_UNUSED(pwm2);
+    Q_UNUSED(status2);
+    Q_UNUSED(volt3);
+    Q_UNUSED(amp3);
+    Q_UNUSED(pwm3);
+    Q_UNUSED(status3);
+
 	m_MPPTUpdateReset->stop();
     ui->mppt1VLabel->setText(QString("%1V").arg(volt1, 0, 'f', 1));
     ui->mppt1ALabel->setText(QString("%1A").arg(amp1, 0, 'f', 1));
@@ -393,12 +416,16 @@ void EnergyBudget::updateMPPT(float volt1, float amp1, uint16_t pwm1, uint8_t st
     ui->mppt1StatLabel->setText(convertMPPTStatus(status1));
     ui->mppt1PwmLabel->setText(QString("%1").arg(pwm1));
 
+    int FailureOld=*Failure;
+    *Failure = 0;
     ui->MPPTHealthLED->setColor(QColor(Qt::green));
     ui->mppt1StatLabel->setStyleSheet("QLabel { background-color : green;}");
     if(convertMPPTStatus(status1)!="OK") {
+        *Failure = 2;
         ui->MPPTHealthLED->setColor(QColor(Qt::red));
         ui->mppt1StatLabel->setStyleSheet("QLabel { background-color : red;}");
     }
+    if(*Failure!=FailureOld) *FailureChanged=true;
 
     m_cellPower = volt1*amp1;
 	updateGraphicsImage();
@@ -494,22 +521,22 @@ void EnergyBudget::updateGraphicsImage(void)
 void EnergyBudget::setActiveUAS(Vehicle* vehicle)
 {
     //disconnect any previous uas
-    disconnect(this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    disconnect(this, SLOT(updateMPPT(int*, bool*, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
     //disconnect(this, SLOT(updateMPPTHL(uint8_t, uint8_t, uint8_t)));
-    disconnect(this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    disconnect(this, SLOT(updateBatMon(int*, bool*, uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
     //disconnect(this, SLOT(updateBatMonHL(uint8_t, uint8_t, int8_t, uint8_t)));
     disconnect(this, SLOT(onThrustChanged(Vehicle*,double)));
-    disconnect(this, SLOT(updatePowerBoard(uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)));
+    disconnect(this, SLOT(updatePowerBoard(int* , bool* , uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)));
 
     //connect the uas if asluas
     Vehicle* tempUAS = vehicle;
 
-    connect(tempUAS, SIGNAL(MPPTDataChanged(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
+    connect(tempUAS, SIGNAL(MPPTDataChanged(int*, bool*, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)), this, SLOT(updateMPPT(int*, bool*, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t, float, float, uint16_t, uint8_t)));
     //connect(tempUAS, SIGNAL(MPPTDataChangedHL(uint8_t, uint8_t, uint8_t)), this, SLOT(updateMPPTHL(uint8_t, uint8_t, uint8_t)));
-    connect(tempUAS, SIGNAL(BatMonDataChanged(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
+    connect(tempUAS, SIGNAL(BatMonDataChanged(int*, bool*, uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)), this, SLOT(updateBatMon(int*, bool*, uint8_t, uint16_t, int16_t, uint8_t, float, uint16_t, uint32_t, uint32_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t)));
     //connect(tempUAS, SIGNAL(BatMonDataChangedHL(uint8_t, uint8_t, int8_t, uint8_t)), this, SLOT(updateBatMonHL(uint8_t, uint8_t, int8_t, uint8_t)));
     connect(tempUAS, SIGNAL(thrustChanged(Vehicle*, double)), this, SLOT(onThrustChanged(Vehicle*, double)));
-    connect(tempUAS, SIGNAL(SensPowerBoardChanged(uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)), this, SLOT(updatePowerBoard(uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)));
+    connect(tempUAS, SIGNAL(SensPowerBoardChanged(int*, bool*, uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)), this, SLOT(updatePowerBoard(int*, bool*, uint64_t, uint8_t, uint8_t, float, float, float, float, float, float, float, float, float)));
 }
 
 #define HOSTFETBIT1 "DSG"

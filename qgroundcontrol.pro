@@ -362,6 +362,7 @@ INCLUDEPATH += \
     src/ui/px4_configuration \
     src/ui/toolbar \
     src/ui/uas \
+    src/ui/ASLCustomWidgets/EnergyBudget \
 
 FORMS += \
     src/ui/MainWindow.ui \

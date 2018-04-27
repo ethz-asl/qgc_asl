@@ -666,6 +666,7 @@ QGCView {
             Connections {
                 target: _activeVehicle
                 onUnhealthySensorsChanged: checklist.onUnhealthySensorsChanged();
+                onEnergySystemFailureChanged: buttonEnergyBudgetWidget.updateItem();
             }
             Connections {
                 target: QGroundControl.multiVehicleManager
@@ -688,6 +689,7 @@ QGCView {
                 buttonBattery.updateItem();
                 buttonRC.updateItem();
                 buttonEstimator.updateItem();
+                buttonEnergyBudgetWidget.updateItem();
             }
             function onActiveVehicleChanged() {
                 buttonSoundOutput.updateItem();     // Just updated here for initialization once we connect to a vehicle
@@ -781,6 +783,43 @@ QGCView {
                 }
 
                 QGCCheckListItem {
+                    id: buttonEnergyBudgetWidget
+                    name: "Power generation and storage"
+                    defaulttext: "No data yet. Is the energy budget widget (see widgets menu) open?"
+                    function updateItem() {
+                        console.log("CLenergybudgetWidget::update | Batmon:",_activeVehicle.batmonFailure," MPPT: ",_activeVehicle.mpptFailure," Powerboard:",_activeVehicle.powerboardFailure);
+                         if (!_activeVehicle) {
+                             _state = 0;
+                         } else {
+                             if(_activeVehicle.batmonFailure==2 || _activeVehicle.powerboardFailure==2 || _activeVehicle.mpptFailure==2) {
+                                 if(_activeVehicle.mpptFailure==2) failuretext="Maximum powerpoint tracker (MPPT) failure. Check console and energy widget."
+                                 if(_activeVehicle.powerboardFailure==2) failuretext="Powerboard failure. Check console and energy widget."
+                                 if(_activeVehicle.batmonFailure==2) failuretext="Battery monitoring system (BMS) failure. Check console and energy widget."
+                                 _state = 3;
+                             } else if(_activeVehicle.batmonFailure==1 || _activeVehicle.powerboardFailure==1 || _activeVehicle.mpptFailure==1) {
+                                 var str="";
+                                 if(_activeVehicle.mpptFailure==1) { str+="MPPT"; if(_activeVehicle.powerboardFailure==1 || _activeVehicle.batmonFailure==1) {str+=" and ";}}
+                                 if(_activeVehicle.powerboardFailure==1) { str+="Powerboard"; if(_activeVehicle.batmonFailure==1) {str+=" and ";}}
+                                 if(_activeVehicle.batmonFailure==1) { str+="Battery Monitoring System" }
+                                 pendingtext=str+" issue(s). Check console and energy widget. Click to confirm you still want to launch despite the issue(s)."
+                                 _state = 1 + 3*_nrClicked;
+                             } else if (_activeVehicle.batmonFailure==-1 || _activeVehicle.powerboardFailure==-1 || _activeVehicle.mpptFailure==-1) {
+                                 if (_activeVehicle.batmonFailure==-1 && _activeVehicle.powerboardFailure==-1 && _activeVehicle.mpptFailure==-1) {
+                                     _state=0;
+                                     _nrClicked=0;
+                                 } else {
+                                    if(_activeVehicle.mpptFailure==-1) {_state=1+_nrClicked*3; pendingtext="No updates from maximum powerpoint trackers (MPPTs). Check console and energy widget. Click if OK (e.g. because MPPTs are not installed)." }
+                                    if(_activeVehicle.powerboardFailure==-1) {_state=1 ; pendingtext="No updates from powerboard. Check console and energy widget." }
+                                    if(_activeVehicle.batmonFailure==-1) {_state=1 ; pendingtext="No updates from battery monitoring system (BMS). Check console and energy widget." }
+                                 }
+                             } else {
+                                 _state = 4;
+                             }
+                         }
+                     }
+                }
+
+                QGCCheckListItem {
                      id: buttonSensors
                      name: "Sensors"
                      function updateItem() {
@@ -837,6 +876,12 @@ QGCView {
                             else {_state = 3;}
                         }
                     }
+               }
+
+               QGCCheckListItem {
+                    id: buttonSatcom
+                    name: "Satellite Communication"
+                    defaulttext: "Confirm the send and receive is working properly."
                }
 
                // Arming header

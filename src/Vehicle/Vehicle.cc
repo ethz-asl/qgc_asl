@@ -168,6 +168,10 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _gitHash(versionNotSetValue)
     , _uid(0)
     , _lastAnnouncedLowBatteryPercent(100)
+    , _batmonFailure(-1)
+    , _mpptFailure(-1)
+    , _powerboardFailure(-1)
+    , _energySystemFailureChanged(false)
     , _rollFact             (0, _rollFactName,              FactMetaData::valueTypeDouble)
     , _pitchFact            (0, _pitchFactName,             FactMetaData::valueTypeDouble)
     , _headingFact          (0, _headingFactName,           FactMetaData::valueTypeDouble)
@@ -358,6 +362,10 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _gitHash(versionNotSetValue)
     , _uid(0)
     , _lastAnnouncedLowBatteryPercent(100)
+    , _batmonFailure(-1)
+    , _mpptFailure(-1)
+    , _powerboardFailure(-1)
+    , _energySystemFailureChanged(false)
     , _rollFact             (0, _rollFactName,              FactMetaData::valueTypeDouble)
     , _pitchFact            (0, _pitchFactName,             FactMetaData::valueTypeDouble)
     , _headingFact          (0, _headingFactName,           FactMetaData::valueTypeDouble)
@@ -622,6 +630,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
     case MAVLINK_MSG_ID_HEARTBEAT:
         _handleHeartbeat(message);
+        //emit BatMonDataChanged(&_batmonFailure, &_energySystemFailureChanged, 100, 25, 1, 80, 30, rand()%65535, rand()%65535, rand()%65535, 3500, 3501, 3502, 3503, 3503, 3504);
+        //emit MPPTDataChanged(&_mpptFailure, &_energySystemFailureChanged,10,1,1000,100,11,2,1000,100,12,3,1000,100);
+        //emit SensPowerBoardChanged(&_powerboardFailure, &_energySystemFailureChanged,0,100,100,23,5,4,3,2,1,5,4,3);
         break;
     case MAVLINK_MSG_ID_RADIO_STATUS:
         _handleRadioStatus(message);
@@ -748,6 +759,11 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         case MAVLINK_MSG_ID_SENSORPOD_STATUS:
             _handleSensorpodStatus(message);
             break;
+    }
+
+    if(_energySystemFailureChanged) {
+        emit energySystemFailureChanged();
+        _energySystemFailureChanged=false;
     }
 
     // This must be emitted after the vehicle processes the message. This way the vehicle state is up to date when anyone else
@@ -1206,21 +1222,21 @@ void Vehicle::_handleSensPowerBoard(mavlink_message_t &message)
 {
   mavlink_sens_power_board_t data;
   mavlink_msg_sens_power_board_decode(&message, &data);
-  emit SensPowerBoardChanged(data.timestamp, data.pwr_brd_status, data.pwr_brd_led_status, data.pwr_brd_system_volt, data.pwr_brd_servo_volt, data.pwr_brd_digital_volt, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp, data.pwr_brd_analog_amp, data.pwr_brd_digital_amp, data.pwr_brd_ext_amp, data.pwr_brd_aux_amp);
+  emit SensPowerBoardChanged(&_powerboardFailure, &_energySystemFailureChanged, data.timestamp, data.pwr_brd_status, data.pwr_brd_led_status, data.pwr_brd_system_volt, data.pwr_brd_servo_volt, data.pwr_brd_digital_volt, data.pwr_brd_mot_l_amp, data.pwr_brd_mot_r_amp, data.pwr_brd_analog_amp, data.pwr_brd_digital_amp, data.pwr_brd_ext_amp, data.pwr_brd_aux_amp);
 }
 
 void Vehicle::_handleSensMppt(mavlink_message_t& message)
 {
   mavlink_sens_mppt_t data;
   mavlink_msg_sens_mppt_decode(&message, &data);
-  emit MPPTDataChanged(data.mppt1_volt, data.mppt1_amp, data.mppt1_pwm, data.mppt1_status, data.mppt2_volt, data.mppt2_amp, data.mppt2_pwm, data.mppt2_status, data.mppt3_volt, data.mppt3_amp, data.mppt3_pwm, data.mppt3_status);
+  emit MPPTDataChanged(&_mpptFailure, &_energySystemFailureChanged,data.mppt1_volt, data.mppt1_amp, data.mppt1_pwm, data.mppt1_status, data.mppt2_volt, data.mppt2_amp, data.mppt2_pwm, data.mppt2_status, data.mppt3_volt, data.mppt3_amp, data.mppt3_pwm, data.mppt3_status);
 }
 
 void Vehicle::_handleSensBatmon(mavlink_message_t& message)
 {
   mavlink_sens_batmon_t data;
   mavlink_msg_sens_batmon_decode(&message, &data);
-  emit BatMonDataChanged(message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.safetystatus, data.operationstatus, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
+  emit BatMonDataChanged(&_batmonFailure, &_energySystemFailureChanged, message.compid, data.voltage, data.current, data.SoC, data.temperature, data.batterystatus, data.safetystatus, data.operationstatus, data.cellvoltage1, data.cellvoltage2, data.cellvoltage3, data.cellvoltage4, data.cellvoltage5, data.cellvoltage6);
 }
 
 void Vehicle::_handleSensorpodStatus(mavlink_message_t& message)
