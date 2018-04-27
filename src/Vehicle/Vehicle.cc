@@ -172,6 +172,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _mpptFailure(-1)
     , _powerboardFailure(-1)
     , _energySystemFailureChanged(false)
+    , _priorityLinkCommanded(false)
     , _rollFact             (0, _rollFactName,              FactMetaData::valueTypeDouble)
     , _pitchFact            (0, _pitchFactName,             FactMetaData::valueTypeDouble)
     , _headingFact          (0, _headingFactName,           FactMetaData::valueTypeDouble)
@@ -1613,6 +1614,16 @@ void Vehicle::_sendMessageOnLink(LinkInterface* link, mavlink_message_t message)
 void Vehicle::_updatePriorityLink(bool updateActive, bool sendCommand)
 {
     emit linkNamesChanged();
+
+    // if the priority link is commanded and still active don't change anything
+    if (_priorityLinkCommanded) {
+        if (_priorityLink.data()->active(_id)) {
+            return;
+        } else {
+            _priorityLinkCommanded = false;
+        }
+    }
+
     LinkInterface* newPriorityLink = NULL;
 
     // This routine specifically does not clear _priorityLink when there are no links remaining.
@@ -2081,6 +2092,7 @@ void Vehicle::setPriorityLinkByName(const QString& priorityLinkName)
     }
 
     if (newPriorityLink) {
+        _priorityLinkCommanded = true;
         _priorityLink = _toolbox->linkManager()->sharedLinkInterfacePointerForLink(newPriorityLink);
         _updateHighLatencyLink(true);
         emit priorityLinkNameChanged(_priorityLink->getName());
