@@ -292,7 +292,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
 
             if (_radio_version_mismatch_count == 5) {
                 // Warn the user if the radio continues to send v1 while the link uses v2
-                emit protocolStatusMessage(tr("MAVLink Protocol"), tr("Detected radio still using MAVLink v1.0 on a link with MAVLink v2.0 enabled. Please upgrade the radio firmware."));
+                //emit protocolStatusMessage(tr("MAVLink Protocol"), tr("Detected radio still using MAVLink v1.0 on a link with MAVLink v2.0 enabled. Please upgrade the radio firmware."));
                 // Ensure the warning can't get stuck
                 _radio_version_mismatch_count++;
                 // Flick link back to v1
