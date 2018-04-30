@@ -611,6 +611,9 @@ public:
     Q_INVOKABLE void clearMessages();
 
     Q_INVOKABLE void triggerCamera(void);
+
+    Q_INVOKABLE void controlCameraDoor(bool open);   // added by mantelt (ASL@ETHZ) for Solar3
+
     Q_INVOKABLE void sendPlan(QString planFile);
 
 #if 0

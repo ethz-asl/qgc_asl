@@ -3180,6 +3180,15 @@ void Vehicle::triggerCamera(void)
                    1.0);                            // test shot flag
 }
 
+void Vehicle::controlCameraDoor(bool open) // added by mantelt (ASL@ETHZ) for Solar3
+{
+    sendMavCommand(_defaultComponentId,
+                   MAV_CMD_DO_MOUNT_CONTROL,
+                   true,                            // show errors
+                   open ? MAV_MOUNT_MODE_NEUTRAL : MAV_MOUNT_MODE_RETRACT,
+                   NAN, NAN, NAN, NAN, NAN, NAN);     // param 2-7 unused
+}
+
 void Vehicle::setVtolInFwdFlight(bool vtolInFwdFlight)
 {
     if (_vtolInFwdFlight != vtolInFwdFlight) {
