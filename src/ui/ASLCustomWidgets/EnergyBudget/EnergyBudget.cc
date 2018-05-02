@@ -16,12 +16,12 @@
 #define OVERVIEWTOIMAGEHEIGHTSCALE (3.0)
 #define OVERVIEWTOIMAGEWIDTHSCALE (3.0)
 
-#define CELLPOWERHYSTMIN 1
-#define CELLPOWERHYSTMAX 3
-#define BATPOWERHIGHMIN 1
-#define BATPOWERHIGHMAX 3
-#define BATPOWERLOWMIN -3
-#define BATPOWERLOWMAX -1
+#define CELLPOWERHYSTMIN 0.5
+#define CELLPOWERHYSTMAX 1
+#define BATPOWERHIGHMIN 0.5
+#define BATPOWERHIGHMAX 1
+#define BATPOWERLOWMIN -1
+#define BATPOWERLOWMAX -0.5
 #define MPPTRESETTIMEMS 3000
 
 QGC_LOGGING_CATEGORY(EnergyBudgetLog, "EnergyBudgetLog")
@@ -212,11 +212,13 @@ void EnergyBudget::updatePowerBoard(int* Failure, bool* FailureChanged, uint64_t
 void EnergyBudget::updateBatMon(int* Failure, bool* FailureChanged, uint8_t compid, uint16_t volt, int16_t current, uint8_t soc, float temp, uint16_t batStatus, uint32_t batSafety, uint32_t batOperation, uint16_t cellvolt1, uint16_t cellvolt2, uint16_t cellvolt3, uint16_t cellvolt4, uint16_t cellvolt5, uint16_t cellvolt6)
 {
     Q_UNUSED(compid);
+    
+    float power = (volt/1000.0) * (current/1000.0);
 
     ui->bat1VLabel->setText(QString("%1V").arg(volt/1000.0, 0, 'f', 1));
     ui->bat1ALabel->setText(QString("%1A").arg(current / 1000.0, 0, 'f', 1));
-    ui->bat1PowerLabel->setText(QString("%1W").arg((volt / 1000.0)*(current / 1000.0), 0, 'f', 1));
-    ui->bat1TempLabel->setText(QString("%1C").arg((temp), 0, 'f', 1));
+    ui->bat1PowerLabel->setText(QString("%1W").arg(power, 0, 'f', 1));
+    ui->bat1TempLabel->setText(QString("%1C").arg(temp, 0, 'f', 1));
     ui->bat1SoCBar->setValue(soc);
     QString str="%p% ("+QString::number(volt/1000.0,'f',1)+"V)";
     ui->bat1SoCBar->setFormat(str);
@@ -265,7 +267,6 @@ void EnergyBudget::updateBatMon(int* Failure, bool* FailureChanged, uint8_t comp
         ui->bat1StatusFlags->setStyleSheet("QLabel { background-color : red;}");
     }
 
-    float power(ui->bat1PowerLabel->text().toDouble());
 	if (m_batHystHigh->check(power))
     {
 		m_batCharging = batChargeStatus::CHRG;
@@ -407,11 +408,14 @@ void EnergyBudget::updateMPPT(int* Failure, bool* FailureChanged, float volt1, f
     Q_UNUSED(amp3);
     Q_UNUSED(pwm3);
     Q_UNUSED(status3);
+    
+    m_cellPower = fmax(m_SystemPower + m_chargePower - m_batUsePower, 0.0); // Do not trust the MPPT current voltage sensors to calculate the output power
 
 	m_MPPTUpdateReset->stop();
     ui->mppt1VLabel->setText(QString("%1V").arg(volt1, 0, 'f', 1));
     ui->mppt1ALabel->setText(QString("%1A").arg(amp1, 0, 'f', 1));
     ui->mppt1PowerLabel->setText(QString("%1W").arg(volt1*amp1, 0, 'f', 1));
+    ui->mppt1PowerRecalcLabel->setText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
 	ui->mppt1ModLabel->setText(convertMPPTModus(status1));
     ui->mppt1StatLabel->setText(convertMPPTStatus(status1));
     ui->mppt1PwmLabel->setText(QString("%1").arg(pwm1));
@@ -427,7 +431,6 @@ void EnergyBudget::updateMPPT(int* Failure, bool* FailureChanged, float volt1, f
     }
     if(*Failure!=FailureOld) *FailureChanged=true;
 
-    m_cellPower = volt1*amp1;
 	updateGraphicsImage();
 	m_MPPTUpdateReset->start(MPPTRESETTIMEMS);
 }
@@ -484,32 +487,20 @@ void EnergyBudget::updateGraphicsImage(void)
 		m_batToPropPath->setVisible(false);
 		m_batUsePowerText->setVisible(false);
 	}
+
 	if (m_mpptHyst->check(m_cellPower))
 	{
 		m_cellToPropPath->setVisible(true);
 		m_cellPowerText->setPlainText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
 		m_cellUsePowerText->setVisible(true);
-        m_cellUsePowerText->setPlainText(QString("%1W").arg(m_SystemPower - m_batUsePower, 0, 'f', 1));
+        m_cellUsePowerText->setPlainText(QString("%1W").arg(fmax(m_SystemPower-m_batUsePower, 0.0), 0, 'f', 1));
 	}
 	else
 	{
-		m_cellToPropPath->setVisible(false);
+        m_cellToPropPath->setVisible(false);
 		m_cellUsePowerText->setVisible(false);
 		m_cellPowerText->setPlainText(QString("0W"));
 	}
-
-    // for testing only
-    m_chargePath->setVisible(true);
-    m_chargePowerText->setVisible(true);
-    m_chargePowerText->setPlainText(QString("%1W").arg(m_chargePower, 0, 'f', 1));
-    m_batToPropPath->setVisible(true);
-    m_batUsePowerText->setVisible(true);
-    m_batUsePowerText->setPlainText(QString("%1W").arg(m_batUsePower, 0, 'f', 1));
-    m_cellToPropPath->setVisible(true);
-    m_cellPowerText->setPlainText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
-    m_cellUsePowerText->setVisible(true);
-    m_cellUsePowerText->setPlainText(QString("%1W").arg(m_SystemPower - m_batUsePower, 0, 'f', 1));
-
 }
 
 //void EnergyBudget::resizeEvent(QResizeEvent *event)
@@ -674,7 +665,8 @@ void EnergyBudget::styleChanged(bool darkStyle)
 
 void EnergyBudget::MPPTTimerTimeout(void)
 {
-    m_cellPower = m_SystemPower - m_chargePower - m_batUsePower;
+    m_cellPower = fmax(m_SystemPower + m_chargePower - m_batUsePower, 0.0);
+    ui->mppt1PowerRecalcLabel->setText(QString("%1W").arg(m_cellPower, 0, 'f', 1));
     ui->mppt1VLabel->setText(QString("N/A"));
     ui->mppt1ALabel->setText(QString("N/A"));
 }
