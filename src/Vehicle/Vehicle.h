@@ -393,6 +393,8 @@ public:
     Q_PROPERTY(int                  batmonFailure           MEMBER _batmonFailure)
     Q_PROPERTY(int                  mpptFailure             MEMBER _mpptFailure)
     Q_PROPERTY(int                  powerboardFailure       MEMBER _powerboardFailure)
+    Q_PROPERTY(QStringList          linkNames               READ linkNames                                              NOTIFY linkNamesChanged)
+    Q_PROPERTY(QString              priorityLinkName        READ priorityLinkName       WRITE setPriorityLinkByName     NOTIFY priorityLinkNameChanged)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool flying                  READ flying NOTIFY flyingChanged)                               ///< Vehicle is flying
@@ -591,6 +593,10 @@ public:
     QStringList flightModes(void);
     QString flightMode(void) const;
     void setFlightMode(const QString& flightMode);
+
+    QStringList linkNames(void) const;
+    QString priorityLinkName(void) const;
+    void setPriorityLinkByName(const QString& priorityLinkName);
 
     bool hilMode(void);
     void setHilMode(bool hilMode);
@@ -837,6 +843,8 @@ signals:
     void capabilityBitsChanged(uint64_t capabilityBits);
     void toolBarIndicatorsChanged(void);
     void highLatencyLinkChanged(bool highLatencyLink);
+    void linkNamesChanged(void);
+    void priorityLinkNameChanged(const QString& priorityLinkName);
 
     void messagesReceivedChanged    ();
     void messagesSentChanged        ();
@@ -924,7 +932,7 @@ private slots:
     void _offlineVehicleTypeSettingChanged(QVariant value);
     void _offlineCruiseSpeedSettingChanged(QVariant value);
     void _offlineHoverSpeedSettingChanged(QVariant value);
-    void _updateHighLatencyLink(void);
+    void _updateHighLatencyLink(bool sendCommand = true);
 
     void _handleTextMessage                 (int newCount);
     void _handletextMessageReceived         (UASMessage* message);
@@ -934,7 +942,6 @@ private slots:
     void _updateAttitude                    (UASInterface* uas, int component, double roll, double pitch, double yaw, quint64 timestamp);
     /** @brief A new camera image has arrived */
     void _imageReady                        (UASInterface* uas);
-    void _connectionLostTimeout(void);
     void _prearmErrorTimeout(void);
     void _missionLoadComplete(void);
     void _geoFenceLoadComplete(void);
@@ -989,14 +996,14 @@ private:
     void _rallyPointManagerError(int errorCode, const QString& errorMsg);
     void _mapTrajectoryStart(void);
     void _mapTrajectoryStop(void);
-    void _connectionActive(void);
+    void _linkActiveChanged(LinkInterface* link, bool active, int vehicleID);
     void _say(const QString& text);
     QString _vehicleIdSpeech(void);
     void _handleMavlinkLoggingData(mavlink_message_t& message);
     void _handleMavlinkLoggingDataAcked(mavlink_message_t& message);
     void _ackMavlinkLogData(uint16_t sequence);
     void _sendNextQueuedMavCommand(void);
-    void _updatePriorityLink(void);
+    void _updatePriorityLink(bool updateActive, bool sendCommand);
     void _commonInit(void);
     void _startPlanRequest(void);
     void _setupAutoDisarmSignalling(void);
@@ -1092,8 +1099,6 @@ private:
     // Lost connection handling
     bool                _connectionLost;
     bool                _connectionLostEnabled;
-    static const int    _connectionLostTimeoutMSecs = 3500;  // Signal connection lost after 3.5 seconds of missed heartbeat
-    QTimer              _connectionLostTimer;
 
     bool                _initialPlanRequestComplete;
 
@@ -1167,6 +1172,7 @@ private:
     int _lastAnnouncedLowBatteryPercent;
 
     SharedLinkInterfacePointer _priorityLink;  // We always keep a reference to the priority link to manage shutdown ordering
+    bool _priorityLinkCommanded;
 
     //ASLUAV
     int _batmonFailure;

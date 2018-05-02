@@ -17,9 +17,11 @@
 #include <QMetaType>
 #include <QSharedPointer>
 #include <QDebug>
+#include <QTimer>
 
 #include "QGCMAVLink.h"
 #include "LinkConfiguration.h"
+#include "HeartbeatTimer.h"
 
 class LinkManager;
 
@@ -36,13 +38,16 @@ class LinkInterface : public QThread
     friend class LinkManager;
 
 public:    
-    ~LinkInterface() { _config->setLink(NULL); }
+    virtual ~LinkInterface() {
+        timerStop();
+        _config->setLink(NULL);
+    }
 
-    Q_PROPERTY(bool active      READ active         WRITE setActive         NOTIFY activeChanged)
+    Q_PROPERTY(bool active      READ active                                 NOTIFY activeChanged)
 
     // Property accessors
-    bool active(void)           { return _active; }
-    void setActive(bool active) { _active = active; emit activeChanged(active); }
+    bool active() const;
+    bool active(int vehicle_id) const;
 
     LinkConfiguration* getLinkConfiguration(void) { return _config.data(); }
 
@@ -149,10 +154,12 @@ public slots:
 
 private slots:
     virtual void _writeBytes(const QByteArray) = 0;
+
+    void _activeChanged(bool active, int vehicle_id);
     
 signals:
     void autoconnectChanged(bool autoconnect);
-    void activeChanged(bool active);
+    void activeChanged(LinkInterface* link, bool active, int vehicle_id);
     void _invokeWriteBytes(QByteArray);
     void highLatencyChanged(bool highLatency);
 
@@ -248,10 +255,24 @@ private:
     virtual bool _connect(void) = 0;
 
     virtual void _disconnect(void) = 0;
-    
+
     /// Sets the mavlink channel to use for this link
     void _setMavlinkChannel(uint8_t channel);
     
+    /**
+     * @brief timerStart
+     *
+     * Allocate the timer if it does not exist yet and start it.
+     */
+    void timerStart(int vehicle_id);
+
+    /**
+     * @brief timerStop
+     *
+     * Stop and deallocate the timer if it exists.
+     */
+    void timerStop();
+
     bool _mavlinkChannelSet;    ///< true: _mavlinkChannel has been set
     uint8_t _mavlinkChannel;    ///< mavlink channel to use for this link, as used by mavlink_parse_char
     
@@ -273,9 +294,10 @@ private:
     
     mutable QMutex _dataRateMutex; // Mutex for accessing the data rate member variables
 
-    bool _active;                       ///< true: link is actively receiving mavlink messages
     bool _enableRateCollection;
     bool _decodedFirstMavlinkPacket;    ///< true: link has correctly decoded it's first mavlink packet
+
+    QList<HeartbeatTimer*> _heartbeatTimerList;
 };
 
 typedef QSharedPointer<LinkInterface> SharedLinkInterfacePointer;

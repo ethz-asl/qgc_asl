@@ -34,6 +34,7 @@ const char* AppSettings::showLargeCompassName =                         "ShowLar
 const char* AppSettings::savePathName =                                 "SavePath";
 const char* AppSettings::autoLoadMissionsName =                         "AutoLoadMissions";
 const char* AppSettings::useChecklistName =                             "UseChecklist";
+const char* AppSettings::advancedLinkSettingsName =                     "AdvancedLinkSettings";
 const char* AppSettings::mapboxTokenName =                              "MapboxToken";
 const char* AppSettings::esriTokenName =                                "EsriToken";
 const char* AppSettings::defaultFirmwareTypeName =                      "DefaultFirmwareType";
@@ -56,29 +57,30 @@ const char* AppSettings::logDirectory =             "Logs";
 const char* AppSettings::videoDirectory =           "Video";
 
 AppSettings::AppSettings(QObject* parent)
-    : SettingsGroup(appSettingsGroupName, QString() /* root settings group */, parent)
-    , _offlineEditingFirmwareTypeFact(NULL)
-    , _offlineEditingVehicleTypeFact(NULL)
-    , _offlineEditingCruiseSpeedFact(NULL)
-    , _offlineEditingHoverSpeedFact(NULL)
-    , _offlineEditingAscentSpeedFact(NULL)
-    , _offlineEditingDescentSpeedFact(NULL)
-    , _batteryPercentRemainingAnnounceFact(NULL)
-    , _defaultMissionItemAltitudeFact(NULL)
-    , _telemetrySaveFact(NULL)
-    , _telemetrySaveNotArmedFact(NULL)
-    , _audioMutedFact(NULL)
-    , _virtualJoystickFact(NULL)
-    , _appFontPointSizeFact(NULL)
-    , _indoorPaletteFact(NULL)
-    , _showLargeCompassFact(NULL)
-    , _savePathFact(NULL)
-    , _autoLoadMissionsFact(NULL)
+    : SettingsGroup                         (appSettingsGroupName, QString() /* root settings group */, parent)
+    , _offlineEditingFirmwareTypeFact       (NULL)
+    , _offlineEditingVehicleTypeFact        (NULL)
+    , _offlineEditingCruiseSpeedFact        (NULL)
+    , _offlineEditingHoverSpeedFact         (NULL)
+    , _offlineEditingAscentSpeedFact        (NULL)
+    , _offlineEditingDescentSpeedFact       (NULL)
+    , _batteryPercentRemainingAnnounceFact  (NULL)
+    , _defaultMissionItemAltitudeFact       (NULL)
+    , _telemetrySaveFact                    (NULL)
+    , _telemetrySaveNotArmedFact            (NULL)
+    , _audioMutedFact                       (NULL)
+    , _virtualJoystickFact                  (NULL)
+    , _appFontPointSizeFact                 (NULL)
+    , _indoorPaletteFact                    (NULL)
+    , _showLargeCompassFact                 (NULL)
+    , _savePathFact                         (NULL)
+    , _autoLoadMissionsFact                 (NULL)
     , _useChecklistFact                     (NULL)
-    , _mapboxTokenFact(NULL)
-    , _esriTokenFact(NULL)
-    , _defaultFirmwareTypeFact(NULL)
-    , _gstDebugFact(NULL)
+    , _advancedLinkSettingsFact             (NULL)
+    , _mapboxTokenFact                      (NULL)
+    , _esriTokenFact                        (NULL)
+    , _defaultFirmwareTypeFact              (NULL)
+    , _gstDebugFact                         (NULL)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     qmlRegisterUncreatableType<AppSettings>("QGroundControl.SettingsManager", 1, 0, "AppSettings", "Reference only");
@@ -360,6 +362,15 @@ Fact* AppSettings::autoLoadMissions(void)
     }
 
     return _autoLoadMissionsFact;
+}
+
+Fact* AppSettings::advancedLinkSettings(void)
+{
+    if (!_advancedLinkSettingsFact) {
+        _advancedLinkSettingsFact = _createSettingsFact(advancedLinkSettingsName);
+    }
+
+    return _advancedLinkSettingsFact;
 }
 
 Fact* AppSettings::mapboxToken(void)

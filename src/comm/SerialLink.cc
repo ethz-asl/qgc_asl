@@ -306,7 +306,7 @@ bool SerialLink::isConnected() const
 
 QString SerialLink::getName() const
 {
-    return _serialConfig->portName();
+    return _serialConfig->name();
 }
 
 /**
