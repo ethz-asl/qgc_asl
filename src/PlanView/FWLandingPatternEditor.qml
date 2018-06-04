@@ -88,6 +88,13 @@ Rectangle {
                     fact:               missionItem.landingAltitude
                 }
 
+                QGCLabel { text: qsTr("Virt. Alt.") }
+
+                FactTextField {
+                    Layout.fillWidth:   true
+                    fact:               missionItem.hVirt
+                }
+
             QGCRadioButton {
                 id:                 specifyLandingDistance
                 text:               qsTr("Landing Dist")

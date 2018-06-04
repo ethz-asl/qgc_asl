@@ -31,6 +31,7 @@ public:
     Q_PROPERTY(bool             valueSetIsDistance      MEMBER  _valueSetIsDistance                                     NOTIFY valueSetIsDistanceChanged)
     Q_PROPERTY(Fact*            landingDistance         READ    landingDistance                                         CONSTANT)
     Q_PROPERTY(Fact*            glideSlope              READ    glideSlope                                              CONSTANT)
+    Q_PROPERTY(Fact*            hVirt                   READ    hVirt                                                   CONSTANT)
     Q_PROPERTY(bool             loiterClockwise         MEMBER  _loiterClockwise                                        NOTIFY loiterClockwiseChanged)
     Q_PROPERTY(bool             altitudesAreRelative    MEMBER  _altitudesAreRelative                                   NOTIFY altitudesAreRelativeChanged)
     Q_PROPERTY(QGeoCoordinate   loiterCoordinate        READ    loiterCoordinate            WRITE setLoiterCoordinate   NOTIFY loiterCoordinateChanged)
@@ -44,6 +45,7 @@ public:
     Fact*           landingDistance         (void) { return &_landingDistanceFact; }
     Fact*           landingHeading          (void) { return &_landingHeadingFact; }
     Fact*           glideSlope              (void) { return &_glideSlopeFact; }
+    Fact*           hVirt                   (void) { return &_hVirtFact; }
     QGeoCoordinate  landingCoordinate       (void) const { return _landingCoordinate; }
     QGeoCoordinate  loiterCoordinate        (void) const { return _loiterCoordinate; }
     QGeoCoordinate  loiterTangentCoordinate (void) const { return _loiterTangentCoordinate; }
@@ -98,6 +100,7 @@ public:
     static const char* landingHeadingName;
     static const char* landingAltitudeName;
     static const char* glideSlopeName;
+    static const char* hVirtName;
 
 signals:
     void loiterCoordinateChanged        (QGeoCoordinate coordinate);
@@ -139,6 +142,7 @@ private:
     Fact            _landingHeadingFact;
     Fact            _landingAltitudeFact;
     Fact            _glideSlopeFact;
+    Fact            _hVirtFact;
 
     bool            _loiterClockwise;
     bool            _altitudesAreRelative;

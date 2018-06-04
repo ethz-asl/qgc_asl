@@ -52,5 +52,15 @@
     "max":              90,
     "decimalPlaces":    1,
     "defaultValue":     12.0
+},
+{
+    "name":             "HVirt",
+    "shortDescription": "The virtual distance below the landing point the un-flared glide slope leads to.",
+    "type":             "double",
+    "units":            "m",
+    "min":              0.0,
+    "max":              15.0,
+    "decimalPlaces":    1,
+    "defaultValue":     0.0
 }
 ]

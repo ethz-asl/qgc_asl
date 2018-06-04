@@ -26,6 +26,7 @@ const char* FixedWingLandingComplexItem::loiterAltitudeName =       "LoiterAltit
 const char* FixedWingLandingComplexItem::loiterRadiusName =         "LoiterRadius";
 const char* FixedWingLandingComplexItem::landingAltitudeName =      "LandingAltitude";
 const char* FixedWingLandingComplexItem::glideSlopeName =           "GlideSlope";
+const char* FixedWingLandingComplexItem::hVirtName =                "HVirt";
 
 const char* FixedWingLandingComplexItem::_jsonLoiterCoordinateKey =         "loiterCoordinate";
 const char* FixedWingLandingComplexItem::_jsonLoiterRadiusKey =             "loiterRadius";
@@ -52,6 +53,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, bool 
     , _landingHeadingFact       (_metaDataMap[landingHeadingName])
     , _landingAltitudeFact      (_metaDataMap[landingAltitudeName])
     , _glideSlopeFact           (_metaDataMap[glideSlopeName])
+    , _hVirtFact                (_metaDataMap[hVirtName])
     , _loiterClockwise          (true)
     , _altitudesAreRelative     (true)
     , _valueSetIsDistance       (true)
@@ -71,6 +73,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, bool 
     connect(this,                       &FixedWingLandingComplexItem::landingCoordinateChanged, this, &FixedWingLandingComplexItem::_recalcFromCoordinateChange);
 
     connect(&_glideSlopeFact,           &Fact::valueChanged,                                    this, &FixedWingLandingComplexItem::_glideSlopeChanged);
+    connect(&_hVirtFact,                &Fact::valueChanged,                                    this, &FixedWingLandingComplexItem::_glideSlopeChanged);
 
     connect(&_loiterAltitudeFact,       &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
     connect(&_landingAltitudeFact,      &Fact::valueChanged,                                            this, &FixedWingLandingComplexItem::_setDirty);
@@ -573,7 +576,8 @@ void FixedWingLandingComplexItem::_glideSlopeChanged(void)
     if (!_ignoreRecalcSignals) {
         double landingAltDifference = _loiterAltitudeFact.rawValue().toDouble() - _landingAltitudeFact.rawValue().toDouble();
         double glideSlope = _glideSlopeFact.rawValue().toDouble();
-        _landingDistanceFact.setRawValue(landingAltDifference / qTan(qDegreesToRadians(glideSlope)));
+        double hVirt = _hVirtFact.rawValue().toDouble();
+        _landingDistanceFact.setRawValue((landingAltDifference+hVirt) / qTan(qDegreesToRadians(glideSlope)));
     }
 }
 
@@ -581,6 +585,7 @@ void FixedWingLandingComplexItem::_calcGlideSlope(void)
 {
     double landingAltDifference = _loiterAltitudeFact.rawValue().toDouble() - _landingAltitudeFact.rawValue().toDouble();
     double landingDistance = _landingDistanceFact.rawValue().toDouble();
+    double hVirt = _hVirtFact.rawValue().toDouble();
 
-    _glideSlopeFact.setRawValue(qRadiansToDegrees(qAtan(landingAltDifference / landingDistance)));
+    _glideSlopeFact.setRawValue(qRadiansToDegrees(qAtan((landingAltDifference+hVirt) / landingDistance)));
 }
