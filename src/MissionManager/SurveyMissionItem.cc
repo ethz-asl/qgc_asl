@@ -1067,13 +1067,13 @@ int SurveyMissionItem::_appendWaypointToMission(QList<MissionItem*>& items, int 
     return seqNum;
 }
 
-int SurveyMissionItem::_appendPayloadMountControlToMission(QList<MissionItem*>& items, int seqNum, bool openBay, QObject* missionItemParent)
+int SurveyMissionItem::_appendPayloadControlToMission(QList<MissionItem*>& items, int seqNum, bool openBay, QObject* missionItemParent)
 {
 
-    qCDebug(SurveyMissionItemLog) << "_appendPayloadMountControlToMission seq:open" << seqNum << (openBay);
+    qCDebug(SurveyMissionItemLog) << "_appendPayloadControlToMission seq:open" << seqNum << (openBay);
 
     MissionItem* item = new MissionItem(seqNum++,
-                                        MAV_CMD_DO_MOUNT_CONTROL,
+                                        MAV_CMD_PAYLOAD_CONTROL,
                                         MAV_FRAME_MISSION,
                                         std::numeric_limits<double>::quiet_NaN(),  // param 1
                                         std::numeric_limits<double>::quiet_NaN(), // param 2
@@ -1081,7 +1081,7 @@ int SurveyMissionItem::_appendPayloadMountControlToMission(QList<MissionItem*>& 
                                         std::numeric_limits<double>::quiet_NaN(),   // param 4
                                         std::numeric_limits<double>::quiet_NaN(),   // param 5
                                         std::numeric_limits<double>::quiet_NaN(),   // param 6
-                                        openBay ? MAV_MOUNT_MODE_NEUTRAL : MAV_MOUNT_MODE_RETRACT,   // param 7
+                                        openBay ? 1.0 : 0.0,   // param 7
                                         true,                                       // autoContinue
                                         false,                                      // isCurrentItem
                                         missionItemParent);
@@ -1134,7 +1134,7 @@ bool SurveyMissionItem::_appendMissionItemsWorker(QList<MissionItem*>& items, QO
             }
             seqNum = _appendWaypointToMission(items, seqNum, coord, firstWaypointTrigger ? CameraTriggerOn : CameraTriggerNone, missionItemParent);
             if (segmentIndex == 0) {
-                seqNum = _appendPayloadMountControlToMission(items, seqNum, true, missionItemParent);
+                seqNum = _appendPayloadControlToMission(items, seqNum, true, missionItemParent);
             }
             firstWaypointTrigger = false;
         }
@@ -1177,7 +1177,7 @@ bool SurveyMissionItem::_appendMissionItemsWorker(QList<MissionItem*>& items, QO
             }
             seqNum = _appendWaypointToMission(items, seqNum, coord, CameraTriggerNone, missionItemParent);
             if (segmentIndex == transectSegments.count() - 1) {
-                seqNum = _appendPayloadMountControlToMission(items, seqNum, false, missionItemParent);
+                seqNum = _appendPayloadControlToMission(items, seqNum, false, missionItemParent);
             }
 
         }

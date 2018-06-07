@@ -203,7 +203,7 @@ private:
     void _setCoveredArea(double coveredArea);
     void _cameraValueChanged(void);
     int _appendWaypointToMission(QList<MissionItem*>& items, int seqNum, QGeoCoordinate& coord, CameraTriggerCode cameraTrigger, QObject* missionItemParent);
-    int _appendPayloadMountControlToMission(QList<MissionItem*>& items, int seqNum, bool openBay, QObject* missionItemParent);
+    int _appendPayloadControlToMission(QList<MissionItem*>& items, int seqNum, bool openBay, QObject* missionItemParent);
     bool _nextTransectCoord(const QList<QGeoCoordinate>& transectPoints, int pointIndex, QGeoCoordinate& coord);
     double _triggerDistance(void) const;
     bool _triggerCamera(void) const;
