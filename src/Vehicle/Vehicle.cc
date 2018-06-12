@@ -3183,10 +3183,10 @@ void Vehicle::triggerCamera(void)
 void Vehicle::controlCameraDoor(bool open) // added by mantelt (ASL@ETHZ) for Solar3
 {
     sendMavCommand(_defaultComponentId,
-                   MAV_CMD_DO_MOUNT_CONTROL,
+                   MAV_CMD_PAYLOAD_CONTROL,
                    true,                            // show errors
-                   open ? MAV_MOUNT_MODE_NEUTRAL : MAV_MOUNT_MODE_RETRACT,
-                   NAN, NAN, NAN, NAN, NAN, NAN);     // param 2-7 unused
+                   NAN, NAN, NAN, NAN, NAN, NAN,
+                   open ? 1.0 : 0.0);     // param 1-6 unused
 }
 
 void Vehicle::setVtolInFwdFlight(bool vtolInFwdFlight)

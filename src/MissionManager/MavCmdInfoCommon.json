@@ -1061,6 +1061,24 @@
             }
         },
         { "id": 30001, "rawName": "MAV_CMD_PAYLOAD_PREPARE_DEPLOY", "friendlyName": "Payload prepare deploy" },
-        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" }
-    ]
+        { "id": 30002, "rawName": "MAV_CMD_PAYLOAD_CONTROL_DEPLOY", "friendlyName": "Payload control deploy" },
+        {
+            "id": 40002,
+            "rawName":      "MAV_CMD_PAYLOAD_CONTROL",
+            "friendlyName": "ASLUAV payload control",
+            "description":  "Control of ASLUAV payload.",
+            "category":     "Advanced",
+            "param1": {
+                "label":            "Restart payload",
+                "default":          0,
+                "enumStrings":       "no action,do power cycle",
+                "enumValues":       "0,1"
+            },
+            "param7": {
+                "label":            "Camera Door",
+                "default":          0,
+                "enumStrings":       "close door,open door",
+                "enumValues":       "0,1"
+            }
+        }    ]
 }

@@ -926,6 +926,23 @@ void SurveyComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& items, 
                                    missionItemParent);
             items.append(item);
 
+            if (firstOverallPoint) {
+                item = new MissionItem(seqNum++,
+                                       MAV_CMD_PAYLOAD_CONTROL,
+                                       MAV_FRAME_MISSION,
+                                       std::numeric_limits<double>::quiet_NaN(),  // param 1
+                                       std::numeric_limits<double>::quiet_NaN(), // param 2
+                                       std::numeric_limits<double>::quiet_NaN(),   // param 3
+                                       std::numeric_limits<double>::quiet_NaN(),   // param 4
+                                       std::numeric_limits<double>::quiet_NaN(),   // param 5
+                                       std::numeric_limits<double>::quiet_NaN(),   // param 6
+                                       1.0,   // param 7
+                                       true,                                       // autoContinue
+                                       false,                                      // isCurrentItem
+                                       missionItemParent);
+                items.append(item);
+            }
+
             if (firstOverallPoint && addTriggerAtBeginning) {
                 // Start triggering
                 addTriggerAtBeginning = false;
@@ -990,6 +1007,22 @@ void SurveyComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& items, 
                                             missionItemParent);
         items.append(item);
     }
+
+    // close payload lid
+    item = new MissionItem(seqNum++,
+                           MAV_CMD_PAYLOAD_CONTROL,
+                           MAV_FRAME_MISSION,
+                           std::numeric_limits<double>::quiet_NaN(),  // param 1
+                           std::numeric_limits<double>::quiet_NaN(), // param 2
+                           std::numeric_limits<double>::quiet_NaN(),   // param 3
+                           std::numeric_limits<double>::quiet_NaN(),   // param 4
+                           std::numeric_limits<double>::quiet_NaN(),   // param 5
+                           std::numeric_limits<double>::quiet_NaN(),   // param 6
+                           0.0,   // param 7
+                           true,                                       // autoContinue
+                           false,                                      // isCurrentItem
+                           missionItemParent);
+    items.append(item);
 }
 
 #if 0
