@@ -60,6 +60,23 @@ Column {
         onClicked:                  _activeVehicle.triggerCamera()
         enabled:                    _activeVehicle
     }
+    // Buttons to control camera door -- added by mantelt (ASL@ETHZ) for SOLAR^3 {
+    QGCButton {
+        anchors.horizontalCenter:   parent.horizontalCenter
+        text:                       qsTr("Open camera door")
+        visible:                    !_isCamera
+        onClicked:                  _activeVehicle.controlCameraDoor(true)
+        enabled:                    _activeVehicle
+    }
+    QGCButton {
+        anchors.horizontalCenter:   parent.horizontalCenter
+        text:                       qsTr("Close camera door")
+        visible:                    !_isCamera
+        onClicked:                  _activeVehicle.controlCameraDoor(false)
+        enabled:                    _activeVehicle
+    }
+    // } END buttons to control camera door
+
     Item { width: 1; height: ScreenTools.defaultFontPixelHeight; visible: _isCamera; }
     //-- Actual controller
     QGCLabel {

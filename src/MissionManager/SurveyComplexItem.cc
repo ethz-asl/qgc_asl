@@ -838,6 +838,18 @@ void SurveyComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& items, 
                                    missionItemParent);
             items.append(item);
 
+            if (firstOverallPoint) {
+                item = new MissionItem(seqNum++,
+                                       MAV_CMD_PAYLOAD_CONTROL,
+                                       MAV_FRAME_MISSION,
+                                       1,                 // open camera door
+                                       0, 0, 0, 0, 0, 0,  // param 2-7
+                                       true,                                       // autoContinue
+                                       false,                                      // isCurrentItem
+                                       missionItemParent);
+                items.append(item);
+            }
+
             if (firstOverallPoint && addTriggerAtBeginning) {
                 // Start triggering
                 addTriggerAtBeginning = false;
@@ -902,6 +914,17 @@ void SurveyComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& items, 
                                             missionItemParent);
         items.append(item);
     }
+
+    // close payload lid
+    item = new MissionItem(seqNum++,
+                           MAV_CMD_PAYLOAD_CONTROL,
+                           MAV_FRAME_MISSION,
+                           0,                 // close camera door
+                           0, 0, 0, 0, 0, 0,  // param 2-7
+                           true,                                       // autoContinue
+                           false,                                      // isCurrentItem
+                           missionItemParent);
+    items.append(item);
 }
 
 #if 0

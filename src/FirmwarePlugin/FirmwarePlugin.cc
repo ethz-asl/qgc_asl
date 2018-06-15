@@ -505,6 +505,18 @@ const QVariantList& FirmwarePlugin::cameraList(const Vehicle* vehicle)
                                       0,        // minTriggerInterval
                                       this);
         _cameraList.append(QVariant::fromValue(metaData));
+
+        metaData = new CameraMetaData(tr("Gamaya Iris Solar3"),
+                                      11.27,     // sensorWidth
+                                      3,        // sendsorHeight
+                                      2048,     // imageWidth
+                                      1088,     // imageHeight
+                                      25,       // focalLength
+                                      true,     // landscape
+                                      true,     // fixedOrientation
+                                      0.5,        // minTriggerInterval
+                                      this);
+        _cameraList.append(QVariant::fromValue(metaData));
     }
 
     return _cameraList;
