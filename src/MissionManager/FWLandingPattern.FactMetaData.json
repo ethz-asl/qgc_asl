@@ -44,6 +44,30 @@
     "defaultValue":     0.0
 },
 {
+    "name":             "FlareAltitude",
+    "shortDescription": "Altitude at which the aircraft begins to flare.",
+    "type":             "double",
+    "units":            "m",
+    "decimalPlaces":    1,
+    "defaultValue":     1.0
+},
+{
+    "name":             "VirtualAltitude",
+    "shortDescription": "Altitude below ground the flare curve will asymptotically approach.",
+    "type":             "double",
+    "units":            "m",
+    "decimalPlaces":    1,
+    "defaultValue":     1.0
+},
+{
+    "name":             "FlareLength",
+    "shortDescription": "Ground distance traveled during flare.",
+    "type":             "double",
+    "units":            "m",
+    "decimalPlaces":    1,
+    "defaultValue":     1.0
+},
+{
     "name":             "GlideSlope",
     "shortDescription": "The glide slope between the loiter and landing point.",
     "type":             "double",
@@ -51,6 +75,6 @@
     "min":              0.1,
     "max":              90,
     "decimalPlaces":    1,
-    "defaultValue":     12.0
+    "defaultValue":     5.0
 }
 ]

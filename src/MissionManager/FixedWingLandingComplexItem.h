@@ -27,6 +27,9 @@ public:
     Q_PROPERTY(Fact*            loiterAltitude          READ    loiterAltitude                                          CONSTANT)
     Q_PROPERTY(Fact*            loiterRadius            READ    loiterRadius                                            CONSTANT)
     Q_PROPERTY(Fact*            landingAltitude         READ    landingAltitude                                         CONSTANT)
+    Q_PROPERTY(Fact*            flareAltitude           READ    flareAltitude                                           CONSTANT)
+    Q_PROPERTY(Fact*            virtualAltitude         READ    virtualAltitude                                         CONSTANT)
+    Q_PROPERTY(Fact*            flareLength             READ    flareLength                                             CONSTANT)
     Q_PROPERTY(Fact*            landingHeading          READ    landingHeading                                          CONSTANT)
     Q_PROPERTY(bool             valueSetIsDistance      MEMBER  _valueSetIsDistance                                     NOTIFY valueSetIsDistanceChanged)
     Q_PROPERTY(Fact*            landingDistance         READ    landingDistance                                         CONSTANT)
@@ -34,6 +37,7 @@ public:
     Q_PROPERTY(bool             loiterClockwise         MEMBER  _loiterClockwise                                        NOTIFY loiterClockwiseChanged)
     Q_PROPERTY(bool             altitudesAreRelative    MEMBER  _altitudesAreRelative                                   NOTIFY altitudesAreRelativeChanged)
     Q_PROPERTY(QGeoCoordinate   loiterCoordinate        READ    loiterCoordinate            WRITE setLoiterCoordinate   NOTIFY loiterCoordinateChanged)
+    Q_PROPERTY(QGeoCoordinate   loiterCoordinateItem    READ    loiterCoordinateItem        WRITE setLoiterCoordinateItem   NOTIFY loiterCoordinateDragged)
     Q_PROPERTY(QGeoCoordinate   loiterTangentCoordinate READ    loiterTangentCoordinate                                 NOTIFY loiterTangentCoordinateChanged)
     Q_PROPERTY(QGeoCoordinate   landingCoordinate       READ    landingCoordinate           WRITE setLandingCoordinate  NOTIFY landingCoordinateChanged)
     Q_PROPERTY(bool             landingCoordSet         MEMBER _landingCoordSet                                         NOTIFY landingCoordSetChanged)
@@ -41,15 +45,20 @@ public:
     Fact*           loiterAltitude          (void) { return &_loiterAltitudeFact; }
     Fact*           loiterRadius            (void) { return &_loiterRadiusFact; }
     Fact*           landingAltitude         (void) { return &_landingAltitudeFact; }
+    Fact*           flareAltitude           (void) { return &_flareAltitudeFact; }
+    Fact*           virtualAltitude         (void) { return &_virtualAltitudeFact; }
+    Fact*           flareLength             (void) { return &_flareLengthFact; }
     Fact*           landingDistance         (void) { return &_landingDistanceFact; }
     Fact*           landingHeading          (void) { return &_landingHeadingFact; }
     Fact*           glideSlope              (void) { return &_glideSlopeFact; }
     QGeoCoordinate  landingCoordinate       (void) const { return _landingCoordinate; }
     QGeoCoordinate  loiterCoordinate        (void) const { return _loiterCoordinate; }
+    QGeoCoordinate  loiterCoordinateItem    (void) const { return _loiterCoordinateItem; }
     QGeoCoordinate  loiterTangentCoordinate (void) const { return _loiterTangentCoordinate; }
 
     void setLandingCoordinate       (const QGeoCoordinate& coordinate);
     void setLoiterCoordinate        (const QGeoCoordinate& coordinate);
+    void setLoiterCoordinateItem    (const QGeoCoordinate& coordinate);
 
     /// Scans the loaded items for a landing pattern complex item
     static bool scanForItem(QmlObjectListModel* visualItems, bool flyView, Vehicle* vehicle);
@@ -97,10 +106,14 @@ public:
     static const char* loiterRadiusName;
     static const char* landingHeadingName;
     static const char* landingAltitudeName;
+    static const char* flareAltitudeName;
+    static const char* virtualAltitudeName;
+    static const char* flareLengthName;
     static const char* glideSlopeName;
 
 signals:
     void loiterCoordinateChanged        (QGeoCoordinate coordinate);
+    void loiterCoordinateDragged        (QGeoCoordinate coordinate);
     void loiterTangentCoordinateChanged (QGeoCoordinate coordinate);
     void landingCoordinateChanged       (QGeoCoordinate coordinate);
     void landingCoordSetChanged         (bool landingCoordSet);
@@ -111,6 +124,7 @@ signals:
 private slots:
     void    _recalcFromHeadingAndDistanceChange     (void);
     void    _recalcFromCoordinateChange             (void);
+    void    _recalcFromDraggedCoordinateChange      (void);
     void    _recalcFromRadiusChange                 (void);
     void    _updateLoiterCoodinateAltitudeFromFact  (void);
     void    _updateLandingCoodinateAltitudeFromFact (void);
@@ -126,6 +140,7 @@ private:
     int             _sequenceNumber;
     bool            _dirty;
     QGeoCoordinate  _loiterCoordinate;
+    QGeoCoordinate  _loiterCoordinateItem;
     QGeoCoordinate  _loiterTangentCoordinate;
     QGeoCoordinate  _landingCoordinate;
     bool            _landingCoordSet;
@@ -138,6 +153,9 @@ private:
     Fact            _loiterRadiusFact;
     Fact            _landingHeadingFact;
     Fact            _landingAltitudeFact;
+    Fact            _flareAltitudeFact;
+    Fact            _virtualAltitudeFact;
+    Fact            _flareLengthFact;
     Fact            _glideSlopeFact;
 
     bool            _loiterClockwise;

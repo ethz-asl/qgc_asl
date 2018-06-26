@@ -117,6 +117,30 @@ Rectangle {
                 enabled:            specifyGlideSlope.checked
                 Layout.fillWidth:   true
             }
+
+            QGCLabel { text: qsTr("Flare Altitude") }
+
+            FactTextField {
+                fact:               missionItem.flareAltitude
+                enabled:            specifyGlideSlope.checked
+                Layout.fillWidth:   true
+            }
+
+            QGCLabel { text: qsTr("Virtual Altitude") }
+
+            FactTextField {
+                fact:               missionItem.virtualAltitude
+                enabled:            specifyGlideSlope.checked
+                Layout.fillWidth:   true
+            }
+
+            QGCLabel { text: qsTr("Flare Length") }
+
+            FactTextField {
+                fact:               missionItem.flareLength
+                enabled:            false
+                Layout.fillWidth:   true
+            }
         }
 
         Item { width: 1; height: _spacer }
