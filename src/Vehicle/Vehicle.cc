@@ -984,6 +984,9 @@ void Vehicle::_handleHighLatency2(mavlink_message_t& message)
 
     if (highLatency2.timestamp > _vehicleTimestamp) {
         _vehicleTimestamp = highLatency2.timestamp;
+    } else {
+        // do not display an outdated HL2 message
+        return;
     }
 
     QString previousFlightMode;
@@ -2901,6 +2904,7 @@ void Vehicle::setCurrentMissionSequence(int seq)
     if (!_firmwarePlugin->sendHomePositionToVehicle()) {
         seq--;
     }
+
     mavlink_message_t msg;
     mavlink_msg_mission_set_current_pack_chan(_mavlink->getSystemId(),
                                               _mavlink->getComponentId(),
