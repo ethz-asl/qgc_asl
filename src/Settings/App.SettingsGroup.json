@@ -125,6 +125,13 @@
     "defaultValue":     false
 },
 {
+    "name":             "SendStampedCommands",
+    "shortDescription": "Send the commands with a timestamp",
+    "longDescription":  "If this option is enabled the commands will be sent with a vehicle and utc timestamp.",
+    "type":             "bool",
+    "defaultValue":     false
+},
+{
     "name":             "BaseDeviceFontPointSize",
     "shortDescription": "Application font size",
     "longDescription":  "The point size for the default font used.",
