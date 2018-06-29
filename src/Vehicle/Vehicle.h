@@ -1130,6 +1130,7 @@ private:
     void _handleSensMppt(mavlink_message_t& message);
     void _handleSensBatmon(mavlink_message_t& message);
     void _handleSensorpodStatus(mavlink_message_t& message);
+    uint32_t _getMavlinkEpochTimeElapsed(); ///> get the seconds elapsed since the MAVLink epoch (1.1.2009)
 
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
@@ -1202,6 +1203,8 @@ private:
         MAV_FRAME   frame;
         double      rgParam[7];
         bool        showError;
+        uint32_t    mavlink_epoch_time;
+        uint64_t    vehicle_timestamp;
     } MavCommandQueueEntry_t;
 
     QList<MavCommandQueueEntry_t>   _mavCommandQueue;
@@ -1210,6 +1213,8 @@ private:
     static const int                _mavCommandMaxRetryCount = 3;
     static const int                _mavCommandAckTimeoutMSecs = 3000;
     static const int                _mavCommandAckTimeoutMSecsHighLatency = 120000;
+
+    uint64_t _vehicleTimestamp; ///< The time in microseconds since vehicle boot according to mavlink messages
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;

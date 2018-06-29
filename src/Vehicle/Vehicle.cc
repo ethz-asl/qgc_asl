@@ -7,6 +7,8 @@
  *
  ****************************************************************************/
 
+#include <time.h>
+
 #include <QTime>
 #include <QDateTime>
 #include <QLocale>
@@ -137,6 +139,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _highLatencyLink(false)
     , _receivingAttitudeQuaternion(false)
     , _cameras(NULL)
+    , _vehicleTimestamp(0)
     , _connectionLost(false)
     , _connectionLostEnabled(true)
     , _initialPlanRequestComplete(false)
@@ -896,6 +899,10 @@ void Vehicle::_handleAttitude(mavlink_message_t& message)
     mavlink_attitude_t attitude;
     mavlink_msg_attitude_decode(&message, &attitude);
 
+    if (attitude.time_boot_ms > _vehicleTimestamp) {
+        _vehicleTimestamp = attitude.time_boot_ms;
+    }
+
     _handleAttitudeWorker(attitude.roll, attitude.pitch, attitude.yaw);
 }
 
@@ -905,6 +912,10 @@ void Vehicle::_handleAttitudeQuaternion(mavlink_message_t& message)
 
     mavlink_attitude_quaternion_t attitudeQuaternion;
     mavlink_msg_attitude_quaternion_decode(&message, &attitudeQuaternion);
+
+    if (attitudeQuaternion.time_boot_ms > _vehicleTimestamp) {
+        _vehicleTimestamp = attitudeQuaternion.time_boot_ms;
+    }
 
     float roll, pitch, yaw;
     float q[] = { attitudeQuaternion.q1, attitudeQuaternion.q2, attitudeQuaternion.q3, attitudeQuaternion.q4 };
@@ -970,6 +981,10 @@ void Vehicle::_handleHighLatency2(mavlink_message_t& message)
 {
     mavlink_high_latency2_t highLatency2;
     mavlink_msg_high_latency2_decode(&message, &highLatency2);
+
+    if (highLatency2.timestamp > _vehicleTimestamp) {
+        _vehicleTimestamp = highLatency2.timestamp;
+    }
 
     QString previousFlightMode;
     if (_base_mode != 0 || _custom_mode != 0){
@@ -1056,6 +1071,10 @@ void Vehicle::_handleAltitude(mavlink_message_t& message)
         if (!_gpsRawIntMessageAvailable) {
             _altitudeAMSLFact.setRawValue(altitude.altitude_amsl);
         }
+    }
+
+    if (altitude.time_usec / 1000 > _vehicleTimestamp) {
+        _vehicleTimestamp = altitude.time_usec / 1000;
     }
 }
 
@@ -2912,6 +2931,8 @@ void Vehicle::sendMavCommand(int component, MAV_CMD command, bool showError, flo
     entry.rgParam[4] = param5;
     entry.rgParam[5] = param6;
     entry.rgParam[6] = param7;
+    entry.vehicle_timestamp = _vehicleTimestamp;
+    entry.mavlink_epoch_time = _getMavlinkEpochTimeElapsed();
 
     _mavCommandQueue.append(entry);
 
@@ -2937,6 +2958,8 @@ void Vehicle::sendMavCommandInt(int component, MAV_CMD command, MAV_FRAME frame,
     entry.rgParam[4] = param5;
     entry.rgParam[5] = param6;
     entry.rgParam[6] = param7;
+    entry.vehicle_timestamp = _vehicleTimestamp;
+    entry.mavlink_epoch_time = _getMavlinkEpochTimeElapsed();
 
     _mavCommandQueue.append(entry);
 
@@ -3011,47 +3034,98 @@ void Vehicle::_sendMavCommandAgain(void)
 
     _mavCommandAckTimer.start();
 
-    mavlink_message_t       msg;
-    if (queuedCommand.commandInt) {
-        mavlink_command_int_t  cmd;
+    mavlink_message_t msg;
+    if (qgcApp()->toolbox()->settingsManager()->appSettings()->sendStampedCommands()->rawValue().toBool()) {
+        // send the commands with the timestamp information
+        if (queuedCommand.commandInt) {
 
-        memset(&cmd, 0, sizeof(cmd));
-        cmd.target_system =     _id;
-        cmd.target_component =  queuedCommand.component;
-        cmd.command =           queuedCommand.command;
-        cmd.frame =             queuedCommand.frame;
-        cmd.param1 =            queuedCommand.rgParam[0];
-        cmd.param2 =            queuedCommand.rgParam[1];
-        cmd.param3 =            queuedCommand.rgParam[2];
-        cmd.param4 =            queuedCommand.rgParam[3];
-        cmd.x =                 queuedCommand.rgParam[4] * qPow(10.0, 7.0);
-        cmd.y =                 queuedCommand.rgParam[5] * qPow(10.0, 7.0);
-        cmd.z =                 queuedCommand.rgParam[6];
-        mavlink_msg_command_int_encode_chan(_mavlink->getSystemId(),
-                                            _mavlink->getComponentId(),
-                                            priorityLink()->mavlinkChannel(),
-                                            &msg,
-                                            &cmd);
+            mavlink_command_int_stamped_t  cmd;
+
+            memset(&cmd, 0, sizeof(cmd));
+            cmd.target_system =     _id;
+            cmd.target_component =  queuedCommand.component;
+            cmd.command =           queuedCommand.command;
+            cmd.frame =             queuedCommand.frame;
+            cmd.param1 =            queuedCommand.rgParam[0];
+            cmd.param2 =            queuedCommand.rgParam[1];
+            cmd.param3 =            queuedCommand.rgParam[2];
+            cmd.param4 =            queuedCommand.rgParam[3];
+            cmd.x =                 queuedCommand.rgParam[4] * qPow(10.0, 7.0);
+            cmd.y =                 queuedCommand.rgParam[5] * qPow(10.0, 7.0);
+            cmd.z =                 queuedCommand.rgParam[6];
+            cmd.utc_time =          queuedCommand.mavlink_epoch_time;
+            cmd.vehicle_timestamp = queuedCommand.vehicle_timestamp;
+            mavlink_msg_command_int_stamped_encode_chan(_mavlink->getSystemId(),
+                                                        _mavlink->getComponentId(),
+                                                        priorityLink()->mavlinkChannel(),
+                                                        &msg,
+                                                        &cmd);
+        } else {
+            mavlink_command_long_stamped_t  cmd;
+
+            memset(&cmd, 0, sizeof(cmd));
+            cmd.target_system =     _id;
+            cmd.target_component =  queuedCommand.component;
+            cmd.command =           queuedCommand.command;
+            cmd.confirmation =      0;
+            cmd.param1 =            queuedCommand.rgParam[0];
+            cmd.param2 =            queuedCommand.rgParam[1];
+            cmd.param3 =            queuedCommand.rgParam[2];
+            cmd.param4 =            queuedCommand.rgParam[3];
+            cmd.param5 =            queuedCommand.rgParam[4];
+            cmd.param6 =            queuedCommand.rgParam[5];
+            cmd.param7 =            queuedCommand.rgParam[6];
+            cmd.utc_time =          queuedCommand.mavlink_epoch_time;
+            cmd.vehicle_timestamp = queuedCommand.vehicle_timestamp;
+            mavlink_msg_command_long_stamped_encode_chan(_mavlink->getSystemId(),
+                                                        _mavlink->getComponentId(),
+                                                        priorityLink()->mavlinkChannel(),
+                                                        &msg,
+                                                        &cmd);
+        }
     } else {
-        mavlink_command_long_t  cmd;
+        // send the commands without the timestamp information
+        if (queuedCommand.commandInt) {
+            mavlink_command_int_t  cmd;
 
-        memset(&cmd, 0, sizeof(cmd));
-        cmd.target_system =     _id;
-        cmd.target_component =  queuedCommand.component;
-        cmd.command =           queuedCommand.command;
-        cmd.confirmation =      0;
-        cmd.param1 =            queuedCommand.rgParam[0];
-        cmd.param2 =            queuedCommand.rgParam[1];
-        cmd.param3 =            queuedCommand.rgParam[2];
-        cmd.param4 =            queuedCommand.rgParam[3];
-        cmd.param5 =            queuedCommand.rgParam[4];
-        cmd.param6 =            queuedCommand.rgParam[5];
-        cmd.param7 =            queuedCommand.rgParam[6];
-        mavlink_msg_command_long_encode_chan(_mavlink->getSystemId(),
-                                             _mavlink->getComponentId(),
-                                             priorityLink()->mavlinkChannel(),
-                                             &msg,
-                                             &cmd);
+            memset(&cmd, 0, sizeof(cmd));
+            cmd.target_system =     _id;
+            cmd.target_component =  queuedCommand.component;
+            cmd.command =           queuedCommand.command;
+            cmd.frame =             queuedCommand.frame;
+            cmd.param1 =            queuedCommand.rgParam[0];
+            cmd.param2 =            queuedCommand.rgParam[1];
+            cmd.param3 =            queuedCommand.rgParam[2];
+            cmd.param4 =            queuedCommand.rgParam[3];
+            cmd.x =                 queuedCommand.rgParam[4] * qPow(10.0, 7.0);
+            cmd.y =                 queuedCommand.rgParam[5] * qPow(10.0, 7.0);
+            cmd.z =                 queuedCommand.rgParam[6];
+            mavlink_msg_command_int_encode_chan(_mavlink->getSystemId(),
+                                                _mavlink->getComponentId(),
+                                                priorityLink()->mavlinkChannel(),
+                                                &msg,
+                                                &cmd);
+        } else {
+            mavlink_command_long_t  cmd;
+
+            memset(&cmd, 0, sizeof(cmd));
+            cmd.target_system =     _id;
+            cmd.target_component =  queuedCommand.component;
+            cmd.command =           queuedCommand.command;
+            cmd.confirmation =      0;
+            cmd.param1 =            queuedCommand.rgParam[0];
+            cmd.param2 =            queuedCommand.rgParam[1];
+            cmd.param3 =            queuedCommand.rgParam[2];
+            cmd.param4 =            queuedCommand.rgParam[3];
+            cmd.param5 =            queuedCommand.rgParam[4];
+            cmd.param6 =            queuedCommand.rgParam[5];
+            cmd.param7 =            queuedCommand.rgParam[6];
+            mavlink_msg_command_long_encode_chan(_mavlink->getSystemId(),
+                                                 _mavlink->getComponentId(),
+                                                 priorityLink()->mavlinkChannel(),
+                                                 &msg,
+                                                 &cmd);
+        }
     }
 
     sendMessageOnLink(priorityLink(), msg);
@@ -3560,6 +3634,20 @@ void Vehicle::_updateHighLatencyLink(bool sendCommand)
                            _highLatencyLink ? 1.0f : 0.0f); // request start/stop transmitting over high latency telemetry
         }
     }
+}
+
+uint32_t Vehicle::_getMavlinkEpochTimeElapsed()
+{
+    // reference time January 1, 2009 (MAVLink epoch)
+    struct tm y2k = {};
+    y2k.tm_year = 109;
+    y2k.tm_mday = 1;
+
+    time_t timer;
+    time(&timer);
+    timer = mktime(gmtime(&timer));
+
+    return static_cast<uint32_t>(difftime(timer,mktime(&y2k)) + 0.5);
 }
 
 //-----------------------------------------------------------------------------
