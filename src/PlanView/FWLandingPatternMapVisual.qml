@@ -180,7 +180,7 @@ Item {
             itemIndicator:  _itemVisuals[_loiterPointIndex]
             itemCoordinate: _missionItem.loiterCoordinate
 
-            onItemCoordinateChanged: _missionItem.loiterCoordinate = itemCoordinate
+            onItemCoordinateChanged: _missionItem.loiterCoordinateItem = itemCoordinate
         }
     }
 
@@ -273,20 +273,24 @@ Item {
             color:          "green"
             opacity:        0.5
 
-            readonly property real landingWidth:    15
-            readonly property real landingLength:   100
-            readonly property real angleRadians:    Math.atan((landingWidth / 2) / (landingLength / 2))
-            readonly property real angleDegrees:    (angleRadians * (180 / Math.PI))
-            readonly property real hypotenuse:      (landingWidth / 2) / Math.sin(angleRadians)
+            readonly property real landingWidth:        15
+            readonly property real postTouchdownLength: 50
+            readonly property real flareLength:         _missionItem.flareLength.rawValue
+            readonly property real anglePostRadians:    Math.atan((landingWidth / 2) / postTouchdownLength)
+            readonly property real anglePostDegrees:    (anglePostRadians * (180 / Math.PI))
+            readonly property real anglePreRadians:     Math.atan((landingWidth / 2) / flareLength)
+            readonly property real anglePreDegrees:     (anglePreRadians * (180 / Math.PI))
+            readonly property real hypotenusePre:       (landingWidth / 2) / Math.sin(anglePreRadians)
+            readonly property real hypotenusePost:      (landingWidth / 2) / Math.sin(anglePostRadians)
 
             property real landingAreaAngle: _missionItem.landingCoordinate.azimuthTo(_missionItem.loiterTangentCoordinate)
 
             function calcPoly() {
                 path = [ ]
-                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenuse, landingAreaAngle - angleDegrees))
-                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenuse, landingAreaAngle + angleDegrees))
-                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenuse, landingAreaAngle + (180 - angleDegrees)))
-                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenuse, landingAreaAngle - (180 - angleDegrees)))
+                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenusePre, landingAreaAngle - anglePreDegrees))
+                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenusePre, landingAreaAngle + anglePreDegrees))
+                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenusePost, landingAreaAngle + (180 - anglePostDegrees)))
+                addCoordinate(_missionItem.landingCoordinate.atDistanceAndAzimuth(hypotenusePost, landingAreaAngle - (180 - anglePostDegrees)))
             }
 
             Component.onCompleted: calcPoly()
