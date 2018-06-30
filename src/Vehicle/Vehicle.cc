@@ -2905,15 +2905,10 @@ void Vehicle::setCurrentMissionSequence(int seq)
         seq--;
     }
 
-    mavlink_message_t msg;
-    mavlink_msg_mission_set_current_pack_chan(_mavlink->getSystemId(),
-                                              _mavlink->getComponentId(),
-                                              priorityLink()->mavlinkChannel(),
-                                              &msg,
-                                              id(),
-                                              _compID,
-                                              seq);
-    sendMessageOnLink(priorityLink(), msg);
+    sendMavCommand(_defaultComponentId,
+                   MAV_CMD_DO_SET_MISSION_CURRENT,
+                   true, // show error if it fails
+                   seq);
 }
 
 void Vehicle::sendMavCommand(int component, MAV_CMD command, bool showError, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
