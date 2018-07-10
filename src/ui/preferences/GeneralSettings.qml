@@ -271,6 +271,14 @@ QGCView {
                                 }
 
                                 FactCheckBox {
+                                    text:       qsTr("Send timestamped commands")
+                                    fact:       _sendStampedCommands
+                                    visible:    _sendStampedCommands.visible
+
+                                    property Fact _sendStampedCommands: QGroundControl.settingsManager.appSettings.sendStampedCommands
+                                }
+
+                                FactCheckBox {
                                     text:       qsTr("Virtual Joystick")
                                     visible:    _virtualJoystick.visible
                                     fact:       _virtualJoystick
