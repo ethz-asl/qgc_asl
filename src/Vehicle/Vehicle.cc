@@ -8,6 +8,7 @@
  ****************************************************************************/
 
 #include <time.h>
+#include <limits>
 
 #include <QTime>
 #include <QDateTime>
@@ -79,6 +80,7 @@ const char* Vehicle::_vibrationFactGroupName =      "vibration";
 const char* Vehicle::_temperatureFactGroupName =    "temperature";
 const char* Vehicle::_clockFactGroupName =          "clock";
 const char* Vehicle::_distanceSensorFactGroupName = "distanceSensor";
+const char* Vehicle::_gsmStatusFactGroupName =      "gsm";
 
 Vehicle::Vehicle(LinkInterface*             link,
                  int                        vehicleId,
@@ -198,6 +200,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _temperatureFactGroup(this)
     , _clockFactGroup(this)
     , _distanceSensorFactGroup(this)
+    , _gsmStatusFactGroup(this)
 {
     connect(_joystickManager, &JoystickManager::activeJoystickChanged, this, &Vehicle::_loadSettings);
     connect(qgcApp()->toolbox()->multiVehicleManager(), &MultiVehicleManager::activeVehicleAvailableChanged, this, &Vehicle::_loadSettings);
@@ -381,6 +384,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _vibrationFactGroup(this)
     , _clockFactGroup(this)
     , _distanceSensorFactGroup(this)
+    , _gsmStatusFactGroup(this)
 {
     _commonInit();
     _firmwarePlugin->initializeVehicle(this);
@@ -453,6 +457,7 @@ void Vehicle::_commonInit(void)
     _addFactGroup(&_temperatureFactGroup,       _temperatureFactGroupName);
     _addFactGroup(&_clockFactGroup,             _clockFactGroupName);
     _addFactGroup(&_distanceSensorFactGroup,    _distanceSensorFactGroupName);
+    _addFactGroup(&_gsmStatusFactGroup,         _gsmStatusFactGroupName);
 
     // Add firmware-specific fact groups, if provided
     QMap<QString, FactGroup*>* fwFactGroups = _firmwarePlugin->factGroups();
@@ -758,6 +763,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
             break;
         case MAVLINK_MSG_ID_SENSORPOD_STATUS:
             _handleSensorpodStatus(message);
+            break;
+        case MAVLINK_MSG_ID_GSM_LINK_STATUS:
+            _handleGsmLinkStatus(message);
             break;
     }
 
@@ -1345,6 +1353,107 @@ void Vehicle::_handleSensorpodStatus(mavlink_message_t& message)
   mavlink_sensorpod_status_t data;
   mavlink_msg_sensorpod_status_decode(&message, &data);
   emit SensorpodStatusChanged(data.visensor_rate_1, data.visensor_rate_2, data.visensor_rate_3, data.visensor_rate_4, data.recording_nodes_count,data.cpu_temp, data.free_space);
+}
+
+void Vehicle::_handleGsmLinkStatus(mavlink_message_t& message)
+{
+  mavlink_gsm_link_status_t data;
+  mavlink_msg_gsm_link_status_decode(&message, &data);
+
+  // convert the values
+  _gsmStatusFactGroup.present()->setRawValue(true);
+  _gsmStatusFactGroup.modemType()->setRawValue(data.gsm_modem_type);
+  _gsmStatusFactGroup.linkType()->setRawValue(data.gsm_link_type);
+
+  switch (data.gsm_modem_type) {
+    case GSM_MODEM_TYPE_HUAWEI_E3372:
+      switch (data.gsm_link_type) {
+        case GSM_LINK_TYPE_2G:
+          if (data.rssi != 255) {
+            _gsmStatusFactGroup.rssi()->setRawValue(data.rssi - 121.0);
+          }
+          _gsmStatusFactGroup.rssiExcellentThreshold()->setRawValue(VehicleGsmStatusFactGroup::_2GrssiExcellentThreshold);
+          _gsmStatusFactGroup.rssiGoodThreshold()->setRawValue(VehicleGsmStatusFactGroup::_2GrssiGoodThreshold);
+          _gsmStatusFactGroup.rssiFairThreshold()->setRawValue(VehicleGsmStatusFactGroup::_2GrssiFairThreshold);
+          _gsmStatusFactGroup.rsrp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rscp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.sinr()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.ecio()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rsrq()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+
+        case GSM_LINK_TYPE_3G:
+          if (data.rssi != 255) {
+            _gsmStatusFactGroup.rssi()->setRawValue(data.rssi - 121.0);
+          }
+          if (data.rsrp_rscp != 255) {
+            _gsmStatusFactGroup.rscp()->setRawValue(data.rsrp_rscp - 121.0);
+          }
+          if (data.sinr_ecio != 255) {
+            _gsmStatusFactGroup.ecio()->setRawValue(0.5 * data.sinr_ecio - 32.5);
+          }
+          _gsmStatusFactGroup.rssiExcellentThreshold()->setRawValue(VehicleGsmStatusFactGroup::_3GrssiExcellentThreshold);
+          _gsmStatusFactGroup.rssiGoodThreshold()->setRawValue(VehicleGsmStatusFactGroup::_3GrssiGoodThreshold);
+          _gsmStatusFactGroup.rssiFairThreshold()->setRawValue(VehicleGsmStatusFactGroup::_3GrssiFairThreshold);
+          _gsmStatusFactGroup.rsrp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.sinr()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rsrq()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+
+        case GSM_LINK_TYPE_4G:
+          if (data.rssi != 255) {
+            _gsmStatusFactGroup.rssi()->setRawValue(data.rssi - 121.0);
+          }
+          if (data.rsrp_rscp != 255) {
+            _gsmStatusFactGroup.rsrp()->setRawValue(data.rsrp_rscp - 141.0);
+          }
+          if (data.sinr_ecio != 255) {
+            _gsmStatusFactGroup.sinr()->setRawValue(0.2 * data.sinr_ecio - 20.2);
+          }
+          if (data.rsrq != 255) {
+            _gsmStatusFactGroup.rsrq()->setRawValue(0.5 * data.rsrq - 21.0);
+          }
+          _gsmStatusFactGroup.rssiExcellentThreshold()->setRawValue(VehicleGsmStatusFactGroup::_4GrssiExcellentThreshold);
+          _gsmStatusFactGroup.rssiGoodThreshold()->setRawValue(VehicleGsmStatusFactGroup::_4GrssiGoodThreshold);
+          _gsmStatusFactGroup.rssiFairThreshold()->setRawValue(VehicleGsmStatusFactGroup::_4GrssiFairThreshold);
+          _gsmStatusFactGroup.rscp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.ecio()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+      }
+      break;
+
+    case GSM_MODEM_TYPE_UNKNOWN:
+      switch (data.gsm_link_type) {
+        case GSM_LINK_TYPE_2G:
+          _gsmStatusFactGroup.rssi()->setRawValue(data.rssi);
+          _gsmStatusFactGroup.rsrp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rscp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.sinr()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.ecio()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rsrq()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+
+        case GSM_LINK_TYPE_3G:
+          _gsmStatusFactGroup.rssi()->setRawValue(data.rssi);
+          _gsmStatusFactGroup.rscp()->setRawValue(data.rsrp_rscp);
+          _gsmStatusFactGroup.ecio()->setRawValue(data.sinr_ecio);
+          _gsmStatusFactGroup.rsrp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.sinr()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.rsrq()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+
+        case GSM_LINK_TYPE_4G:
+          _gsmStatusFactGroup.rssi()->setRawValue(data.rssi);
+          _gsmStatusFactGroup.rsrp()->setRawValue(data.rsrp_rscp);
+          _gsmStatusFactGroup.sinr()->setRawValue(data.sinr_ecio);
+          _gsmStatusFactGroup.rsrq()->setRawValue(data.rsrq);
+          _gsmStatusFactGroup.rscp()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          _gsmStatusFactGroup.ecio()->setRawValue(VehicleGsmStatusFactGroup::_valueUnavailable);
+          break;
+      }
+      // do nothing, just pass the raw values
+      break;
+  }
 }
 
 bool Vehicle::_apmArmingNotRequired(void)
@@ -3881,4 +3990,87 @@ VehicleDistanceSensorFactGroup::VehicleDistanceSensorFactGroup(QObject* parent)
     _rotationYaw270Fact.setRawValue(std::numeric_limits<float>::quiet_NaN());
     _rotationPitch90Fact.setRawValue(std::numeric_limits<float>::quiet_NaN());
     _rotationPitch270Fact.setRawValue(std::numeric_limits<float>::quiet_NaN());
+}
+
+const char* VehicleGsmStatusFactGroup::_presentFactName =                "present";
+const char* VehicleGsmStatusFactGroup::_modemTypeFactName =              "modemType";
+const char* VehicleGsmStatusFactGroup::_linkTypeFactName =               "linkType";
+const char* VehicleGsmStatusFactGroup::_rssiFactName =                   "rssi";
+const char* VehicleGsmStatusFactGroup::_rsrpFactName =                   "rsrp";
+const char* VehicleGsmStatusFactGroup::_rscpFactName =                   "rscp";
+const char* VehicleGsmStatusFactGroup::_sinrFactName =                   "sinr";
+const char* VehicleGsmStatusFactGroup::_ecioFactName =                   "ecio";
+const char* VehicleGsmStatusFactGroup::_rsrqFactName =                   "rsrq";
+const char* VehicleGsmStatusFactGroup::_rssiExcellentThresholdFactName = "rssiExcellentThreshold";
+const char* VehicleGsmStatusFactGroup::_rssiGoodThresholdFactName =      "rssiGoodThreshold";
+const char* VehicleGsmStatusFactGroup::_rssiFairThresholdFactName =      "rssiFairThreshold";
+
+const char* VehicleGsmStatusFactGroup::_settingsGroup =                "Vehicle.gsm";
+
+const double VehicleGsmStatusFactGroup::_valueUnavailable =            std::numeric_limits<double>::quiet_NaN();
+const uint8_t VehicleGsmStatusFactGroup::_modemUnknown =               0;
+const uint8_t VehicleGsmStatusFactGroup::_noConnection =               0;
+const double VehicleGsmStatusFactGroup::_2GrssiExcellentThreshold =    -70.0;
+const double VehicleGsmStatusFactGroup::_2GrssiGoodThreshold =         -86.0;
+const double VehicleGsmStatusFactGroup::_2GrssiFairThreshold =         -100.0;
+const double VehicleGsmStatusFactGroup::_3GrssiExcellentThreshold =    -70.0;
+const double VehicleGsmStatusFactGroup::_3GrssiGoodThreshold =         -86.0;
+const double VehicleGsmStatusFactGroup::_3GrssiFairThreshold =         -100.0;
+const double VehicleGsmStatusFactGroup::_4GrssiExcellentThreshold =    -65.0;
+const double VehicleGsmStatusFactGroup::_4GrssiGoodThreshold =         -75.0;
+const double VehicleGsmStatusFactGroup::_4GrssiFairThreshold =         -85.0;
+const double VehicleGsmStatusFactGroup::_rsrpExcellentThreshold =      -90.0;
+const double VehicleGsmStatusFactGroup::_rsrpGoodThreshold =           -106.0;
+const double VehicleGsmStatusFactGroup::_rsrpFairThreshold =           -121.0;
+const double VehicleGsmStatusFactGroup::_rscpExcellentThreshold =      -60.0;
+const double VehicleGsmStatusFactGroup::_rscpGoodThreshold =           -75.0;
+const double VehicleGsmStatusFactGroup::_rscpFairThreshold =           -85.0;
+const double VehicleGsmStatusFactGroup::_sinrExcellentThreshold =      10.0;
+const double VehicleGsmStatusFactGroup::_sinrGoodThreshold =           5.0;
+const double VehicleGsmStatusFactGroup::_sinrFairThreshold =           0.0;
+const double VehicleGsmStatusFactGroup::_ecioExcellentThreshold =      -6.0;
+const double VehicleGsmStatusFactGroup::_ecioGoodThreshold =           -10.0;
+const double VehicleGsmStatusFactGroup::_ecioFairThreshold =           -15.0;
+const double VehicleGsmStatusFactGroup::_rsrqExcellentThreshold =      -10.0;
+const double VehicleGsmStatusFactGroup::_rsrqGoodThreshold =           -15.0;
+const double VehicleGsmStatusFactGroup::_rsrqFairThreshold =           -17.5;
+
+VehicleGsmStatusFactGroup::VehicleGsmStatusFactGroup(QObject* parent)
+    : FactGroup(1000, ":/json/Vehicle/GsmFact.json", parent)
+    , _presentFact                  (0, _presentFactName,                   FactMetaData::valueTypeBool)
+    , _modemTypeFact                (0, _modemTypeFactName,                 FactMetaData::valueTypeInt8)
+    , _linkTypeFact                 (0, _linkTypeFactName,                  FactMetaData::valueTypeInt8)
+    , _rssiFact                     (0, _rssiFactName,                      FactMetaData::valueTypeDouble)
+    , _rsrpFact                     (0, _rsrpFactName,                      FactMetaData::valueTypeDouble)
+    , _rscpFact                     (0, _rscpFactName,                      FactMetaData::valueTypeDouble)
+    , _sinrFact                     (0, _sinrFactName,                      FactMetaData::valueTypeDouble)
+    , _ecioFact                     (0, _ecioFactName,                      FactMetaData::valueTypeDouble)
+    , _rsrqFact                     (0, _rsrqFactName,                      FactMetaData::valueTypeDouble)
+    , _rssiExcellentThresholdFact   (0, _rssiExcellentThresholdFactName,    FactMetaData::valueTypeDouble)
+    , _rssiGoodThresholdFact        (0, _rssiGoodThresholdFactName,         FactMetaData::valueTypeDouble)
+    , _rssiFairThresholdFact        (0, _rssiFairThresholdFactName,         FactMetaData::valueTypeDouble)
+{
+    _addFact(&_presentFact,                  _presentFactName);
+    _addFact(&_modemTypeFact,               _modemTypeFactName);
+    _addFact(&_linkTypeFact,                _linkTypeFactName);
+    _addFact(&_rssiFact,                    _rssiFactName);
+    _addFact(&_rsrpFact,                    _rsrpFactName);
+    _addFact(&_rscpFact,                    _rscpFactName);
+    _addFact(&_sinrFact,                    _sinrFactName);
+    _addFact(&_ecioFact,                    _ecioFactName);
+    _addFact(&_rsrqFact,                    _rsrqFactName);
+    _addFact(&_rssiExcellentThresholdFact,  _rssiExcellentThresholdFactName);
+    _addFact(&_rssiGoodThresholdFact,       _rssiGoodThresholdFactName);
+    _addFact(&_rssiFairThresholdFact,       _rssiFairThresholdFactName);
+
+    // Start out as not available
+    _presentFact.setRawValue                (false);
+    _modemTypeFact.setRawValue              (_modemUnknown);
+    _linkTypeFact.setRawValue               (_noConnection);
+    _rssiFact.setRawValue                   (_valueUnavailable);
+    _rsrpFact.setRawValue                   (_valueUnavailable);
+    _rscpFact.setRawValue                   (_valueUnavailable);
+    _sinrFact.setRawValue                   (_valueUnavailable);
+    _ecioFact.setRawValue                   (_valueUnavailable);
+    _rsrqFact.setRawValue                   (_valueUnavailable);
 }

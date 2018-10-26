@@ -355,6 +355,127 @@ private:
     Fact            _currentDateFact;
 };
 
+class VehicleGsmStatusFactGroup : public FactGroup
+{
+    Q_OBJECT
+
+public:
+    VehicleGsmStatusFactGroup(QObject* parent = NULL);
+
+    Q_PROPERTY(Fact* present                   READ present                 CONSTANT)
+    Q_PROPERTY(Fact* modemType                 READ modemType               CONSTANT)
+    Q_PROPERTY(Fact* linkType                  READ linkType                CONSTANT)
+    Q_PROPERTY(Fact* rssi                      READ rssi                    CONSTANT)
+    Q_PROPERTY(Fact* rsrp                      READ rsrp                    CONSTANT)
+    Q_PROPERTY(Fact* rscp                      READ rscp                    CONSTANT)
+    Q_PROPERTY(Fact* sinr                      READ sinr                    CONSTANT)
+    Q_PROPERTY(Fact* ecio                      READ ecio                    CONSTANT)
+    Q_PROPERTY(Fact* rsrq                      READ rsrq                    CONSTANT)
+    Q_PROPERTY(Fact* rssiExcellentThreshold    READ rssiExcellentThreshold  CONSTANT)
+    Q_PROPERTY(Fact* rssiGoodThreshold         READ rssiGoodThreshold       CONSTANT)
+    Q_PROPERTY(Fact* rssiFairThreshold         READ rssiFairThreshold       CONSTANT)
+    Q_PROPERTY(double rsrpExcellentThreshold   READ rsrpExcellentThreshold  CONSTANT)
+    Q_PROPERTY(double rsrpGoodThreshold        READ rsrpGoodThreshold       CONSTANT)
+    Q_PROPERTY(double rsrpFairThreshold        READ rsrpFairThreshold       CONSTANT)
+    Q_PROPERTY(double rscpExcellentThreshold   READ rscpExcellentThreshold  CONSTANT)
+    Q_PROPERTY(double rscpGoodThreshold        READ rscpGoodThreshold       CONSTANT)
+    Q_PROPERTY(double rscpFairThreshold        READ rscpFairThreshold       CONSTANT)
+    Q_PROPERTY(double sinrExcellentThreshold   READ sinrExcellentThreshold  CONSTANT)
+    Q_PROPERTY(double sinrGoodThreshold        READ sinrGoodThreshold       CONSTANT)
+    Q_PROPERTY(double sinrFairThreshold        READ sinrFairThreshold       CONSTANT)
+    Q_PROPERTY(double ecioExcellentThreshold   READ ecioExcellentThreshold  CONSTANT)
+    Q_PROPERTY(double ecioGoodThreshold        READ ecioGoodThreshold       CONSTANT)
+    Q_PROPERTY(double ecioFairThreshold        READ ecioFairThreshold       CONSTANT)
+    Q_PROPERTY(double rsrqExcellentThreshold   READ rsrqExcellentThreshold  CONSTANT)
+    Q_PROPERTY(double rsrqGoodThreshold        READ rsrqGoodThreshold       CONSTANT)
+    Q_PROPERTY(double rsrqFairThreshold        READ rsrqFairThreshold       CONSTANT)
+
+    Fact* present                       (void) { return &_presentFact; }
+    Fact* modemType                     (void) { return &_modemTypeFact; }
+    Fact* linkType                      (void) { return &_linkTypeFact; }
+    Fact* rssi                          (void) { return &_rssiFact; }
+    Fact* rsrp                          (void) { return &_rsrpFact; }
+    Fact* rscp                          (void) { return &_rscpFact; }
+    Fact* sinr                          (void) { return &_sinrFact; }
+    Fact* ecio                          (void) { return &_ecioFact; }
+    Fact* rsrq                          (void) { return &_rsrqFact; }
+    Fact* rssiExcellentThreshold        (void) { return &_rssiExcellentThresholdFact;}
+    Fact* rssiGoodThreshold             (void) { return &_rssiGoodThresholdFact;}
+    Fact* rssiFairThreshold             (void) { return &_rssiFairThresholdFact;}
+    double rsrpExcellentThreshold       (void) { return _rsrpExcellentThreshold;}
+    double rsrpGoodThreshold            (void) { return _rsrpGoodThreshold;}
+    double rsrpFairThreshold            (void) { return _rsrpFairThreshold;}
+    double rscpExcellentThreshold       (void) { return _rscpExcellentThreshold;}
+    double rscpGoodThreshold            (void) { return _rscpGoodThreshold;}
+    double rscpFairThreshold            (void) { return _rscpFairThreshold;}
+    double sinrExcellentThreshold       (void) { return _sinrExcellentThreshold;}
+    double sinrGoodThreshold            (void) { return _sinrGoodThreshold;}
+    double sinrFairThreshold            (void) { return _sinrFairThreshold;}
+    double ecioExcellentThreshold       (void) { return _ecioExcellentThreshold;}
+    double ecioGoodThreshold            (void) { return _ecioGoodThreshold;}
+    double ecioFairThreshold            (void) { return _ecioFairThreshold;}
+    double rsrqExcellentThreshold       (void) { return _rsrqExcellentThreshold;}
+    double rsrqGoodThreshold            (void) { return _rsrqGoodThreshold;}
+    double rsrqFairThreshold            (void) { return _rsrqFairThreshold;}
+
+    static const char* _presentFactName;
+    static const char* _modemTypeFactName;
+    static const char* _linkTypeFactName;
+    static const char* _rssiFactName;
+    static const char* _rsrpFactName;
+    static const char* _rscpFactName;
+    static const char* _sinrFactName;
+    static const char* _ecioFactName;
+    static const char* _rsrqFactName;
+    static const char* _rssiExcellentThresholdFactName;
+    static const char* _rssiGoodThresholdFactName;
+    static const char* _rssiFairThresholdFactName;
+
+    static const char* _settingsGroup;
+
+    static const double  _valueUnavailable;
+    static const uint8_t _modemUnknown;
+    static const uint8_t _noConnection;
+    static const double  _2GrssiExcellentThreshold;
+    static const double  _2GrssiGoodThreshold;
+    static const double  _2GrssiFairThreshold;
+    static const double  _3GrssiExcellentThreshold;
+    static const double  _3GrssiGoodThreshold;
+    static const double  _3GrssiFairThreshold;
+    static const double  _4GrssiExcellentThreshold;
+    static const double  _4GrssiGoodThreshold;
+    static const double  _4GrssiFairThreshold;
+    static const double  _rsrpExcellentThreshold;
+    static const double  _rsrpGoodThreshold;
+    static const double  _rsrpFairThreshold;
+    static const double  _rscpExcellentThreshold;
+    static const double  _rscpGoodThreshold;
+    static const double  _rscpFairThreshold;
+    static const double  _sinrExcellentThreshold;
+    static const double  _sinrGoodThreshold;
+    static const double  _sinrFairThreshold;
+    static const double  _ecioExcellentThreshold;
+    static const double  _ecioGoodThreshold;
+    static const double  _ecioFairThreshold;
+    static const double  _rsrqExcellentThreshold;
+    static const double  _rsrqGoodThreshold;
+    static const double  _rsrqFairThreshold;
+
+private:
+    Fact            _presentFact;
+    Fact            _modemTypeFact;
+    Fact            _linkTypeFact;
+    Fact            _rssiFact;
+    Fact            _rsrpFact;
+    Fact            _rscpFact;
+    Fact            _sinrFact;
+    Fact            _ecioFact;
+    Fact            _rsrqFact;
+    Fact            _rssiExcellentThresholdFact;
+    Fact            _rssiGoodThresholdFact;
+    Fact            _rssiFairThresholdFact;
+};
+
 class Vehicle : public FactGroup
 {
     Q_OBJECT
@@ -534,6 +655,7 @@ public:
     Q_PROPERTY(FactGroup* temperature READ temperatureFactGroup CONSTANT)
     Q_PROPERTY(FactGroup* clock       READ clockFactGroup       CONSTANT)
     Q_PROPERTY(FactGroup* setpoint    READ setpointFactGroup    CONSTANT)
+    Q_PROPERTY(FactGroup* gsm         READ gsmStatusFactGroup   CONSTANT)
 
     Q_PROPERTY(int      firmwareMajorVersion        READ firmwareMajorVersion       NOTIFY firmwareVersionChanged)
     Q_PROPERTY(int      firmwareMinorVersion        READ firmwareMinorVersion       NOTIFY firmwareVersionChanged)
@@ -824,6 +946,7 @@ public:
     FactGroup* clockFactGroup           (void) { return &_clockFactGroup; }
     FactGroup* setpointFactGroup        (void) { return &_setpointFactGroup; }
     FactGroup* distanceSensorFactGroup  (void) { return &_distanceSensorFactGroup; }
+    FactGroup* gsmStatusFactGroup       (void) { return &_gsmStatusFactGroup; }
 
     void setConnectionLostEnabled(bool connectionLostEnabled);
 
@@ -1131,6 +1254,7 @@ private:
     void _handleSensMppt(mavlink_message_t& message);
     void _handleSensBatmon(mavlink_message_t& message);
     void _handleSensorpodStatus(mavlink_message_t& message);
+    void _handleGsmLinkStatus(mavlink_message_t& message);
     uint32_t _getMavlinkEpochTimeElapsed(); ///> get the seconds elapsed since the MAVLink epoch (1.1.2009)
 
     int     _id;                    ///< Mavlink system id
@@ -1326,6 +1450,7 @@ private:
     VehicleClockFactGroup           _clockFactGroup;
     VehicleSetpointFactGroup        _setpointFactGroup;
     VehicleDistanceSensorFactGroup  _distanceSensorFactGroup;
+    VehicleGsmStatusFactGroup       _gsmStatusFactGroup;
 
     static const char* _rollFactName;
     static const char* _pitchFactName;
@@ -1351,6 +1476,7 @@ private:
     static const char* _temperatureFactGroupName;
     static const char* _clockFactGroupName;
     static const char* _distanceSensorFactGroupName;
+    static const char* _gsmStatusFactGroupName;
 
     static const int _vehicleUIUpdateRateMSecs = 100;
 

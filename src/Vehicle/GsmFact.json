@@ -1,0 +1,83 @@
+[
+{
+    "name":             "present",
+    "shortDescription": "Present",
+    "type":             "bool",
+    "decimalPlaces":    0
+},
+{
+    "name":             "linkType",
+    "shortDescription": "Link Type",
+    "type":             "int8",
+     "decimalPlaces":    0
+},
+{
+    "name":             "modemType",
+    "shortDescription": "Modem Type",
+    "type":             "int8",
+     "decimalPlaces":    0
+},
+{
+    "name":             "rssi",
+    "shortDescription": "RSSI",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+},
+{
+    "name":             "rscp",
+    "shortDescription": "RSCP",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+},
+{
+    "name":             "sinr",
+    "shortDescription": "SINR",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "dB"
+},
+{
+    "name":             "ecio",
+    "shortDescription": "ECIO",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "dB"
+},
+{
+    "name":             "rsrp",
+    "shortDescription": "RSRP",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+},
+{
+    "name":             "rsrq",
+    "shortDescription": "RSRQ",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "dB"
+},
+{
+    "name":             "rssiExcellentThreshold",
+    "shortDescription": "RSSI Excellent Threshold",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+},
+{
+    "name":             "rssiGoodThreshold",
+    "shortDescription": "RSSI Good Threshold",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+},
+{
+    "name":             "rssiFairThreshold",
+    "shortDescription": "RSSI Fair Threshold",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "dBm"
+}
+]
