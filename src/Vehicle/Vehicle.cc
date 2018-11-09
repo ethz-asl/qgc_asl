@@ -2688,6 +2688,9 @@ void Vehicle::_linkActiveChanged(LinkInterface *link, bool active, int vehicleID
                 _maxProtoVersion = 0;
                 emit connectionLostChanged(true);
 
+                // reset the vehicle timestamp
+                _vehicleTimestamp = 0;
+
                 if (_autoDisconnect) {
                     // Reset link state
                     for (int i = 0; i < _links.length(); i++) {
