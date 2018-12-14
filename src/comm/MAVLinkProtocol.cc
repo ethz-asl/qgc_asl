@@ -85,7 +85,7 @@ void MAVLinkProtocol::setVersion(unsigned version)
         mavlink_status_t* mavlinkStatus = mavlink_get_channel_status(links[i]->mavlinkChannel());
 
         // Set flags for version
-        if (version < 200) {
+        if (version < 200 || links[i]->getHighLatency()) {
             mavlinkStatus->flags |= MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
         } else {
             mavlinkStatus->flags &= ~MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
