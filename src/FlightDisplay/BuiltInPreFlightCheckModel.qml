@@ -42,6 +42,11 @@ PreFlightCheckModel {
 
         PreFlightRCCheck {
         }
+
+        PreFlightCheckButton {
+            name:           qsTr("SatCom")
+            manualText:     qsTr("SatCom link connected")
+        }
     }
 
     PreFlightCheckGroup {
