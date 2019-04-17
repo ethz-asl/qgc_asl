@@ -24,14 +24,16 @@
     "type":             "double",
     "units":            "m",
     "decimalPlaces":    1,
-    "defaultValue":     40.0
+    "min":              13,
+    "max":              22,
+    "defaultValue":     18.0
 },
 {
     "name":             "LoiterRadius",
     "shortDescription": "Loiter radius.",
     "type":             "double",
     "decimalPlaces":    1,
-    "min":              1,
+    "min":              70,
     "units":            "m",
     "defaultValue":     75.0
 },
@@ -49,7 +51,7 @@
     "type":             "double",
     "units":            "m",
     "decimalPlaces":    1,
-    "defaultValue":     1.0
+    "defaultValue":     1.5
 },
 {
     "name":             "VirtualAltitude",
@@ -72,9 +74,9 @@
     "shortDescription": "The glide slope between the loiter and landing point.",
     "type":             "double",
     "units":            "deg",
-    "min":              0.1,
-    "max":              90,
+    "min":              4.4,
+    "max":              4.6,
     "decimalPlaces":    1,
-    "defaultValue":     5.0
+    "defaultValue":     4.5
 }
 ]

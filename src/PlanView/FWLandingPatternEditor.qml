@@ -88,33 +88,19 @@ Rectangle {
                     fact:               missionItem.landingAltitude
                 }
 
-            QGCRadioButton {
-                id:                 specifyLandingDistance
-                text:               qsTr("Landing Dist")
-                checked:            missionItem.valueSetIsDistance
-                exclusiveGroup:     distanceGlideGroup
-                onClicked:          missionItem.valueSetIsDistance = checked
-                Layout.fillWidth:   true
-            }
+            QGCLabel { text: qsTr("Landing Dist") }
 
             FactTextField {
                 fact:               missionItem.landingDistance
-                enabled:            specifyLandingDistance.checked
+                enabled:            false
                 Layout.fillWidth:   true
             }
 
-            QGCRadioButton {
-                id:                 specifyGlideSlope
-                text:               qsTr("Glide Slope")
-                checked:            !missionItem.valueSetIsDistance
-                exclusiveGroup:     distanceGlideGroup
-                onClicked:          missionItem.valueSetIsDistance = !checked
-                Layout.fillWidth:   true
-            }
+            QGCLabel { text: qsTr("Glide Slope") }
 
             FactTextField {
                 fact:               missionItem.glideSlope
-                enabled:            specifyGlideSlope.checked
+                enabled:            false
                 Layout.fillWidth:   true
             }
 
@@ -122,7 +108,7 @@ Rectangle {
 
             FactTextField {
                 fact:               missionItem.flareAltitude
-                enabled:            specifyGlideSlope.checked
+                enabled:            false
                 Layout.fillWidth:   true
             }
 
@@ -130,7 +116,7 @@ Rectangle {
 
             FactTextField {
                 fact:               missionItem.virtualAltitude
-                enabled:            specifyGlideSlope.checked
+                enabled:            false
                 Layout.fillWidth:   true
             }
 

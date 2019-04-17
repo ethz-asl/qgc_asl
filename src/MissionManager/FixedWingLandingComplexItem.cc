@@ -61,7 +61,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(Vehicle* vehicle, bool 
     , _glideSlopeFact           (settingsGroup, _metaDataMap[glideSlopeName])
     , _loiterClockwise          (true)
     , _altitudesAreRelative     (true)
-    , _valueSetIsDistance       (true)
+    , _valueSetIsDistance       (false)
 {
     _editorQml = "qrc:/qml/FWLandingPatternEditor.qml";
 
@@ -319,6 +319,7 @@ bool FixedWingLandingComplexItem::scanForItem(QmlObjectListModel* visualItems, b
     if (!item) {
         return false;
     }
+
     MissionItem& missionItemLoiter = item->missionItem();
     if (missionItemLoiter.command() != MAV_CMD_NAV_LOITER_TO_ALT ||
             missionItemLoiter.frame() != landPointFrame ||
@@ -381,29 +382,16 @@ void FixedWingLandingComplexItem::setLandingCoordinate(const QGeoCoordinate& coo
     if (coordinate != _landingCoordinate) {
         _landingCoordinate = coordinate;
 
-        if (_valueSetIsDistance) {
-
-            if (_landingCoordSet) {
-                emit exitCoordinateChanged(coordinate);
-                emit landingCoordinateChanged(coordinate);
-            } else {
-                _ignoreRecalcSignals = true;
-                emit exitCoordinateChanged(coordinate);
-                emit landingCoordinateChanged(coordinate);
-                _ignoreRecalcSignals = false;
-                _landingCoordSet = true;
-                _recalcFromHeadingAndDistanceChange();
-                emit landingCoordSetChanged(true);
-            }
-        }
-        else {
-
+        if (_landingCoordSet) {
+            emit exitCoordinateChanged(coordinate);
+            emit landingCoordinateChanged(coordinate);
+        } else {
             _ignoreRecalcSignals = true;
             emit exitCoordinateChanged(coordinate);
             emit landingCoordinateChanged(coordinate);
             _ignoreRecalcSignals = false;
             _landingCoordSet = true;
-            _recalcFromDraggedCoordinateChange();
+            _recalcFromHeadingAndDistanceChange();
             emit landingCoordSetChanged(true);
         }
     }
@@ -420,7 +408,11 @@ void FixedWingLandingComplexItem::setLoiterCoordinate(const QGeoCoordinate& coor
 
 void FixedWingLandingComplexItem::setLoiterCoordinateItem(const QGeoCoordinate& coordinate)
 {
-    if (coordinate != _loiterCoordinateItem) {
+    const double eps = 1e-10;
+    if ((qAbs(coordinate.longitude()-_loiterCoordinateItem.longitude()) > eps) ||
+            (qAbs(coordinate.latitude()-_loiterCoordinateItem.latitude()) > eps) ||
+            (qAbs(coordinate.altitude()-_loiterCoordinateItem.altitude()) > eps) ||
+            (qIsNaN(_loiterCoordinateItem.longitude()))) { // nan check important to check the first iteration
         _loiterCoordinateItem = coordinate;
         emit loiterCoordinateDragged(coordinate);
     }
@@ -479,6 +471,7 @@ void FixedWingLandingComplexItem::_recalcFromRadiusChange(void)
             _ignoreRecalcSignals = true;
             emit loiterCoordinateChanged(_loiterCoordinate);
             emit coordinateChanged(_loiterCoordinate);
+
             _ignoreRecalcSignals = false;
         }
     }
@@ -547,53 +540,26 @@ void FixedWingLandingComplexItem::_recalcFromDraggedCoordinateChange(void)
     }
     else {
 
-        // These are our known values
-        double radius = _loiterRadiusFact.rawValue().toDouble();
-        double landToLoiterDistance = _landingCoordinate.distanceTo(_loiterCoordinate);
-        double landToLoiterHeading = _landingCoordinate.azimuthTo(_loiterCoordinate);
-
-        // calculate landing distance considering flare params
-        // fix the landing distance for set glide slope.. do not allow recalculation of glide slope
-        _glideSlopeChanged();
-        double landToTangentDistance = _landingDistanceFact.rawValue().toDouble();
-
-        // calculate loiter tangent coordinate
-        double loiterToTangentAngle = qRadiansToDegrees(qAsin(radius/landToLoiterDistance)) * (_loiterClockwise ? 1 : -1);
-        _loiterTangentCoordinate = _landingCoordinate.atDistanceAndAzimuth(landToTangentDistance, landToLoiterHeading + loiterToTangentAngle);
-
-        // adjust loiter point for corrected landing distance
-        landToLoiterDistance = qSqrt(qPow(landToTangentDistance, 2) + qPow(radius, 2));
-        double tangentToLoiterAdjustedAngle = qRadiansToDegrees(qAtan(radius/landToTangentDistance)) * (_loiterClockwise ? -1 : 1);
-        _loiterCoordinate = _landingCoordinate.atDistanceAndAzimuth(landToLoiterDistance, landToLoiterHeading + loiterToTangentAngle + tangentToLoiterAdjustedAngle);
-
-        // update heading
-        double heading = _loiterTangentCoordinate.azimuthTo(_landingCoordinate);
-
-        _ignoreRecalcSignals = true;
-        _landingHeadingFact.setRawValue(heading);
-        emit loiterTangentCoordinateChanged(_loiterTangentCoordinate);
-        emit loiterCoordinateChanged(_loiterCoordinate);
+        emit loiterCoordinateChanged(_loiterCoordinate); // will trigger regular recalc
         emit coordinateChanged(_loiterCoordinate);
-        _ignoreRecalcSignals = false;
     }
 
 }
 
 void FixedWingLandingComplexItem::_recalcFromCoordinateChange(void)
 {
-    // Fixed:
-    //      land
-    //      loiter
-    //      radius
-    // Adjusted:
-    //      loiter tangent
-    //      heading
-    //      distance
-    //      glide slope
-
     if (!_ignoreRecalcSignals && _landingCoordSet) {
 
         if (_valueSetIsDistance) {
+            // Fixed:
+            //      land
+            //      loiter
+            //      radius
+            // Adjusted:
+            //      loiter tangent
+            //      heading
+            //      distance
+            //      glide slope
 
             // These are our known values
             double radius = _loiterRadiusFact.rawValue().toDouble();
@@ -619,6 +585,40 @@ void FixedWingLandingComplexItem::_recalcFromCoordinateChange(void)
             _landingDistanceFact.setRawValue(landToTangentDistance);
             emit loiterTangentCoordinateChanged(_loiterTangentCoordinate);
             _calcGlideSlope();
+            _ignoreRecalcSignals = false;
+        } else {
+            // These are our known values
+            double radius = _loiterRadiusFact.rawValue().toDouble();
+            double landToLoiterDistance = _landingCoordinate.distanceTo(_loiterCoordinate);
+            double landToLoiterHeading = _landingCoordinate.azimuthTo(_loiterCoordinate);
+
+            // guard the degenerate case
+            if (landToLoiterDistance < 1.5 * radius) {
+                landToLoiterDistance = 1.5 * radius;
+            }
+
+            // calculate landing distance considering flare params
+            // fix the landing distance for set glide slope.. do not allow recalculation of glide slope
+            _glideSlopeChanged();
+            double landToTangentDistance = _landingDistanceFact.rawValue().toDouble();
+
+            // calculate loiter tangent coordinate
+            double loiterToTangentAngle = qRadiansToDegrees(qAsin(radius/landToLoiterDistance)) * (_loiterClockwise ? 1 : -1);
+            _loiterTangentCoordinate = _landingCoordinate.atDistanceAndAzimuth(landToTangentDistance, landToLoiterHeading + loiterToTangentAngle);
+
+            // adjust loiter point for corrected landing distance
+            landToLoiterDistance = qSqrt(qPow(landToTangentDistance, 2) + qPow(radius, 2));
+            double tangentToLoiterAdjustedAngle = qRadiansToDegrees(qAtan(radius/landToTangentDistance)) * (_loiterClockwise ? -1 : 1);
+            _loiterCoordinate = _landingCoordinate.atDistanceAndAzimuth(landToLoiterDistance, landToLoiterHeading + loiterToTangentAngle + tangentToLoiterAdjustedAngle);
+
+            // update heading
+            double heading = _loiterTangentCoordinate.azimuthTo(_landingCoordinate);
+
+            _ignoreRecalcSignals = true;
+            _landingHeadingFact.setRawValue(heading);
+            emit loiterTangentCoordinateChanged(_loiterTangentCoordinate);
+            emit loiterCoordinateChanged(_loiterCoordinate);
+            emit coordinateChanged(_loiterCoordinate);
             _ignoreRecalcSignals = false;
         }
     }
