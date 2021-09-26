@@ -76,8 +76,8 @@ private:
     QString     _value;
     bool        _selectable = true;
     int         _dataIndex  = 0;
-    qreal       _rangeMin   = 0;
-    qreal       _rangeMax   = 0;
+    qreal       _rangeMin   = std::numeric_limits<qreal>::max();
+    qreal       _rangeMax   = std::numeric_limits<qreal>::min();
 
     QAbstractSeries*    _pSeries = nullptr;
     QGCMAVLinkMessage*  _msg     = nullptr;
@@ -127,6 +127,7 @@ private:
     void _updateFields(void);
 
     QmlObjectListModel  _fields;
+    int  _quaternion_field_index        = -1;
     QString             _name;
     qreal               _messageHz      = 0.0;
     uint64_t            _count          = 1;

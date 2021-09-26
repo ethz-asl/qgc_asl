@@ -176,8 +176,21 @@ QGCMAVLinkMessage::QGCMAVLinkMessage(QObject *parent, mavlink_message_t* message
             case MAVLINK_TYPE_UINT64_T: type = QString("uint64_t"); break;
             case MAVLINK_TYPE_INT64_T:  type = QString("int64_t");  break;
         }
+
         QGCMAVLinkMessageField* f = new QGCMAVLinkMessageField(this, msgInfo->fields[i].name, type);
         _fields.append(f);
+        if (std::string("q").compare(msgInfo->fields[i].name) == 0) {
+            _quaternion_field_index = i;
+        }
+    }
+
+    if (_quaternion_field_index >= 0) {
+        QGCMAVLinkMessageField* fr = new QGCMAVLinkMessageField(this, "Roll", QString("double"));
+        _fields.append(fr);
+        QGCMAVLinkMessageField* fp = new QGCMAVLinkMessageField(this, "Pitch", QString("double"));
+        _fields.append(fp);
+        QGCMAVLinkMessageField* fy = new QGCMAVLinkMessageField(this, "Yaw", QString("double"));
+        _fields.append(fy);
     }
 }
 
@@ -233,7 +246,7 @@ QGCMAVLinkMessage::update(mavlink_message_t* message)
     _count++;
     _message = *message;
 
-    if (_selected) {
+    if (true) {
         // Don't update field info unless selected to reduce perf hit of message processing
         _updateFields();
     }
@@ -247,7 +260,11 @@ void QGCMAVLinkMessage::_updateFields(void)
         qWarning() << QStringLiteral("QGCMAVLinkMessage::update NULL msgInfo msgid(%1)").arg(_message.msgid);
         return;
     }
-    if(_fields.count() != static_cast<int>(msgInfo->num_fields)) {
+    int num_fields = static_cast<int>(msgInfo->num_fields);
+    if (_quaternion_field_index >= 0) {
+        num_fields += 3;
+    }
+    if(_fields.count() != num_fields) {
         qWarning() << QStringLiteral("QGCMAVLinkMessage::update msgInfo field count mismatch msgid(%1)").arg(_message.msgid);
         return;
     }
@@ -395,6 +412,24 @@ void QGCMAVLinkMessage::_updateFields(void)
                     }
                     string += QString::number(static_cast<double>(nums[array_length - 1]));
                     f->updateValue(string, static_cast<qreal>(nums[0]));
+
+                    if (_quaternion_field_index == (int) i) {
+                        float roll, pitch, yaw;
+                        mavlink_quaternion_to_euler(nums, &roll, &pitch, &yaw);
+
+                        QGCMAVLinkMessageField* f_roll = qobject_cast<QGCMAVLinkMessageField*>(_fields.get(static_cast<int>(msgInfo->num_fields)));
+                        QGCMAVLinkMessageField* f_pitch = qobject_cast<QGCMAVLinkMessageField*>(_fields.get(static_cast<int>(msgInfo->num_fields+1)));
+                        QGCMAVLinkMessageField* f_yaw = qobject_cast<QGCMAVLinkMessageField*>(_fields.get(static_cast<int>(msgInfo->num_fields+2)));
+                        if(f_roll) {
+                            f_roll->updateValue(QString::number(static_cast<double>(roll)), static_cast<qreal>(roll));
+                        }
+                        if(f_pitch) {
+                            f_pitch->updateValue(QString::number(static_cast<double>(pitch)), static_cast<qreal>(pitch));
+                        }
+                        if(f_yaw) {
+                            f_yaw->updateValue(QString::number(static_cast<double>(yaw)), static_cast<qreal>(yaw));
+                        }
+                    }
                 } else {
                     // Single value
                     float fv;
